@@ -1,22 +1,21 @@
-import React from 'react';
-
-const QuizCard = ({ question, options, onAnswer }) => {
+export default function QuizCard({ question, options = [], selected, onAnswer, disabled }) {
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h3 className="text-lg font-semibold mb-4">{question}</h3>
-      <div className="space-y-2">
-        {options.map((option, index) => (
+    <section className="quiz-card">
+      <p className="eyebrow">Quiz question</p>
+      <h3>{question}</h3>
+      <div className="quiz-options">
+        {options.map((option) => (
           <button
-            key={index}
+            key={option}
+            type="button"
+            className={`quiz-option ${selected === option ? "selected" : ""}`}
             onClick={() => onAnswer(option)}
-            className="block w-full text-left p-2 border rounded hover:bg-gray-100"
+            disabled={disabled}
           >
             {option}
           </button>
         ))}
       </div>
-    </div>
+    </section>
   );
-};
-
-export default QuizCard;
+}

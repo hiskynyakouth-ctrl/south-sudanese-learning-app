@@ -1,15 +1,10 @@
-import React from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from "../components/Navbar";
 
-const MainLayout = ({ children }) => {
+export default function MainLayout({ children }) {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="app-shell">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
-        {children}
-      </main>
+      <main className="page-shell">{children}</main>
     </div>
   );
-};
-
-export default MainLayout;
+}

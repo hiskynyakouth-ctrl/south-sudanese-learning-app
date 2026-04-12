@@ -1,11 +1,8 @@
-import React from 'react';
-
-const Loader = () => {
+export default function Loader({ label = "Loading..." }) {
   return (
-    <div className="flex justify-center items-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <div className="loader-wrap" role="status" aria-live="polite">
+      <div className="loader-dot" />
+      <span>{label}</span>
     </div>
   );
-};
-
-export default Loader;
+}

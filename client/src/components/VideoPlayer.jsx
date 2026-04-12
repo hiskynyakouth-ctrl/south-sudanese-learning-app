@@ -1,12 +1,21 @@
-import React from 'react';
+import { getYoutubeEmbedUrl } from "../utils/helpers";
 
-const VideoPlayer = ({ src }) => {
+export default function VideoPlayer({ src, title }) {
+  const embedUrl = getYoutubeEmbedUrl(src);
+
+  if (!embedUrl) {
+    return null;
+  }
+
   return (
-    <video controls className="w-full">
-      <source src={src} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+    <div className="video-panel">
+      <iframe
+        src={embedUrl}
+        title={title || "Lesson video"}
+        className="video-frame"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
   );
-};
-
-export default VideoPlayer;
+}

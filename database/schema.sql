@@ -28,6 +28,14 @@ CREATE TABLE chapters (
   FOREIGN KEY (subject_id) REFERENCES subjects(id)
 );
 
+CREATE TABLE discussion_questions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  chapter_id INT,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  FOREIGN KEY (chapter_id) REFERENCES chapters(id)
+);
+
 CREATE TABLE quizzes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   chapter_id INT,

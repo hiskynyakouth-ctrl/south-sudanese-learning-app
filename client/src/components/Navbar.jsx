@@ -1,19 +1,55 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const Navbar = () => {
+export default function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
+
   return (
-    <nav className="bg-blue-600 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">South Sudanese eLearning</Link>
-        <div className="space-x-4">
-          <Link to="/subjects" className="hover:underline">Subjects</Link>
-          <Link to="/chat" className="hover:underline">Chat AI</Link>
-          <Link to="/login" className="hover:underline">Login</Link>
+    <header className="topbar">
+      <div className="topbar-inner">
+        <Link to="/" className="brand-mark">
+          <span className="brand-badge">SS</span>
+          <span>
+            <strong>South Sudan E-Learning</strong>
+            <small>Secondary school study platform</small>
+          </span>
+        </Link>
+
+        <nav className="nav-links">
+          <NavLink to="/" className="nav-link">
+            Home
+          </NavLink>
+          <NavLink to="/subjects/1" className="nav-link">
+            Subjects
+          </NavLink>
+          <NavLink to="/chat" className="nav-link">
+            AI Tutor
+          </NavLink>
+        </nav>
+
+        <div className="nav-actions">
+          {isAuthenticated ? (
+            <>
+              <div className="user-pill">
+                <span>{user?.name || "Student"}</span>
+                <small>{user?.email}</small>
+              </div>
+              <button type="button" className="ghost-button" onClick={logout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="ghost-link">
+                Login
+              </Link>
+              <Link to="/register" className="primary-link">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
-};
-
-export default Navbar;
+}

@@ -1,12 +1,15 @@
-import React from 'react';
+import { Link } from "react-router-dom";
+import { truncate } from "../utils/helpers";
 
-const ChapterCard = ({ chapter }) => {
+export default function ChapterCard({ chapter }) {
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h3 className="text-lg font-semibold">{chapter.title}</h3>
-      <p>{chapter.description}</p>
-    </div>
+    <Link to={`/chapter/${chapter.id}`} className="card chapter-card">
+      <div className="chapter-meta">
+        <span className="eyebrow">Chapter {chapter.id}</span>
+        <span className="quiz-chip">{chapter.quiz_count || 0} quiz items</span>
+      </div>
+      <h3>{chapter.title}</h3>
+      <p>{truncate(chapter.content || "This chapter includes notes, revision questions, and guided learning support.", 130)}</p>
+    </Link>
   );
-};
-
-export default ChapterCard;
+}
