@@ -6,9 +6,13 @@ import Chapters from "./pages/Chapters";
 import ChatAI from "./pages/ChatAI";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import ModuleDetail from "./pages/ModuleDetail";
 import Quiz from "./pages/Quiz";
 import Register from "./pages/Register";
+import Streams from "./pages/Streams";
+import SubjectModules from "./pages/SubjectModules";
 import Subjects from "./pages/Subjects";
+import Textbooks from "./pages/Textbooks";
 
 export default function App() {
   return (
@@ -19,6 +23,38 @@ export default function App() {
           element={
             <MainLayout>
               <Home />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/textbooks"
+          element={
+            <MainLayout>
+              <Textbooks />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/streams/:id"
+          element={
+            <MainLayout>
+              <Streams />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/subject/:subject/:classId"
+          element={
+            <MainLayout>
+              <SubjectModules />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/module/:subject/:classId/:moduleId"
+          element={
+            <MainLayout>
+              <ModuleDetail />
             </MainLayout>
           }
         />

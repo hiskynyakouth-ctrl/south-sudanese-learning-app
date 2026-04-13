@@ -1,75 +1,87 @@
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { coreSubjects, streams, subjectIcons } from "../data/curriculum";
+
+const classNames = { 1: "Senior 1", 2: "Senior 2", 3: "Senior 3", 4: "Senior 4" };
 
 export default function Streams() {
   const { id } = useParams();
-
-  const data = {
-    1: {
-      name: "Senior 1",
-      streams: [
-        { name: "Natural Science", subjects: ["Math", "English", "Biology", "Chemistry", "Physics", "Agriculture", "CRE", "Computer Studies"] },
-        { name: "Social Science", subjects: ["Math", "English", "History", "Geography", "Economics", "CRE", "Business Studies", "Literature"] }
-      ]
-    },
-
-    2: {
-      name: "Senior 2",
-      streams: [
-        { name: "Natural Science", subjects: ["Math", "English", "Biology", "Chemistry", "Physics", "Agriculture", "CRE", "Computer"] },
-        { name: "Social Science", subjects: ["Math", "English", "History", "Geography", "Economics", "Literature", "Accounting", "Business"] }
-      ]
-    },
-
-    3: {
-      name: "Senior 3",
-      streams: [
-        { name: "Natural Science", subjects: ["Math", "English", "Biology", "Chemistry", "Physics", "CRE", "Agriculture", "ICT"] },
-        { name: "Social Science", subjects: ["Math", "English", "History", "Geography", "Economics", "Literature", "Accounting", "Business", "CRE"] }
-      ]
-    },
-
-    4: {
-      name: "Senior 4",
-      streams: [
-        { name: "Natural Science", subjects: ["Math", "English", "Biology", "Chemistry", "Physics", "CRE", "ICT", "Agriculture"] },
-        { name: "Social Science", subjects: ["Math", "English", "History", "Geography", "Economics", "Literature", "Accounting", "Business", "CRE"] }
-      ]
-    }
-  };
-
-  const level = data[id];
+  const classId = parseInt(id, 10);
+  const className = classNames[classId] || `Senior ${classId}`;
+  const isSplit = classId === 3 || classId === 4;
 
   return (
-    <div className="p-6">
+    <div className="streams-shell">
 
-      <h1 className="text-3xl font-bold mb-6">{level.name}</h1>
-
-      <div className="grid md:grid-cols-2 gap-6">
-
-        {level.streams.map((stream, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl shadow">
-
-            <h2 className="text-xl font-bold mb-4">
-              {stream.name}
-            </h2>
-
-            <div className="grid grid-cols-2 gap-2">
-
-              {stream.subjects.map((sub, j) => (
-                <Link key={j} to="/chapters/1">
-                  <div className="bg-blue-100 p-2 rounded text-center text-sm hover:bg-blue-200">
-                    {sub}
-                  </div>
-                </Link>
-              ))}
-
-            </div>
-
-          </div>
-        ))}
-
+      {/* Header */}
+      <div className="streams-header">
+        <Link to="/" className="streams-back">← Home</Link>
+        <h1>{className}</h1>
+        <p>
+          {isSplit
+            ? "Choose your stream to view subjects and modules."
+            : "All 15 core subjects — click any subject to open its modules."}
+        </p>
       </div>
 
+      {isSplit ? (
+        /* ── SENIOR 3 & 4: Stream split ── */
+        <div className="streams-split">
+          {Object.entries(streams).map(([key, stream]) => (
+            <div key={key} className="stream-section">
+              <div className="stream-section-header" style={{ background: stream.color }}>
+                <span>{key === "natural" ? "🔬" : "📚"}</span>
+                <div>
+                  <h2>{stream.name}</h2>
+                  <small>{stream.subjects.length} subjects</small>
+                </div>
+              </div>
+              <div className="subject-module-grid">
+                {stream.subjects.map((subject, idx) => (
+                  <Link
+                    key={subject}
+                    to={`/subject/${encodeURIComponent(subject)}/${classId}`}
+                    className="subject-module-card"
+                  >
+                    <div className="smc-num" style={{ background: stream.color }}>{idx + 1}</div>
+                    <div className="smc-icon">{subjectIcons[subject] ?? "📚"}</div>
+                    <div className="smc-label">{subject}</div>
+                    <div className="smc-btn" style={{ background: stream.color }}>
+                      <span>📄</span> Open Modules
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* ── SENIOR 1 & 2: All 15 core subjects ── */
+        <div className="stream-section">
+          <div className="stream-section-header" style={{ background: "#0f6b5b" }}>
+            <span>📘</span>
+            <div>
+              <h2>Core Subjects</h2>
+              <small>15 subjects</small>
+            </div>
+          </div>
+          <div className="subject-module-grid">
+            {coreSubjects.map((subject, idx) => (
+              <Link
+                key={subject}
+                to={`/subject/${encodeURIComponent(subject)}/${classId}`}
+                className="subject-module-card"
+              >
+                <div className="smc-num">{idx + 1}</div>
+                <div className="smc-icon">{subjectIcons[subject] ?? "📚"}</div>
+                <div className="smc-label">{subject}</div>
+                <div className="smc-btn">
+                  <span>📄</span> Open Modules
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

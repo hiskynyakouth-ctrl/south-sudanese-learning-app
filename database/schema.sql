@@ -45,6 +45,18 @@ CREATE TABLE quizzes (
   FOREIGN KEY (chapter_id) REFERENCES chapters(id)
 );
 
+CREATE TABLE textbooks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  subject_id INT,
+  title VARCHAR(255) NOT NULL,
+  grade VARCHAR(50),
+  pdf_url VARCHAR(500) NOT NULL,
+  cover_url VARCHAR(500),
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
+
 CREATE TABLE user_progress (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,

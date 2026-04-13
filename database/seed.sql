@@ -20,3 +20,12 @@ INSERT INTO quizzes (chapter_id, question, options, answer) VALUES
 (1, 'What is 2 + 2?', '["3", "4", "5", "6"]', '4'),
 (2, 'What is the area of a circle?', '["pr", "2pr", "pr^2", "2pr^2"]', 'pr^2'),
 (3, 'Which unit is commonly used for force?', '["Newton", "Meter", "Litre", "Second"]', 'Newton');
+
+-- Textbooks seed data
+INSERT INTO textbooks (subject_id, title, grade, pdf_url, description) VALUES
+(1, 'Mathematics Senior 1', 'Senior 1', 'https://www.africaeducation.org/uploads/maths_s1.pdf', 'Algebra, geometry, and arithmetic fundamentals for Senior 1 students.'),
+(1, 'Mathematics Senior 2', 'Senior 2', 'https://www.africaeducation.org/uploads/maths_s2.pdf', 'Trigonometry, statistics, and advanced algebra for Senior 2 students.'),
+(2, 'Science Senior 1', 'Senior 1', 'https://www.africaeducation.org/uploads/science_s1.pdf', 'Physics, chemistry, and biology foundations for Senior 1 students.'),
+(2, 'Science Senior 2', 'Senior 2', 'https://www.africaeducation.org/uploads/science_s2.pdf', 'Advanced science topics for Senior 2 students.'),
+(3, 'English Senior 1', 'Senior 1', 'https://www.africaeducation.org/uploads/english_s1.pdf', 'Grammar, comprehension, and composition for Senior 1 students.'),
+(3, 'English Senior 2', 'Senior 2', 'https://www.africaeducation.org/uploads/english_s2.pdf', 'Literature, essay writing, and advanced grammar for Senior 2 students.');
