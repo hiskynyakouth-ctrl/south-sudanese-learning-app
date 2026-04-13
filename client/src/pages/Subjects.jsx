@@ -1,49 +1,58 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import SubjectCard from "../components/SubjectCard";
-import Loader from "../components/Loader";
-import api from "../services/api";
+import books from "../data/books";
+import { useState } from "react";
 
 export default function Subjects() {
-  const { classId } = useParams();
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
-  useEffect(() => {
-    const loadSubjects = async () => {
-      try {
-        setLoading(true);
-        const { data } = await api.get("/subjects");
-        setSubjects(data);
-      } catch (err) {
-        setError(err.response?.data?.error || "Unable to load subjects right now.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const subjectList = books.map((b) => b.subject);
 
-    loadSubjects();
-  }, [classId]);
+  const selected = books.find((b) => b.subject === selectedSubject);
 
   return (
-    <div className="stack-lg">
-      <section className="section-heading">
-        <span className="eyebrow">Senior {classId}</span>
-        <h1>Subjects and learning pathways</h1>
-        <p>Choose a subject to open chapters, revision notes, lesson videos, and quizzes.</p>
-      </section>
+    <div className="p-6">
 
-      {loading ? <Loader label="Loading subjects..." /> : null}
-      {error ? <div className="message-card error">{error}</div> : null}
+      <h1 className="text-2xl font-bold mb-4">
+        Subjects
+      </h1>
 
-      {!loading && !error ? (
-        <div className="responsive-grid">
-          {subjects.map((subject) => (
-            <SubjectCard key={subject.id} subject={subject} classLabel={`Senior ${classId}`} />
-          ))}
+      {/* SUBJECT LIST */}
+      <div className="grid grid-cols-2 gap-3">
+        {subjectList.map((sub, i) => (
+          <button
+            key={i}
+            onClick={() => setSelectedSubject(sub)}
+            className="bg-blue-500 text-white p-3 rounded-xl"
+          >
+            {sub}
+          </button>
+        ))}
+      </div>
+
+      {/* BOOKS */}
+      {selected && (
+        <div className="mt-6">
+          <h2 className="text-xl font-bold mb-3">
+            {selected.subject} Books
+          </h2>
+
+          <div className="grid gap-4">
+            {selected.books.map((book, i) => (
+              <div
+                key={i}
+                className="bg-white shadow p-4 rounded-xl"
+              >
+                <h3 className="font-bold text-lg">
+                  {book.title}
+                </h3>
+                <p className="text-gray-600 mt-2">
+                  {book.content}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      ) : null}
+      )}
+
     </div>
   );
 }
