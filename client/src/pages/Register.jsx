@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api";
 
 // Mock local registration used when the server is unreachable
 const MOCK_USERS_KEY = "ssl_mock_users";
@@ -11,53 +10,33 @@ function getMockUsers() {
   catch { return []; }
 }
 
-function mockRegister(form) {
-  const users = getMockUsers();
-  if (users.find((u) => u.email === form.email)) {
-    throw new Error("An account with that email already exists.");
-  }
-  const user = { id: Date.now(), name: form.name, email: form.email };
-  localStorage.setItem(MOCK_USERS_KEY, JSON.stringify([...users, { ...user, password: form.password }]));
-  return { token: `mock-token-${user.id}`, user };
-}
-
 export default function Register() {
   const navigate = useNavigate();
   const { saveSession } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     setError("");
 
     try {
-      setLoading(true);
-      const { data } = await api.post("/auth/register", form);
-      saveSession({ token: data.token, user: data.user });
-      navigate("/");
-    } catch (err) {
-      // Server is down or returned an error — try local mock auth
-      const serverError = err.response?.data?.error;
-      if (serverError) {
-        setError(serverError);
+      const users = getMockUsers();
+      if (users.find((u) => u.email === form.email)) {
+        setError("An account with that email already exists.");
         return;
       }
-      try {
-        const data = mockRegister(form);
-        saveSession(data);
-        navigate("/");
-      } catch (mockErr) {
-        setError(mockErr.message || "Unable to create your account.");
-      }
-    } finally {
-      setLoading(false);
+      const user = { id: Date.now(), name: form.name, email: form.email };
+      localStorage.setItem(MOCK_USERS_KEY, JSON.stringify([...users, { ...user, password: form.password }]));
+      saveSession({ token: `local-token-${user.id}`, user });
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Unable to create your account.");
     }
   };
 
@@ -81,8 +60,8 @@ export default function Register() {
           <input name="password" type="password" value={form.password} onChange={handleChange} required />
         </label>
         {error ? <div className="message-card error">{error}</div> : null}
-        <button type="submit" className="primary-button" disabled={loading}>
-          {loading ? "Creating account..." : "Register"}
+        <button type="submit" className="primary-button">
+          Register
         </button>
       </form>
 

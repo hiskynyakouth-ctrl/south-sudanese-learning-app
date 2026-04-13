@@ -1,42 +1,34 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import api, { getStoredSession, setStoredSession } from "../services/api";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 const AuthContext = createContext(null);
+
+const STORAGE_KEY = "sslauth";
+
+const getStored = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const setStored = (session) => {
+  if (!session) {
+    localStorage.removeItem(STORAGE_KEY);
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  }
+};
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = useState(() => getStoredSession());
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const restore = async () => {
-      const stored = getStoredSession();
-
-      if (!stored?.token) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data } = await api.get("/auth/me");
-        const nextSession = { token: stored.token, user: data.user };
-        setSession(nextSession);
-        setStoredSession(nextSession);
-      } catch (error) {
-        setSession(null);
-        setStoredSession(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    restore();
-  }, []);
+  const [session, setSession] = useState(() => getStored());
 
   const saveSession = useCallback((nextSession) => {
     setSession(nextSession);
-    setStoredSession(nextSession);
+    setStored(nextSession);
   }, []);
 
   const logout = useCallback(() => {
@@ -48,11 +40,11 @@ export const AuthProvider = ({ children }) => {
       user: session?.user ?? null,
       token: session?.token ?? null,
       isAuthenticated: Boolean(session?.token),
-      isLoading,
+      isLoading: false,   // no backend call — never blocks
       saveSession,
       logout,
     }),
-    [session, isLoading, saveSession, logout]
+    [session, saveSession, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
