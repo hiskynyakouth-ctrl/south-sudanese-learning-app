@@ -136,28 +136,108 @@ export default function ModuleDetail() {
 
         {/* ── NOTES ── */}
         {tab === "notes" && (
-          <div className="moddetail-notes">
-            <h2>{mod?.title}</h2>
-            <p style={{ lineHeight:1.85, color:"var(--muted)", marginBottom:24 }}>{note.body}</p>
-            <div className="moddetail-note-sections">
-              <div className="moddetail-note-block">
-                <h3>📌 Key Points</h3>
-                <ul>{note.points.map((p,i) => <li key={i} style={{ marginBottom:8 }}>{p}</li>)}</ul>
+          <div className="notes-page">
+
+            {/* Hero banner */}
+            <div className="notes-hero">
+              <span className="eyebrow">{decoded} · Senior {classId} · Module {moduleId}</span>
+              <h2>{mod?.title}</h2>
+              <p>{note.body}</p>
+            </div>
+
+            {/* Definition highlight */}
+            <div className="notes-definition-block">
+              <h3>📌 Definition</h3>
+              <p><strong>{mod?.title}</strong> — {note.summary}</p>
+            </div>
+
+            {/* Key points + example */}
+            <div className="notes-section-grid">
+              <div className="notes-box green">
+                <h3>✅ Key Points to Remember</h3>
+                <ul>
+                  {note.points.map((p, i) => <li key={i}>{p}</li>)}
+                </ul>
               </div>
-              <div className="moddetail-note-block">
-                <h3>📋 Summary</h3>
-                <p>{note.summary}</p>
-                <div style={{ marginTop:16, display:"flex", gap:10, flexWrap:"wrap" }}>
-                  <button className="moddetail-submit-btn" style={{ fontSize:"0.85rem", padding:"10px 18px" }} onClick={() => setTab("quiz")}>📝 Take Quiz</button>
-                  <button className="moddetail-submit-btn" style={{ fontSize:"0.85rem", padding:"10px 18px", background:"#e65100" }} onClick={() => setTab("video")}>🎥 Watch Video</button>
-                </div>
+              <div className="notes-box blue">
+                <h3>📚 How to Study This Topic</h3>
+                <ul>
+                  <li>Read the notes carefully at least twice</li>
+                  <li>Write key definitions in your notebook</li>
+                  <li>Draw diagrams where helpful</li>
+                  <li>Explain the concept to a friend</li>
+                  <li>Complete the quiz to test yourself</li>
+                </ul>
               </div>
             </div>
-            <div style={{ marginTop:24, display:"flex", gap:12, flexWrap:"wrap" }}>
-              {modIndex > 0 && <button className="ghost-button" onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${modIndex}`)}>← Previous</button>}
-              {modIndex < modules.length - 1 && <button className="primary-button" onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${modIndex + 2}`)}>Next Module →</button>}
+
+            {/* Example block */}
+            <div className="notes-example-block">
+              <h3>💡 Worked Example</h3>
+              <p>
+                Apply the concepts of <strong>{mod?.title}</strong> by working through past exam questions.
+                Start with simple examples, then move to complex problems. Always show your working clearly
+                and check your answer against the key points above.
+              </p>
             </div>
+
+            {/* Exam tips */}
+            <div className="notes-section-grid">
+              <div className="notes-box orange">
+                <h3>⚠️ Common Exam Mistakes</h3>
+                <ul>
+                  <li>Not reading the question carefully</li>
+                  <li>Forgetting to show working</li>
+                  <li>Mixing up key terms and definitions</li>
+                  <li>Running out of time — practice speed</li>
+                </ul>
+              </div>
+              <div className="notes-box purple">
+                <h3>🎯 Exam Tips</h3>
+                <ul>
+                  <li>Learn all key definitions by heart</li>
+                  <li>Practice past paper questions</li>
+                  <li>Use the AI tutor for difficult parts</li>
+                  <li>Review this module the night before</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Summary banner */}
+            <div className="notes-summary-banner">
+              <span>📋</span>
+              <p>
+                <strong>Summary:</strong> {note.summary} This topic is part of the official
+                South Sudan Ministry of Education curriculum for Senior {classId} {decoded}.
+                Master it to build a strong foundation for your national examinations.
+              </p>
+            </div>
+
+            {/* Navigation */}
+            <div className="notes-nav-row">
+              {modIndex > 0 && (
+                <button className="ghost-button"
+                  onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${modIndex}`)}>
+                  ← Previous Module
+                </button>
+              )}
+              <button className="primary-button" onClick={() => setTab("quiz")}>
+                📝 Take Quiz Now
+              </button>
+              <button className="moddetail-submit-btn" style={{ background:"#e65100", padding:"12px 20px" }}
+                onClick={() => setTab("video")}>
+                🎥 Watch Video
+              </button>
+              {modIndex < modules.length - 1 && (
+                <button className="primary-button"
+                  onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${modIndex + 2}`)}>
+                  Next Module →
+                </button>
+              )}
+            </div>
+
           </div>
+        )}
         )}
 
         {/* ── VIDEO ── */}
