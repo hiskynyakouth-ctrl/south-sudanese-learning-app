@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { subjectModules } from "../data/curriculum";
+import { REAL_CONTENT } from "../data/realContent";
 
 // ── Rich notes per module title ──────────────────────────
 const NOTES = {
@@ -18,19 +19,38 @@ const NOTES = {
   "Basic Economic Concepts": { body: "Economics studies how people use limited resources to satisfy unlimited wants. Key concepts: scarcity (limited resources), opportunity cost (what you give up), factors of production (land, labour, capital, enterprise).", points: ["Scarcity is the fundamental economic problem", "Opportunity cost = the next best alternative given up", "Goods are physical; services are non-physical", "Microeconomics studies individuals; macroeconomics studies the whole economy"], summary: "Economics helps us understand how decisions are made at individual, business, and national levels." },
 };
 
-const getNote = (subject, title) => NOTES[title] || {
-  body: `This module covers ${title} as part of the ${subject} curriculum for South Sudan secondary students. Study the key concepts carefully, complete the practice questions, and use the quiz to test your understanding.`,
-  points: ["Read through all notes carefully", "Write down key definitions in your notebook", "Try to explain the concept in your own words", "Complete all practice questions", "Review before the quiz"],
-  summary: `${title} is an important topic in ${subject}. Master these concepts to build a strong foundation for your exams.`,
+const getNote = (subject, title) => {
+  const real = REAL_CONTENT[title];
+  if (real) return real.notes;
+  return NOTES[title] || {
+    body: `This module covers ${title} as part of the ${subject} curriculum for South Sudan secondary students. Study the key concepts carefully, complete the practice questions, and use the quiz to test your understanding.`,
+    points: ["Read through all notes carefully", "Write down key definitions in your notebook", "Try to explain the concept in your own words", "Complete all practice questions", "Review before the quiz"],
+    summary: `${title} is an important topic in ${subject}. Master these concepts to build a strong foundation for your exams.`,
+  };
 };
 
-// ── Q&A per module ───────────────────────────────────────
-const getQA = (subject, title) => [
-  { q: `What is the main idea of ${title}?`, a: `${title} is a core topic in ${subject} covering fundamental concepts needed for the South Sudan secondary curriculum. Understanding this topic helps students build knowledge for higher-level study and national examinations.` },
-  { q: `How does ${title} apply in real life?`, a: `The concepts in ${title} are used in everyday life. In ${subject}, these ideas help explain natural phenomena, solve practical problems, and develop critical thinking skills valuable in any career.` },
-  { q: "What are the most important points to remember?", a: "Focus on: 1) Key definitions and terminology. 2) The main principles or rules. 3) How to apply concepts to solve problems. 4) Common exam question types for this topic." },
-  { q: "How should I prepare for the exam on this topic?", a: "To prepare: 1) Re-read your notes and highlight key points. 2) Write a one-page summary from memory. 3) Complete the module quiz. 4) Look at past exam papers. 5) Ask the AI tutor to explain anything difficult." },
-];
+const getQA = (subject, title) => {
+  const real = REAL_CONTENT[title];
+  if (real) return real.qa;
+  return [
+    { q: `What is the main idea of ${title}?`, a: `${title} is a core topic in ${subject} covering fundamental concepts needed for the South Sudan secondary curriculum.` },
+    { q: `How does ${title} apply in real life?`, a: `The concepts in ${title} are used in everyday life and help develop critical thinking skills valuable in any career.` },
+    { q: "What are the most important points to remember?", a: "Focus on key definitions, main principles, and how to apply concepts to solve problems." },
+    { q: "How should I prepare for the exam on this topic?", a: "Re-read notes, write a summary from memory, complete the quiz, and ask the AI tutor to explain anything difficult." },
+  ];
+};
+
+const getQuiz = (subject, title) => {
+  const real = REAL_CONTENT[title];
+  if (real) return real.quiz;
+  return QUIZZES[title] || [
+    { q: `Which best describes ${title}?`, options: ["A minor topic", "A core curriculum concept", "Only for university", "Not in exams"], answer: 1 },
+    { q: `What is the best way to study ${subject}?`, options: ["Read once", "Notes, videos, and quizzes", "Only memorise", "Skip hard topics"], answer: 1 },
+    { q: "Which tool helps most when you do not understand a topic?", options: ["Ignoring it", "The AI Tutor", "Guessing", "Copying"], answer: 1 },
+    { q: "How many times should you review notes before an exam?", options: ["Never", "Once", "Multiple times", "Only on exam day"], answer: 2 },
+    { q: "What should you do after completing a module?", options: ["Move on immediately", "Take the quiz", "Skip the quiz", "Start a new subject"], answer: 1 },
+  ];
+};
 
 // ── Quiz per module ──────────────────────────────────────
 const QUIZZES = {
@@ -71,14 +91,6 @@ const QUIZZES = {
   ],
 };
 
-const getQuiz = (title) => QUIZZES[title] || [
-  { q: "Which best describes this module topic?", options: ["A minor topic", "A core curriculum concept", "Only for university", "Not in exams"], answer: 1 },
-  { q: "What is the best way to study this subject?", options: ["Read once", "Notes, videos, and quizzes", "Only memorise", "Skip hard topics"], answer: 1 },
-  { q: "Which tool helps most when you do not understand a topic?", options: ["Ignoring it", "The AI Tutor", "Guessing", "Copying"], answer: 1 },
-  { q: "How many times should you review notes before an exam?", options: ["Never", "Once", "Multiple times", "Only on exam day"], answer: 2 },
-  { q: "What should you do after completing a module?", options: ["Move on immediately", "Take the quiz", "Skip the quiz", "Start a new subject"], answer: 1 },
-];
-
 export default function ModuleDetail() {
   const { subject, classId, moduleId } = useParams();
   const navigate = useNavigate();
@@ -89,7 +101,7 @@ export default function ModuleDetail() {
   const mod = modules[modIndex] || modules[0];
   const note = getNote(decoded, mod?.title || "");
   const qaList = getQA(decoded, mod?.title || "");
-  const quizList = getQuiz(mod?.title || "");
+  const quizList = getQuiz(decoded, mod?.title || "");
   const [tab, setTab] = useState(searchParams.get("tab") || "notes");
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -148,38 +160,52 @@ export default function ModuleDetail() {
             {/* Definition highlight */}
             <div className="notes-definition-block">
               <h3>📌 Definition</h3>
-              <p><strong>{mod?.title}</strong> — {note.summary}</p>
+              <p><strong>{mod?.title}</strong> — {note.definition || note.summary}</p>
             </div>
 
-            {/* Key points + example */}
-            <div className="notes-section-grid">
-              <div className="notes-box green">
-                <h3>✅ Key Points to Remember</h3>
-                <ul>
-                  {note.points.map((p, i) => <li key={i}>{p}</li>)}
-                </ul>
+            {/* Rich sections from real content */}
+            {note.sections && note.sections.length > 0 ? (
+              <div className="notes-section-grid">
+                {note.sections.map((sec, i) => (
+                  <div key={i} className="notes-box" style={{ background: sec.color + "22", border: `1px solid ${sec.color}55` }}>
+                    <h3 style={{ color: sec.color }}>📚 {sec.title}</h3>
+                    <ul>{sec.items.map((item, j) => <li key={j}>{item}</li>)}</ul>
+                  </div>
+                ))}
               </div>
-              <div className="notes-box blue">
-                <h3>📚 How to Study This Topic</h3>
-                <ul>
-                  <li>Read the notes carefully at least twice</li>
-                  <li>Write key definitions in your notebook</li>
-                  <li>Draw diagrams where helpful</li>
-                  <li>Explain the concept to a friend</li>
-                  <li>Complete the quiz to test yourself</li>
-                </ul>
+            ) : (
+              <div className="notes-section-grid">
+                <div className="notes-box green">
+                  <h3>✅ Key Points to Remember</h3>
+                  <ul>{(note.points || []).map((p, i) => <li key={i}>{p}</li>)}</ul>
+                </div>
+                <div className="notes-box blue">
+                  <h3>📚 How to Study This Topic</h3>
+                  <ul>
+                    <li>Read the notes carefully at least twice</li>
+                    <li>Write key definitions in your notebook</li>
+                    <li>Draw diagrams where helpful</li>
+                    <li>Complete the quiz to test yourself</li>
+                  </ul>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Example block */}
-            <div className="notes-example-block">
-              <h3>💡 Worked Example</h3>
-              <p>
-                Apply the concepts of <strong>{mod?.title}</strong> by working through past exam questions.
-                Start with simple examples, then move to complex problems. Always show your working clearly
-                and check your answer against the key points above.
-              </p>
-            </div>
+            {/* Formula block if available */}
+            {note.formula && (
+              <div className="notes-formula-block">
+                <h3>🔢 Key Formulas / Rules</h3>
+                <div className="notes-formula">{note.formula}</div>
+              </div>
+            )}
+
+            {/* Worked example */}
+            {note.example && (
+              <div className="notes-example-block">
+                <h3>💡 Worked Example</h3>
+                <p>{note.example}</p>
+              </div>
+            )}
 
             {/* Exam tips */}
             <div className="notes-section-grid">
@@ -237,7 +263,6 @@ export default function ModuleDetail() {
             </div>
 
           </div>
-        )}
         )}
 
         {/* ── VIDEO ── */}
