@@ -3,6 +3,14 @@ import { coreSubjects, streams, subjectIcons } from "../data/curriculum";
 
 const classNames = { 1: "Senior 1", 2: "Senior 2", 3: "Senior 3", 4: "Senior 4" };
 
+const renderIcon = (subject) => {
+  const icon = subjectIcons[subject] ?? "📚";
+  if (icon === "🇸🇸_flag") {
+    return <img src="https://flagcdn.com/w80/ss.png" alt="South Sudan Flag" style={{ width: 48, height: 32, borderRadius: 4, objectFit: "cover" }} />;
+  }
+  return icon;
+};
+
 function SubjectCard({ subject, idx, classId, color }) {
   const navigate = useNavigate();
   return (
@@ -14,7 +22,7 @@ function SubjectCard({ subject, idx, classId, color }) {
       onKeyDown={(e) => e.key === "Enter" && navigate(`/subject/${encodeURIComponent(subject)}/${classId}`)}
     >
       <div className="smc-num" style={{ background: color || "#1a73e8" }}>{idx + 1}</div>
-      <div className="smc-icon">{subjectIcons[subject] ?? "📚"}</div>
+      <div className="smc-icon">{renderIcon(subject)}</div>
       <div className="smc-label">{subject}</div>
       <div className="smc-btn" style={{ background: color || "#1a73e8" }}>
         <span>📄</span> Open Modules

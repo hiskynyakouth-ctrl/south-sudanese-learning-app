@@ -8,12 +8,12 @@ const classes = [
 ];
 
 const features = [
-  { icon: "📖", label: "Full Notes" },
-  { icon: "🎥", label: "YouTube Tutorials" },
-  { icon: "❓", label: "Q&A Discussion" },
-  { icon: "🤖", label: "AI Chat Assistant" },
-  { icon: "📝", label: "Quizzes & Exams" },
-  { icon: "📊", label: "Student Progress" },
+  { icon: "📖", label: "Full Notes", to: "/#classes" },
+  { icon: "🎥", label: "YouTube Tutorials", to: "/#classes" },
+  { icon: "❓", label: "Q&A Discussion", to: "/#classes" },
+  { icon: "🤖", label: "AI Chat Assistant", to: "/chat" },
+  { icon: "📝", label: "Quizzes & Exams", to: "/#classes" },
+  { icon: "📊", label: "Student Progress", to: "/#classes" },
 ];
 
 export default function Home() {
@@ -31,6 +31,10 @@ export default function Home() {
             The curriculum follows the South Sudan Ministry of Education syllabus, divided into
             Natural Sciences and Social Sciences streams for Senior 3 and 4.
           </p>
+          <div className="home-owner-tag">
+            <span className="home-owner-label">Project by</span>
+            <span className="home-owner-name">Thiyang Koang</span>
+          </div>
           <div className="home-hero-actions">
             <Link to="/streams/1" className="home-cta-btn">Start Learning →</Link>
             <Link to="/chat" className="home-cta-ghost">Open AI Tutor 🤖</Link>
@@ -38,8 +42,11 @@ export default function Home() {
         </div>
         <div className="home-hero-badge">
           <div className="hero-badge-circle">
-            <span>SS</span>
-            <small>E-Learning</small>
+            <img
+              src="https://flagcdn.com/w160/ss.png"
+              alt="South Sudan Flag"
+              style={{ width: 110, height: 75, objectFit: "cover", borderRadius: 12 }}
+            />
           </div>
         </div>
       </section>
@@ -47,15 +54,14 @@ export default function Home() {
       {/* ── FEATURES ── */}
       <section className="home-features-row">
         {features.map((f) => (
-          <div key={f.label} className="home-feature-chip">
-            <span>{f.icon}</span>
-            <span>{f.label}</span>
-          </div>
+          f.to === "/chat"
+            ? <Link key={f.label} to="/chat" className="home-feature-chip"><span>{f.icon}</span><span>{f.label}</span></Link>
+            : <button key={f.label} className="home-feature-chip" onClick={() => document.getElementById("classes")?.scrollIntoView({ behavior: "smooth" })}><span>{f.icon}</span><span>{f.label}</span></button>
         ))}
       </section>
 
       {/* ── CLASS SELECTOR ── */}
-      <section>
+      <section id="classes">
         <div className="home-section-head">
           <h2>Choose your class to start learning 👇</h2>
           <p>Each class has full subject modules, notes, videos, quizzes, and AI help.</p>

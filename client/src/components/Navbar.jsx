@@ -17,10 +17,6 @@ export default function Navbar() {
 
         <nav className="nav-links">
           <NavLink to="/" className="nav-link">Home</NavLink>
-          <NavLink to="/streams/1" className="nav-link">Senior 1</NavLink>
-          <NavLink to="/streams/2" className="nav-link">Senior 2</NavLink>
-          <NavLink to="/streams/3" className="nav-link">Senior 3</NavLink>
-          <NavLink to="/streams/4" className="nav-link">Senior 4</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
           <NavLink to="/chat" className="nav-link">AI Tutor</NavLink>
         </nav>
@@ -32,9 +28,7 @@ export default function Navbar() {
                 <span>{user?.name || "Student"}</span>
                 <small>{user?.email}</small>
               </div>
-              <button type="button" className="ghost-button" onClick={logout}>
-                Logout
-              </button>
+              <button type="button" className="ghost-button" onClick={logout}>Logout</button>
             </>
           ) : (
             <>
