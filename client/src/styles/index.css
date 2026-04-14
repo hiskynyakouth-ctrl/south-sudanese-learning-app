@@ -748,7 +748,7 @@ iframe {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  background: rgba(228, 10, 10, 0.15);
   border: 3px solid rgba(255,255,255,0.3);
   display: grid;
   place-items: center;
@@ -1552,3 +1552,97 @@ iframe {
   color: white;
   letter-spacing: 0.02em;
 }
+
+/* ── SubjectModules bottom section ─────────────────────── */
+.submod-bottom {
+  margin-top: 8px;
+  display: grid;
+  gap: 16px;
+}
+.submod-bottom-title {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--ink);
+}
+.submod-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.submod-bottom-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+.submod-bottom-card:hover { transform: translateY(-3px); filter: brightness(0.95); }
+.submod-bottom-card span { font-size: 1.8rem; line-height: 1; }
+.submod-bottom-card strong { font-size: 0.95rem; color: var(--ink); }
+.submod-bottom-card p { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+
+.submod-bottom-card.green  { background: #e8f5e9; }
+.submod-bottom-card.red    { background: #fff3e0; }
+.submod-bottom-card.blue   { background: #e3f2fd; }
+.submod-bottom-card.purple { background: #f3e5f5; }
+.submod-bottom-card.orange { background: #fce4ec; }
+.submod-bottom-card.teal   { background: #e0f7fa; }
+
+@media (max-width: 640px) {
+  .submod-bottom-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Inline subject textbooks ───────────────────────────── */
+.submod-books { display: grid; gap: 14px; }
+
+.submod-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.submod-book-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: white;
+  border: 2px solid #1a73e8;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--ink);
+  transition: 0.18s ease;
+  position: relative;
+}
+.submod-book-card:hover { transform: translateY(-3px); background: #e8f0fe; }
+.submod-book-card.all { border-color: var(--primary); }
+.submod-book-card.all:hover { background: rgba(15,107,91,0.07); }
+
+.submod-book-grade {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #1a73e8;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.submod-book-icon { font-size: 1.8rem; line-height: 1; }
+
+.submod-book-info strong { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+.submod-book-info p { color: var(--muted); font-size: 0.78rem; margin: 0; line-height: 1.4; }
+
+.submod-book-btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a73e8;
+}
+.submod-book-card.all .submod-book-btn { color: var(--primary); }
