@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { login } from "../services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
   const { saveSession } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((c) => ({ ...c, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -22,13 +24,16 @@ export default function Login() {
       return;
     }
 
-    // Frontend-only login — no backend needed
-    const user = {
-      name: form.email.split("@")[0],
-      email: form.email,
-    };
-    saveSession({ token: "local-token", user });
-    navigate("/");
+    try {
+      setLoading(true);
+      const data = await login(form.email, form.password);
+      saveSession({ token: data.token, user: data.user });
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.error || "Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,8 +52,8 @@ export default function Login() {
           <input name="password" type="password" value={form.password} onChange={handleChange} required />
         </label>
         {error && <div className="message-card error">{error}</div>}
-        <button type="submit" className="primary-button">
-          Login
+        <button type="submit" className="primary-button" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
 
