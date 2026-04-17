@@ -18,6 +18,7 @@ export default function Navbar() {
         <nav className="nav-links">
           <NavLink to="/" className="nav-link">Home</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
+          <NavLink to="/past-papers" className="nav-link">Past Papers</NavLink>
           <NavLink to="/chat" className="nav-link">AI Tutor</NavLink>
         </nav>
 

@@ -26,10 +26,9 @@ export default function Home() {
           <span className="eyebrow">South Sudan Secondary School E-Learning Platform</span>
           <h1>Learn Smarter.<br />Study Anywhere.</h1>
           <p className="home-abstract">
-            This platform supports Senior 1 to Senior 4 learners with structured notes,
-            YouTube tutorials, discussion questions, quizzes, and an AI-powered study assistant.
-            The curriculum follows the South Sudan Ministry of Education syllabus, divided into
-            Natural Sciences and Social Sciences streams for Senior 3 and 4.
+            Aligned with South Sudan curriculum and East African standards. Supporting Senior 1–4
+            with structured subjects, topics, notes, videos, quizzes, AI assistance, and past
+            examination papers.
           </p>
           <div className="home-owner-tag">
             <span className="home-owner-label">Project by</span>
@@ -99,6 +98,28 @@ export default function Home() {
             <p>English · History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE</p>
             <span className="home-stream-count">9 subjects</span>
           </div>
+        </div>
+      </section>
+
+      {/* ── PAST PAPERS ── */}
+      <section className="home-pp-section">
+        <div className="home-section-head">
+          <h2>📄 Past Examination Papers</h2>
+          <p>Practice with real national exam papers — filter by subject and year.</p>
+        </div>
+        <div className="home-pp-grid">
+          {["Physics","Biology","Mathematics","English","Chemistry","History","Geography","Economics"].map((sub) => (
+            <Link key={sub} to="/past-papers" className="home-pp-card">
+              <span>📄</span>
+              <strong>{sub}</strong>
+              <span className="home-pp-label">Past Papers</span>
+            </Link>
+          ))}
+        </div>
+        <div style={{ textAlign:"center", marginTop:16 }}>
+          <Link to="/past-papers" className="home-cta-btn" style={{ display:"inline-block" }}>
+            View All Past Papers →
+          </Link>
         </div>
       </section>
 

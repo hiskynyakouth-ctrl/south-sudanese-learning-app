@@ -1,24 +1,61 @@
--- Database schema for South Sudanese eLearning App
+-- South Sudan E-Learning Platform — Full Database Schema
+-- Compatible with PostgreSQL and MySQL
 
 CREATE DATABASE IF NOT EXISTS elearning;
 USE elearning;
 
-CREATE TABLE users (
+-- Grades (Senior 1–4)
+CREATE TABLE IF NOT EXISTS grades (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL
+);
+
+-- Streams (Natural Sciences / Social Sciences)
+CREATE TABLE IF NOT EXISTS streams (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL
+);
+
+-- Subjects (linked to grade and optionally a stream)
+CREATE TABLE IF NOT EXISTS subjects (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  grade_id INT,
+  stream_id INT,
+  FOREIGN KEY (grade_id) REFERENCES grades(id),
+  FOREIGN KEY (stream_id) REFERENCES streams(id)
+);
+
+-- Topics per subject
+CREATE TABLE IF NOT EXISTS topics (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  subject_id INT,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
+
+-- Past exam papers
+CREATE TABLE IF NOT EXISTS past_papers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  subject_id INT,
+  year INT NOT NULL,
+  file_url TEXT NOT NULL,
+  title VARCHAR(255),
+  FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
+
+-- Users
+CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
+  role ENUM('student','teacher','admin') DEFAULT 'student',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE subjects (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE chapters (
+-- Chapters
+CREATE TABLE IF NOT EXISTS chapters (
   id INT AUTO_INCREMENT PRIMARY KEY,
   subject_id INT,
   title VARCHAR(255) NOT NULL,
@@ -28,7 +65,8 @@ CREATE TABLE chapters (
   FOREIGN KEY (subject_id) REFERENCES subjects(id)
 );
 
-CREATE TABLE discussion_questions (
+-- Discussion questions
+CREATE TABLE IF NOT EXISTS discussion_questions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   chapter_id INT,
   question TEXT NOT NULL,
@@ -36,7 +74,8 @@ CREATE TABLE discussion_questions (
   FOREIGN KEY (chapter_id) REFERENCES chapters(id)
 );
 
-CREATE TABLE quizzes (
+-- Quizzes
+CREATE TABLE IF NOT EXISTS quizzes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   chapter_id INT,
   question TEXT NOT NULL,
@@ -45,7 +84,8 @@ CREATE TABLE quizzes (
   FOREIGN KEY (chapter_id) REFERENCES chapters(id)
 );
 
-CREATE TABLE textbooks (
+-- Textbooks
+CREATE TABLE IF NOT EXISTS textbooks (
   id INT AUTO_INCREMENT PRIMARY KEY,
   subject_id INT,
   title VARCHAR(255) NOT NULL,
@@ -57,7 +97,8 @@ CREATE TABLE textbooks (
   FOREIGN KEY (subject_id) REFERENCES subjects(id)
 );
 
-CREATE TABLE user_progress (
+-- Student progress
+CREATE TABLE IF NOT EXISTS user_progress (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
   chapter_id INT,

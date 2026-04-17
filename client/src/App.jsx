@@ -7,6 +7,7 @@ import ChatAI from "./pages/ChatAI";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import ModuleDetail from "./pages/ModuleDetail";
+import PastPapers from "./pages/PastPapers";
 import Quiz from "./pages/Quiz";
 import Register from "./pages/Register";
 import Streams from "./pages/Streams";
@@ -23,6 +24,14 @@ export default function App() {
           element={
             <MainLayout>
               <Home />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/past-papers"
+          element={
+            <MainLayout>
+              <PastPapers />
             </MainLayout>
           }
         />

@@ -29,3 +29,40 @@ INSERT INTO textbooks (subject_id, title, grade, pdf_url, description) VALUES
 (2, 'Science Senior 2', 'Senior 2', 'https://www.africaeducation.org/uploads/science_s2.pdf', 'Advanced science topics for Senior 2 students.'),
 (3, 'English Senior 1', 'Senior 1', 'https://www.africaeducation.org/uploads/english_s1.pdf', 'Grammar, comprehension, and composition for Senior 1 students.'),
 (3, 'English Senior 2', 'Senior 2', 'https://www.africaeducation.org/uploads/english_s2.pdf', 'Literature, essay writing, and advanced grammar for Senior 2 students.');
+
+-- ── GRADES ──────────────────────────────────────────────
+INSERT INTO grades (name) VALUES ('Senior 1'),('Senior 2'),('Senior 3'),('Senior 4');
+
+-- ── STREAMS ─────────────────────────────────────────────
+INSERT INTO streams (name) VALUES ('Natural Sciences'),('Social Sciences');
+
+-- ── SUBJECTS S1 & S2 (no stream) ────────────────────────
+INSERT INTO subjects (name, grade_id, stream_id) VALUES
+('English',1,NULL),('Mathematics',1,NULL),('Biology',1,NULL),
+('Chemistry',1,NULL),('Physics',1,NULL),('Geography',1,NULL),
+('History',1,NULL),('Citizenship',1,NULL),('Computer Studies',1,NULL),('CRE',1,NULL),
+('English',2,NULL),('Mathematics',2,NULL),('Biology',2,NULL),
+('Chemistry',2,NULL),('Physics',2,NULL),('Geography',2,NULL),
+('History',2,NULL),('Computer Studies',2,NULL);
+
+-- ── SUBJECTS S3 & S4 — NATURAL SCIENCES ─────────────────
+INSERT INTO subjects (name, grade_id, stream_id) VALUES
+('English',3,1),('Mathematics',3,1),('Physics',3,1),('Chemistry',3,1),('Biology',3,1),
+('English',4,1),('Mathematics',4,1),('Physics',4,1),('Chemistry',4,1),('Biology',4,1);
+
+-- ── SUBJECTS S3 & S4 — SOCIAL SCIENCES ──────────────────
+INSERT INTO subjects (name, grade_id, stream_id) VALUES
+('English',3,2),('History',3,2),('Geography',3,2),('Economics',3,2),('Mathematics',3,2),
+('English',4,2),('History',4,2),('Geography',4,2),('Economics',4,2),('Mathematics',4,2);
+
+-- ── SAMPLE TOPICS ────────────────────────────────────────
+INSERT INTO topics (name, subject_id) VALUES
+('Cell Structure',3),('Force and Motion',5),('Algebra Basics',2),('Maps and Map Reading',6),
+('Reading Comprehension',1),('Essay Writing',1),('Atomic Structure',4),('Photosynthesis',3);
+
+-- ── SAMPLE PAST PAPERS ───────────────────────────────────
+INSERT INTO past_papers (subject_id, year, file_url, title) VALUES
+(5, 2023, 'https://www.scribd.com/document/873915210/Physics-2021-Set-B-1-2', 'Physics 2023 Paper 1'),
+(3, 2021, 'https://www.scribd.com/document/783949328/BIO-1', 'Biology 2021 Paper 1'),
+(2, 2022, 'https://www.scribd.com/search?query=South+Sudan+Mathematics+past+paper+2022', 'Mathematics 2022 Paper 1'),
+(1, 2022, 'https://www.scribd.com/search?query=South+Sudan+English+past+paper+2022', 'English 2022 Paper 1');

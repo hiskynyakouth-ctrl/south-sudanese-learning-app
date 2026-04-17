@@ -17,6 +17,9 @@ app.use("/api/chapters", require("./routes/chapterRoutes"));
 app.use("/api/quizzes", require("./routes/quizRoutes"));
 app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/textbooks", require("./routes/textbookRoutes"));
+app.use("/api/grades", require("./routes/gradeRoutes"));
+app.use("/api/topics", require("./routes/topicRoutes"));
+app.use("/api/past-papers", require("./routes/pastPaperRoutes"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
