@@ -1,152 +1,215 @@
 import { useState } from "react";
 
 const subjectIcon = {
-  Physics: "⚡", Biology: "🧬", Mathematics: "📐", English: "📖",
-  Chemistry: "⚗️", History: "🏛️", Geography: "🌍", Economics: "💰",
-  CRE: "✝️", Citizenship: "🇸🇸", "Computer Studies": "💻",
-  Agriculture: "🌱", Accounting: "📊", "English Literature": "📜",
-  "Fine Art": "🎨", "Additional Mathematics": "🔢",
+  Physics:"⚡",Biology:"🧬",Mathematics:"📐",English:"📖",Chemistry:"⚗️",
+  History:"🏛️",Geography:"🌍",Economics:"💰",CRE:"✝️",Citizenship:"🇸🇸",
+  "Computer Studies":"💻",Agriculture:"🌱",Accounting:"📊",
+  "English Literature":"📜","Fine Art":"🎨","Additional Mathematics":"🔢",
+};
+
+const subjectColor = {
+  Physics:"#6a1b9a",Biology:"#2e7d32",Mathematics:"#c62828",English:"#1565c0",
+  Chemistry:"#e65100",History:"#bf360c",Geography:"#006064",Economics:"#1b5e20",
+  CRE:"#4a148c",Citizenship:"#f57f17","Computer Studies":"#283593",
+  Agriculture:"#33691e",Accounting:"#004d40","English Literature":"#558b2f",
+  "Fine Art":"#880e4f","Additional Mathematics":"#880e4f",
 };
 
 const SUBJECTS = [
-  "Physics", "Biology", "Mathematics", "English", "Chemistry",
-  "History", "Geography", "Economics", "CRE", "Citizenship",
-  "Computer Studies", "Agriculture", "Accounting", "English Literature",
-  "Fine Art", "Additional Mathematics",
+  "Physics","Biology","Mathematics","English","Chemistry",
+  "History","Geography","Economics","CRE","Citizenship",
+  "Computer Studies","Agriculture","Accounting","English Literature",
+  "Fine Art","Additional Mathematics",
 ];
 
-const YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
+const YEARS = [2026,2025,2024,2023,2022,2021,2020];
 
-function searchUrl(subject, year) {
-  return `https://www.scribd.com/search?query=South+Sudan+${encodeURIComponent(subject)}+past+paper+${year}`;
-}
+const confirmed = {
+  "Physics-2021-Paper 1":"https://www.scribd.com/document/873915210/Physics-2021-Set-B-1-2",
+  "Biology-2021-Paper 1":"https://www.scribd.com/document/783949328/BIO-1",
+};
 
-// Build the pastPapers array — confirmed real links for Physics 2021 & Biology 2021,
-// Scribd search URLs for everything else.
+const searchUrl = (subject, year) =>
+  `https://www.scribd.com/search?query=South+Sudan+${encodeURIComponent(subject)}+past+paper+${year}`;
+
 const pastPapers = (() => {
   const entries = [];
   let id = 1;
-
-  const confirmed = {
-    "Physics-2021-Paper 1": "https://www.scribd.com/document/873915210/Physics-2021-Set-B-1-2",
-    "Biology-2021-Paper 1": "https://www.scribd.com/document/783949328/BIO-1",
-  };
-
   for (const subject of SUBJECTS) {
     for (const year of YEARS) {
-      const papers = ["Paper 1", "Paper 2"];
-      for (const paper of papers) {
+      for (const paper of ["Paper 1","Paper 2"]) {
         const key = `${subject}-${year}-${paper}`;
-        const url = confirmed[key] ?? searchUrl(subject, year);
-        entries.push({
-          id: id++,
-          subject,
-          year,
-          title: `${subject} ${year} — ${paper}`,
-          paper,
-          url,
-        });
+        entries.push({ id:id++, subject, year, paper, url: confirmed[key] ?? searchUrl(subject,year) });
       }
     }
   }
-
   return entries;
 })();
 
+// ── By Year view ─────────────────────────────────────────
+function YearView({ activeSubject }) {
+  const years = YEARS;
+  return (
+    <div className="pp-year-view">
+      {years.map((year) => {
+        const papers = pastPapers.filter(
+          (p) => p.year === year && (activeSubject === "All" || p.subject === activeSubject)
+        );
+        const isUpcoming = year >= 2025;
+        return (
+          <div key={year} className={`pp-year-block${isUpcoming ? " upcoming" : ""}`}>
+            <div className="pp-year-header">
+              <div className="pp-year-badge" style={{ background: isUpcoming ? "#9e9e9e" : "#1a73e8" }}>
+                {year}
+              </div>
+              <div>
+                <strong>{isUpcoming ? `${year} — Coming Soon` : `${year} Examinations`}</strong>
+                <span>{isUpcoming ? "Papers will be added when released" : `${papers.length} papers available`}</span>
+              </div>
+              {isUpcoming && <span className="pp-upcoming-badge">🔜 Upcoming</span>}
+            </div>
+            {!isUpcoming && (
+              <div className="pp-year-grid">
+                {papers.map((p) => (
+                  <a key={p.id} href={p.url} target="_blank" rel="noreferrer" className="pp-mini-card"
+                    style={{ borderColor: subjectColor[p.subject] || "#1a73e8" }}>
+                    <div className="pp-mini-icon" style={{ background: (subjectColor[p.subject] || "#1a73e8") + "22" }}>
+                      {subjectIcon[p.subject] ?? "📄"}
+                    </div>
+                    <div className="pp-mini-body">
+                      <span className="pp-mini-subject" style={{ color: subjectColor[p.subject] || "#1a73e8" }}>
+                        {p.subject}
+                      </span>
+                      <span className="pp-mini-paper">{p.paper}</span>
+                    </div>
+                    <span className="pp-mini-dl">📥</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── By Subject view ───────────────────────────────────────
+function SubjectView({ activeYear }) {
+  return (
+    <div className="pp-subject-view">
+      {SUBJECTS.map((subject) => {
+        const color = subjectColor[subject] || "#1a73e8";
+        const papers = pastPapers.filter(
+          (p) => p.subject === subject && (activeYear === "All" || p.year === Number(activeYear))
+        );
+        const byYear = YEARS.reduce((acc, y) => {
+          acc[y] = papers.filter((p) => p.year === y);
+          return acc;
+        }, {});
+        return (
+          <div key={subject} className="pp-subject-block">
+            <div className="pp-subject-header" style={{ borderLeftColor: color }}>
+              <span className="pp-subject-icon" style={{ background: color + "22" }}>
+                {subjectIcon[subject] ?? "📄"}
+              </span>
+              <div>
+                <strong style={{ color }}>{subject}</strong>
+                <span>{papers.length} papers · {YEARS.filter(y => y < 2025).length} years</span>
+              </div>
+            </div>
+            <div className="pp-subject-years">
+              {YEARS.map((year) => {
+                const yPapers = byYear[year] || [];
+                const isUpcoming = year >= 2025;
+                return (
+                  <div key={year} className={`pp-year-col${isUpcoming ? " upcoming" : ""}`}>
+                    <div className="pp-year-col-label" style={{ background: isUpcoming ? "#eeeeee" : color }}>
+                      {year}
+                    </div>
+                    {isUpcoming ? (
+                      <div className="pp-year-col-soon">🔜</div>
+                    ) : (
+                      yPapers.map((p) => (
+                        <a key={p.id} href={p.url} target="_blank" rel="noreferrer"
+                          className="pp-year-col-btn" style={{ background: color }}>
+                          {p.paper.replace("Paper ","")}
+                        </a>
+                      ))
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function PastPapers() {
+  const [tab, setTab] = useState("year");
   const [activeSubject, setActiveSubject] = useState("All");
   const [activeYear, setActiveYear] = useState("All");
 
-  const filtered = pastPapers.filter((p) => {
-    const matchSubject = activeSubject === "All" || p.subject === activeSubject;
-    const matchYear = activeYear === "All" || p.year === Number(activeYear);
-    return matchSubject && matchYear;
-  });
+  const TABS = [
+    { key:"year",    label:"📅 Browse by Year" },
+    { key:"subject", label:"📚 Browse by Subject" },
+  ];
 
   return (
     <div className="pp-shell">
       <div className="pp-header">
         <span className="eyebrow">South Sudan National Examinations — SSSCE / SSCE</span>
         <h1>Past Examination Papers</h1>
-        <p>Browse and download past papers from 2020 to 2024. Filter by subject or year to find what you need.</p>
+        <p>Browse and download past papers from 2020 to 2024. Filter by year or subject.</p>
         <div className="pp-notice">
           📅 <strong>2025 &amp; 2026 papers will be added when released</strong> by the National Examinations Council.
         </div>
       </div>
 
-      <div className="pp-filters">
-        <div className="pp-filter-group">
-          <span className="filter-label">Subject</span>
+      {/* Category tabs */}
+      <div className="cat-tabs">
+        {TABS.map((t) => (
+          <button key={t.key} className={`cat-tab${tab===t.key?" active":""}`} onClick={() => setTab(t.key)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      {tab === "year" && (
+        <div className="cat-filter-row">
+          <span className="filter-label">Subject:</span>
           <div className="filter-row">
-            {["All", ...SUBJECTS].map((s) => (
-              <button
-                key={s}
-                className={`filter-pill${activeSubject === s ? " active" : ""}`}
-                onClick={() => setActiveSubject(s)}
-              >
-                {s !== "All" && subjectIcon[s] ? `${subjectIcon[s]} ` : ""}{s}
+            <button className={`filter-pill${activeSubject==="All"?" active":""}`} onClick={() => setActiveSubject("All")}>All</button>
+            {SUBJECTS.map((s) => (
+              <button key={s} className={`filter-pill${activeSubject===s?" active":""}`} onClick={() => setActiveSubject(s)}>
+                {subjectIcon[s]} {s}
               </button>
             ))}
           </div>
         </div>
+      )}
 
-        <div className="pp-filter-group">
-          <span className="filter-label">Year</span>
+      {tab === "subject" && (
+        <div className="cat-filter-row">
+          <span className="filter-label">Year:</span>
           <div className="filter-row">
-            {["All", ...YEARS].map((y) => (
-              <button
-                key={y}
-                className={`filter-pill${activeYear === String(y) || (y === "All" && activeYear === "All") ? " active" : ""}`}
-                onClick={() => setActiveYear(String(y))}
-              >
+            <button className={`filter-pill${activeYear==="All"?" active":""}`} onClick={() => setActiveYear("All")}>All Years</button>
+            {YEARS.map((y) => (
+              <button key={y} className={`filter-pill${activeYear===String(y)?" active":""}`} onClick={() => setActiveYear(String(y))}>
                 {y}
               </button>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="pp-results">
-        <div className="pp-results-header">
-          {filtered.length} paper{filtered.length !== 1 ? "s" : ""} found
-          {activeSubject !== "All" && ` · ${activeSubject}`}
-          {activeYear !== "All" && ` · ${activeYear}`}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="pp-empty">
-            <span style={{ fontSize: "3rem" }}>📭</span>
-            <p>No papers found for the selected filters.</p>
-            <button className="ghost-button" onClick={() => { setActiveSubject("All"); setActiveYear("All"); }}>
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="pp-grid">
-            {filtered.map((p) => (
-              <div key={p.id} className="pp-card">
-                <div className="pp-card-icon">{subjectIcon[p.subject] ?? "📄"}</div>
-                <div className="pp-card-body">
-                  <div className="pp-card-subject">{p.subject}</div>
-                  <div className="pp-card-title">{p.title}</div>
-                  <div className="pp-card-year">
-                    <span>{p.year}</span>
-                    <span className="pp-card-paper-badge">{p.paper}</span>
-                  </div>
-                  <a
-                    href={p.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="pp-card-btn"
-                  >
-                    📥 Download PDF
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Views */}
+      {tab === "year"    && <YearView    activeSubject={activeSubject} />}
+      {tab === "subject" && <SubjectView activeYear={activeYear} />}
     </div>
   );
 }

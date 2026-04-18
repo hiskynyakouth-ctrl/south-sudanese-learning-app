@@ -10,27 +10,19 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((c) => ({ ...c, [name]: value }));
-  };
+  const handleChange = (e) => setForm((c) => ({ ...c, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (!form.email || !form.password) {
-      setError("Please enter your email and password.");
-      return;
-    }
-
+    if (!form.email || !form.password) { setError("Please enter your email and password."); return; }
     try {
       setLoading(true);
       const data = await login(form.email, form.password);
       saveSession({ token: data.token, user: data.user });
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.error || "Invalid credentials. Please try again.");
+      setError(err.response?.data?.error || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -38,27 +30,36 @@ export default function Login() {
 
   return (
     <div className="auth-card">
+      <div className="auth-logo">
+        <img src="https://flagcdn.com/w80/ss.png" alt="South Sudan" style={{ width: 56, borderRadius: 8 }} />
+        <div>
+          <strong>South Sudan E-Learning</strong>
+          <small>Secondary School Platform</small>
+        </div>
+      </div>
       <span className="eyebrow">Student access</span>
-      <h1>Login to continue learning</h1>
-      <p>Access your subjects, chapter notes, quizzes, and AI tutoring.</p>
+      <h1>Welcome back 👋</h1>
+      <p>Login to access your subjects, notes, quizzes, and AI tutor.</p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
-          Email
-          <input name="email" type="email" value={form.email} onChange={handleChange} required />
+          Email address
+          <input name="email" type="email" value={form.email} onChange={handleChange}
+            placeholder="your@email.com" required autoFocus />
         </label>
         <label>
           Password
-          <input name="password" type="password" value={form.password} onChange={handleChange} required />
+          <input name="password" type="password" value={form.password} onChange={handleChange}
+            placeholder="Enter your password" required />
         </label>
         {error && <div className="message-card error">{error}</div>}
-        <button type="submit" className="primary-button" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <button type="submit" className="primary-button" disabled={loading} style={{ padding: "14px" }}>
+          {loading ? "Logging in..." : "Login →"}
         </button>
       </form>
 
       <p className="auth-switch">
-        New student? <Link to="/register">Create an account</Link>
+        New student? <Link to="/register">Create a free account</Link>
       </p>
     </div>
   );

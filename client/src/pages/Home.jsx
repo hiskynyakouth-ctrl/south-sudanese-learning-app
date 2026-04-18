@@ -86,13 +86,13 @@ export default function Home() {
           <p>Students choose a stream that matches their career goals.</p>
         </div>
         <div className="home-streams-grid">
-          <div className="home-stream-card" style={{ background: "linear-gradient(135deg,#0f6b5b,#0a4d41)" }}>
+          <div className="home-stream-card natural-stream-card">
             <div className="home-stream-icon">🔬</div>
             <h3>Natural Sciences</h3>
             <p>English · Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics</p>
             <span className="home-stream-count">8 subjects</span>
           </div>
-          <div className="home-stream-card" style={{ background: "linear-gradient(135deg,#1b3558,#0d2240)" }}>
+          <div className="home-stream-card social-stream-card">
             <div className="home-stream-icon">📚</div>
             <h3>Social Sciences</h3>
             <p>English · History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE</p>
