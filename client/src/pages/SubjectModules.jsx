@@ -29,13 +29,6 @@ export default function SubjectModules() {
         </div>
       </div>
 
-      {/* ── Feature chips ── */}
-      <div className="submod-chips">
-        {["📖 Notes", "🎥 Video", "❓ Q&A", "🤖 AI Help", "📝 Quiz"].map((c) => (
-          <span key={c} className="submod-chip">{c}</span>
-        ))}
-      </div>
-
       {/* ── Module cards ── */}
       <div className="submod-grid">
         {modules.map((mod, idx) => (

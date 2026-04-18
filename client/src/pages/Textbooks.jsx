@@ -170,11 +170,7 @@ export default function Textbooks() {
 
       {tab === "class"   && <ClassView   grade={selectedGrade} />}
       {tab === "subject" && <SubjectView subject={selectedSubject} />}
-
-      <a href="https://www.scribd.com/document/643349012/SS-Subject-Overviews-1-pdf"
-        target="_blank" rel="noreferrer" className="tb-overview-link">
-        📋 View Full South Sudan Curriculum Overview (P1–S4) →
-      </a>
+   
     </div>
   );
 }
