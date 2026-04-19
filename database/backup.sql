@@ -1,4 +1,15 @@
--- Database backup script
--- Run this to backup the database
-
--- Example: mysqldump elearning > backup.sql
+-- South Sudan E-Learning — PostgreSQL Backup Script
+-- Database: "south sudan e-learning"
+--
+-- To create a backup, run this command in your terminal:
+--   pg_dump -U postgres -d "south sudan e-learning" -f database/backup.sql
+--
+-- To restore from backup:
+--   psql -U postgres -d "south sudan e-learning" -f database/backup.sql
+--
+-- To backup using Node.js (no psql needed):
+--   node server/createTables.js
+--
+-- ── Quick backup via Node.js ─────────────────────────────
+-- Run: node server/backupDb.js
+-- This will export all data to database/backup_data.json

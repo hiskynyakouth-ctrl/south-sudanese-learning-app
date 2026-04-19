@@ -32,7 +32,7 @@ body {
 /* 🧭 NAVBAR */
 .navbar {
   background: linear-gradient(90deg, #99cabb, #1d4ed8);
-  color: white;
+  color: whitesmoke;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;

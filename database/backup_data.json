@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-04-19T07:25:36.132Z",
+  "tables": {
+    "users": [],
+    "grades": [],
+    "streams": [],
+    "subjects": [],
+    "topics": [],
+    "chapters": [],
+    "quizzes": [],
+    "past_papers": [],
+    "textbooks": [],
+    "user_progress": []
+  }
+}

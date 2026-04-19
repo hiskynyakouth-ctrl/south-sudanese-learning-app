@@ -1,8 +1,10 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggle } = useTheme();
 
   return (
     <header className="topbar">
@@ -23,6 +25,9 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
+          <button className="theme-toggle" onClick={toggle} title="Toggle dark mode">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
           {isAuthenticated ? (
             <>
               <div className="user-pill">
