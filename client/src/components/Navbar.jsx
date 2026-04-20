@@ -28,6 +28,11 @@ export default function Navbar() {
           <button className="theme-toggle" onClick={toggle} title="Toggle dark mode">
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
+          {isAuthenticated && (user?.role === "admin" || user?.email?.includes("admin")) && (
+            <NavLink to="/admin" className="nav-link" style={{ color: "var(--accent)", fontWeight: 700 }}>
+              ⚙️ Admin
+            </NavLink>
+          )}
           {isAuthenticated ? (
             <>
               <div className="user-pill">

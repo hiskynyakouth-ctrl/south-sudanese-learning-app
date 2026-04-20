@@ -1,176 +1,225 @@
-import { useState } from "react";
-import textbooks from "../data/textbooks";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
+
+const GRADES = ["Senior 1","Senior 2","Senior 3","Senior 4"];
+const GRADE_MAP = { "Senior 1":1,"Senior 2":2,"Senior 3":3,"Senior 4":4 };
 
 const subjectIcon = {
   Mathematics:"📐",English:"📖",Biology:"🧬",Chemistry:"⚗️",Physics:"⚡",
   History:"🏛️",Geography:"🌍",Economics:"💰",CRE:"✝️",Citizenship:"🇸🇸",
-  Agriculture:"🌱",General:"📚","Computer Studies":"💻",Accounting:"📊",
+  Agriculture:"🌱","Computer Studies":"💻",Accounting:"📊",
   "English Literature":"📜","Fine Art":"🎨","Additional Mathematics":"🔢",
   "Christian Religious Education":"✝️",
 };
 
-const subjectColor = {
-  English:{bg:"#e3f2fd",border:"#1565c0"},Mathematics:{bg:"#fce4ec",border:"#c62828"},
-  Biology:{bg:"#e8f5e9",border:"#2e7d32"},Chemistry:{bg:"#fff3e0",border:"#e65100"},
-  Physics:{bg:"#f3e5f5",border:"#6a1b9a"},History:{bg:"#fbe9e7",border:"#bf360c"},
-  Geography:{bg:"#e0f7fa",border:"#006064"},Citizenship:{bg:"#fff8e1",border:"#f57f17"},
-  "Computer Studies":{bg:"#e8eaf6",border:"#283593"},"Fine Art":{bg:"#fce4ec",border:"#880e4f"},
-  Accounting:{bg:"#e0f2f1",border:"#004d40"},"English Literature":{bg:"#f9fbe7",border:"#558b2f"},
-  Agriculture:{bg:"#f1f8e9",border:"#33691e"},"Christian Religious Education":{bg:"#fff3e0",border:"#e65100"},
-  Economics:{bg:"#e8f5e9",border:"#1b5e20"},"Additional Mathematics":{bg:"#fce4ec",border:"#880e4f"},
-};
-
-const GRADES = ["All","Secondary 1","Secondary 2","Secondary 3","Secondary 4"];
-const ALL_SUBJECTS = [...new Set([
-  "English","Mathematics","Biology","Chemistry","Physics","History","Geography",
-  "Citizenship","Computer Studies","Fine Art","Accounting","English Literature",
-  "Agriculture","Christian Religious Education","Economics","Additional Mathematics",
-])];
-
-const coreSubjects = ["English","Mathematics","Biology","Chemistry","Physics","History","Geography","Citizenship","Computer Studies","Fine Art","Accounting","English Literature","Agriculture","Christian Religious Education","Economics"];
-const naturalSubjects = ["English","Mathematics","Physics","Chemistry","Biology","Agriculture","Christian Religious Education","Additional Mathematics"];
-const socialSubjects = ["English","History","Geography","Economics","Mathematics","Fine Art","Accounting","English Literature","Christian Religious Education"];
-
-const getBook = (subject, grade) => textbooks.find((b) => b.subject === subject && b.grade === grade) || null;
-
-function BookCircle({ subject, grade }) {
-  const book = getBook(subject, grade);
-  const c = subjectColor[subject] || { bg:"#f5f5f5", border:"#9e9e9e" };
-  const gradeShort = grade.replace("Secondary ","S");
-  const icon = subject === "Citizenship"
-    ? <img src="https://flagcdn.com/w40/ss.png" alt="SS Flag" style={{width:38,height:26,borderRadius:4,objectFit:"cover"}} />
-    : <span style={{fontSize:"2.2rem",lineHeight:1}}>{subjectIcon[subject]??"📚"}</span>;
-  const href = book ? book.url : `https://www.scribd.com/search?query=South+Sudan+${encodeURIComponent(subject)}+${gradeShort}`;
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="tb-circle-card">
-      <div className="tb-circle" style={{background:c.bg,borderColor:c.border}}>
-        <div className="tb-circle-num" style={{background:c.border}}>{gradeShort}</div>
-        {icon}
-      </div>
-      <div className="tb-circle-label">{subject}</div>
-      <div className="tb-circle-btn" style={{background:c.border}}>{book?"📄 Read":"🔍 Find"}</div>
-    </a>
-  );
-}
-
-// ── Browse by Class view ──────────────────────────────────
-function ClassView({ grade }) {
-  const grades = grade === "All" ? ["Secondary 1","Secondary 2","Secondary 3","Secondary 4"] : [grade];
-  return (
-    <div className="tb-class-view">
-      {grades.map((g) => {
-        const num = parseInt(g.replace("Secondary ",""));
-        const isSplit = num >= 3;
-        const sections = isSplit
-          ? [
-              { label:"🔬 Natural Sciences", subjects: naturalSubjects, color:"#1565c0" },
-              { label:"📚 Social Sciences",  subjects: socialSubjects,  color:"#6a1b9a" },
-            ]
-          : [{ label:"📘 Core Subjects", subjects: coreSubjects, color:"#0f6b5b" }];
-        return (
-          <div key={g} className="tb-class-block">
-            <div className="tb-class-block-header">
-              <span className="tb-class-badge">{g.replace("Secondary","Senior")}</span>
-              {isSplit && <span className="tb-class-stream-note">Stream split</span>}
-            </div>
-            {sections.map((sec) => (
-              <div key={sec.label} className="tb-stream-block">
-                <div className="tb-stream-label" style={{background:sec.color}}>{sec.label}</div>
-                <div className="tb-grid">
-                  {sec.subjects.map((s) => <BookCircle key={s+g} subject={s} grade={g} />)}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Browse by Subject view ────────────────────────────────
-function SubjectView({ subject }) {
-  const subjects = subject === "All" ? ALL_SUBJECTS : [subject];
-  const allGrades = ["Secondary 1","Secondary 2","Secondary 3","Secondary 4"];
-  return (
-    <div className="tb-subject-view">
-      {subjects.map((s) => {
-        const c = subjectColor[s] || {bg:"#f5f5f5",border:"#9e9e9e"};
-        return (
-          <div key={s} className="tb-subject-block">
-            <div className="tb-subject-block-header" style={{borderLeftColor:c.border}}>
-              <span style={{fontSize:"1.8rem"}}>{subjectIcon[s]??"📚"}</span>
-              <div>
-                <strong>{s}</strong>
-                <span>All grades</span>
-              </div>
-            </div>
-            <div className="tb-grid">
-              {allGrades.map((g) => <BookCircle key={s+g} subject={s} grade={g} />)}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+const LS_KEY = "ss_textbooks";
+const getLocal = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)||"[]"); } catch { return []; } };
+const setLocal = (d) => localStorage.setItem(LS_KEY, JSON.stringify(d));
 
 export default function Textbooks() {
-  const [tab, setTab] = useState("class");
-  const [selectedGrade, setSelectedGrade] = useState("All");
-  const [selectedSubject, setSelectedSubject] = useState("All");
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email?.includes("admin");
 
-  const TABS = [
-    { key:"class",   label:"🏫 Browse by Class" },
-    { key:"subject", label:"📚 Browse by Subject" },
-  ];
+  const [books, setBooks] = useState([]);
+  const [activeGrade, setActiveGrade] = useState("All");
+  const [uploading, setUploading] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ subject:"", grade:"Senior 1", description:"" });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileRef = useRef();
+
+  useEffect(() => { loadBooks(); }, []);
+
+  const loadBooks = async () => {
+    try {
+      const res = await api.get("/upload/list/textbooks");
+      // Merge with local metadata
+      const local = getLocal();
+      const merged = res.data.map(f => {
+        const meta = local.find(l => l.filename === f.filename) || {};
+        return { ...f, ...meta };
+      });
+      setBooks(merged);
+    } catch {
+      setBooks(getLocal());
+    }
+  };
+
+  const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3500); };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) { flash("Please select a PDF file."); return; }
+    if (!form.subject.trim()) { flash("Please enter the subject name."); return; }
+
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("pdf", selectedFile);
+      const res = await api.post("/upload/textbook", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      // Save metadata locally
+      const entry = {
+        filename: res.data.filename,
+        url: res.data.url,
+        subject: form.subject,
+        grade: form.grade,
+        grade_id: GRADE_MAP[form.grade],
+        description: form.description,
+        originalName: res.data.originalName,
+        size: res.data.size,
+        uploadedAt: new Date().toISOString(),
+      };
+      const updated = [...getLocal(), entry];
+      setLocal(updated);
+      setBooks(updated);
+      setForm({ subject:"", grade:"Senior 1", description:"" });
+      setSelectedFile(null);
+      setShowForm(false);
+      flash(`"${form.subject}" uploaded successfully!`);
+    } catch (err) {
+      flash(err.response?.data?.error || "Upload failed. Make sure the server is running.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const deleteBook = async (book) => {
+    if (!window.confirm(`Delete "${book.subject}"?`)) return;
+    try { await api.delete(`/upload/textbooks/${book.filename}`); } catch {}
+    const updated = getLocal().filter(b => b.filename !== book.filename);
+    setLocal(updated);
+    setBooks(updated);
+    flash("Textbook deleted.");
+  };
+
+  const filtered = activeGrade === "All"
+    ? books
+    : books.filter(b => b.grade === activeGrade);
+
+  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5001";
 
   return (
-    <div className="tb-shell">
-      <div className="tb-header">
-        <span className="eyebrow">Official Ministry of Education — South Sudan</span>
-        <h1>Textbooks &amp; PDFs</h1>
-        <p>Browse official South Sudan secondary textbooks. Filter by class or subject to find what you need.</p>
+    <div className="tb-upload-shell">
+
+      {/* Header */}
+      <div className="tb-upload-header">
+        <span className="eyebrow">Official South Sudan Ministry of Education</span>
+        <h1>📚 Textbooks &amp; PDFs</h1>
+        <p>Browse and read official South Sudan secondary school textbooks uploaded by your school.</p>
+        {msg && <div className="admin-msg">{msg}</div>}
       </div>
 
-      <div className="cat-tabs">
-        {TABS.map((t) => (
-          <button key={t.key} className={`cat-tab${tab===t.key?" active":""}`} onClick={() => setTab(t.key)}>
-            {t.label}
+      {/* Admin upload button */}
+      {isAdmin && (
+        <button className="tb-upload-trigger" onClick={() => setShowForm(!showForm)}>
+          {showForm ? "✕ Cancel" : "⬆️ Upload New Textbook"}
+        </button>
+      )}
+
+      {/* Upload form */}
+      {isAdmin && showForm && (
+        <div className="tb-upload-form-card">
+          <h2>⬆️ Upload Textbook PDF</h2>
+          <form onSubmit={handleUpload} className="tb-upload-form">
+            <div className="admin-field">
+              <label>Subject Name</label>
+              <input className="admin-input" placeholder="e.g. Biology, Mathematics, English"
+                value={form.subject} onChange={e => setForm(f => ({...f, subject: e.target.value}))} required />
+            </div>
+            <div className="admin-field">
+              <label>Grade</label>
+              <select className="admin-select admin-select-lg" value={form.grade}
+                onChange={e => setForm(f => ({...f, grade: e.target.value}))}>
+                {GRADES.map(g => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+            <div className="admin-field" style={{ gridColumn:"1/-1" }}>
+              <label>Description (optional)</label>
+              <input className="admin-input" placeholder="e.g. Covers the full Senior 1 Biology syllabus"
+                value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} />
+            </div>
+            <div className="admin-field" style={{ gridColumn:"1/-1" }}>
+              <label>PDF File (max 50MB)</label>
+              <div className="tb-file-drop" onClick={() => fileRef.current?.click()}>
+                {selectedFile
+                  ? <><span>📄</span><strong>{selectedFile.name}</strong><small>{(selectedFile.size/1024/1024).toFixed(1)} MB</small></>
+                  : <><span>📁</span><strong>Click to select PDF</strong><small>or drag and drop here</small></>
+                }
+              </div>
+              <input ref={fileRef} type="file" accept=".pdf,application/pdf" style={{ display:"none" }}
+                onChange={e => setSelectedFile(e.target.files[0])} />
+            </div>
+            <div style={{ gridColumn:"1/-1", display:"flex", gap:10 }}>
+              <button type="submit" className="primary-button" disabled={uploading}>
+                {uploading ? "Uploading..." : "Upload Textbook"}
+              </button>
+              <button type="button" className="ghost-button" onClick={() => { setShowForm(false); setSelectedFile(null); }}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Grade filter */}
+      <div className="filter-row">
+        {["All", ...GRADES].map(g => (
+          <button key={g} className={`filter-pill${activeGrade===g?" active":""}`}
+            onClick={() => setActiveGrade(g)}>
+            {g === "All" ? "All Grades" : g}
           </button>
         ))}
       </div>
 
-      {tab === "class" && (
-        <div className="cat-filter-row">
-          <span className="filter-label">Class:</span>
-          <div className="filter-row">
-            {GRADES.map((g) => (
-              <button key={g} className={`filter-pill${selectedGrade===g?" active":""}`} onClick={() => setSelectedGrade(g)}>
-                {g === "All" ? "All Classes" : g.replace("Secondary","Senior")}
-              </button>
-            ))}
-          </div>
+      {/* Books grid */}
+      {filtered.length === 0 ? (
+        <div className="tb-empty">
+          <span>📚</span>
+          <h2>No textbooks uploaded yet</h2>
+          <p>{isAdmin ? "Use the upload button above to add your first textbook." : "Your admin will upload textbooks here. Check back soon."}</p>
+        </div>
+      ) : (
+        <div className="tb-books-grid">
+          {filtered.map((book, i) => (
+            <div key={book.filename || i} className="tb-book-card">
+              <div className="tb-book-icon-wrap">
+                <span className="tb-book-icon">{subjectIcon[book.subject] ?? "📚"}</span>
+                <span className="tb-book-grade-badge">{book.grade?.replace("Senior","S")}</span>
+              </div>
+              <div className="tb-book-info">
+                <strong>{book.subject}</strong>
+                <span>{book.grade}</span>
+                {book.description && <p>{book.description}</p>}
+                {book.originalName && <small>📄 {book.originalName}</small>}
+              </div>
+              <div className="tb-book-actions">
+                <a
+                  href={`${API_BASE}${book.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tb-read-btn"
+                >
+                  📖 Read PDF
+                </a>
+                <a
+                  href={`${API_BASE}${book.url}`}
+                  download
+                  className="tb-dl-btn"
+                >
+                  ⬇️ Download
+                </a>
+                {isAdmin && (
+                  <button className="admin-del-btn" onClick={() => deleteBook(book)}>🗑️</button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
-
-      {tab === "subject" && (
-        <div className="cat-filter-row">
-          <span className="filter-label">Subject:</span>
-          <div className="filter-row">
-            <button className={`filter-pill${selectedSubject==="All"?" active":""}`} onClick={() => setSelectedSubject("All")}>All Subjects</button>
-            {ALL_SUBJECTS.map((s) => (
-              <button key={s} className={`filter-pill${selectedSubject===s?" active":""}`} onClick={() => setSelectedSubject(s)}>
-                {subjectIcon[s]} {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {tab === "class"   && <ClassView   grade={selectedGrade} />}
-      {tab === "subject" && <SubjectView subject={selectedSubject} />}
-   
     </div>
   );
 }

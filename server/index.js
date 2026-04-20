@@ -22,6 +22,12 @@ app.use("/api/textbooks", require("./routes/textbookRoutes"));
 app.use("/api/grades", require("./routes/gradeRoutes"));
 app.use("/api/topics", require("./routes/topicRoutes"));
 app.use("/api/past-papers", require("./routes/pastPaperRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes"));
+
+// Serve uploaded files as static
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

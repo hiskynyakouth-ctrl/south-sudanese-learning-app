@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const classes = [
   { id: 1, emoji: "1️⃣", color: "#0f6b5b", desc: "15 core subjects — foundations in all areas" },
@@ -17,6 +18,7 @@ const features = [
 ];
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="home-shell">
 
@@ -65,15 +67,29 @@ export default function Home() {
           <h2>Choose your class to start learning 👇</h2>
           <p>Each class has full subject modules, notes, videos, quizzes, and AI help.</p>
         </div>
+        {!isAuthenticated && (
+          <div className="home-login-prompt">
+            <span>🔒</span>
+            <div>
+              <strong>Login required to access subjects</strong>
+              <p>Create a free account or login to start learning.</p>
+            </div>
+            <div style={{ display:"flex", gap:10 }}>
+              <Link to="/login" className="primary-link">Login</Link>
+              <Link to="/register" className="ghost-link">Register</Link>
+            </div>
+          </div>
+        )}
         <div className="home-class-grid">
           {classes.map((c) => (
-            <Link key={c.id} to={`/streams/${c.id}`} className="home-class-card" style={{ "--card-color": c.color }}>
+            <Link key={c.id} to={isAuthenticated ? `/streams/${c.id}` : "/login"}
+              className="home-class-card" style={{ "--card-color": c.color }}>
               <div className="home-class-num">{c.id}</div>
               <div className="home-class-info">
                 <strong>Senior {c.id}</strong>
                 <span>{c.desc}</span>
               </div>
-              <span className="home-class-arrow">→</span>
+              <span className="home-class-arrow">{isAuthenticated ? "→" : "🔒"}</span>
             </Link>
           ))}
         </div>
