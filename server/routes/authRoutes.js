@@ -8,4 +8,5 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/me", authMiddleware, me);
 
+router.post("/reset-password", require("../controllers/authController").resetPassword);
 module.exports = router;

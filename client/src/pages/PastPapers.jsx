@@ -8,9 +8,20 @@ const PAPERS = ["Paper 1","Paper 2","Paper 3"];
 
 const subjectIcon = {
   Physics:"⚡",Biology:"🧬",Mathematics:"📐",English:"📖",Chemistry:"⚗️",
-  History:"🏛️",Geography:"🌍",Economics:"💰",CRE:"✝️",Citizenship:"🇸🇸",
+  History:"🏛️",Geography:"🌍",Economics:"💰",CRE:"✝️",
   "Computer Studies":"💻",Agriculture:"🌱",Accounting:"📊",
   "English Literature":"📜","Fine Art":"🎨","Additional Mathematics":"🔢",
+};
+
+const getCitizenshipFlag = () => (
+  <img src="https://flagcdn.com/w40/ss.png" alt="South Sudan"
+    style={{ width:28, height:19, borderRadius:3, objectFit:"cover", verticalAlign:"middle" }}
+    onError={e => { e.target.onerror=null; e.target.style.display="none"; }} />
+);
+
+const getIcon = (subject) => {
+  if (subject === "Citizenship") return getCitizenshipFlag();
+  return subjectIcon[subject] ?? "📄";
 };
 
 const LS_KEY = "ss_papers";
@@ -225,7 +236,7 @@ export default function PastPapers() {
                   <div className="tb-papers-row">
                     {yPapers.map((p, i) => (
                       <div key={p.filename || i} className="tb-paper-card">
-                        <div className="tb-paper-icon">{subjectIcon[p.subject] ?? "📄"}</div>
+                        <div className="tb-paper-icon">{getIcon(p.subject)}</div>
                         <div className="tb-paper-info">
                           <strong>{p.title || `${p.subject} ${p.year} — ${p.paper}`}</strong>
                           <span>{p.subject} · {p.paper} · {p.year}</span>

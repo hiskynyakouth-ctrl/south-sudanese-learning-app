@@ -10,33 +10,24 @@ const pool = new Pool({
 });
 
 pool.connect((err, client, release) => {
-  if (err) {
-    console.error('PostgreSQL connection failed:', err.message);
-  } else {
-    console.log('Connected to PostgreSQL database:', process.env.DB_NAME);
-    release();
-  }
+  if (err) { console.error('PostgreSQL connection failed:', err.message); }
+  else { console.log('Connected to PostgreSQL database:', process.env.DB_NAME); release(); }
 });
 
-// Wrap pool.query to match the mysql2 callback style used across the app
-// Usage: db.query(sql, params, callback)
-const db = {
-  query: (sql, params, callback) => {
-    // Support both db.query(sql, cb) and db.query(sql, params, cb)
-    if (typeof params === 'function') {
-      callback = params;
-      params = [];
-    }
-    // Convert MySQL ? placeholders to PostgreSQL $1, $2, ...
-    let i = 0;
-    const pgSql = sql.replace(/\?/g, () => `$${++i}`);
+function ph(sql) {
+  let i = 0;
+  return sql.replace(/[?]/g, function() { i++; return '$' + i; });
+}
 
-    pool.query(pgSql, params, (err, result) => {
-      if (err) return callback(err, null);
-      callback(null, result.rows);
+const db = {
+  query: function(sql, params, cb) {
+    if (typeof params === 'function') { cb = params; params = []; }
+    pool.query(ph(sql), params, function(err, result) {
+      if (err) return cb(err, null);
+      cb(null, result.rows);
     });
   },
-  pool,
+  pool: pool,
 };
 
 module.exports = db;

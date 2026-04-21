@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { login } from "../services/authService";
+import { signInWithGoogle } from "../services/googleAuth";
+import { emailError } from "../utils/validateEmail";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!form.email || !form.password) { setError("Please enter your email and password."); return; }
+    const emailErr = emailError(form.email);
+    if (emailErr) { setError(emailErr); return; }
     try {
       setLoading(true);
       const data = await login(form.email, form.password);
@@ -32,8 +36,30 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = () => {
-    alert("Google login coming soon. Please use email and password for now.");
+  const handleGoogle = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const profile = await signInWithGoogle();
+      const KEY = "ss_users";
+      const users = JSON.parse(localStorage.getItem(KEY) || "[]");
+      let user = users.find(u => u.email === profile.email);
+      if (!user) {
+        // Auto-register if first time
+        user = { id: Date.now(), name: profile.name, email: profile.email,
+          password: `google_${profile.googleId}`, role: "student",
+          googleId: profile.googleId, loginMethod: "google" };
+        localStorage.setItem(KEY, JSON.stringify([...users, user]));
+      }
+      const safeUser = { id: user.id, name: user.name, email: user.email,
+        role: user.role || "student", picture: profile.picture, loginMethod: "google" };
+      saveSession({ token: `local_${user.id}_${Date.now()}`, user: safeUser });
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.message || "Google login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,7 +93,7 @@ export default function Login() {
         <label>
           <div className="auth-label-row">
             <span>Password</span>
-            <button type="button" className="auth-forgot" onClick={() => alert("Password reset: contact your teacher or admin.")}>
+            <button type="button" className="auth-forgot" onClick={() => navigate("/forgot-password")}>
               Forgot password?
             </button>
           </div>

@@ -2,6 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { subjectModules, subjectIcons } from "../data/curriculum";
 import textbooks from "../data/textbooks";
 
+import YouTubeIcon from "../components/YouTubeIcon";
+
 const ytUrl = (subject, mod) =>
   `https://www.youtube.com/results?search_query=South+Sudan+${encodeURIComponent(subject)}+${encodeURIComponent(mod)}+lesson`;
 
@@ -47,15 +49,15 @@ export default function SubjectModules() {
               </button>
               <a href={ytUrl(decoded, mod.title)} target="_blank" rel="noreferrer"
                 className="submod-action-btn video">
-                🎥 Watch Video
+                <YouTubeIcon size={16} /> Watch Video
               </a>
               <button className="submod-action-btn quiz"
                 onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${mod.id}?tab=quiz`)}>
                 📝 Take Quiz
               </button>
-              <button className="submod-action-btn ai"
-                onClick={() => navigate("/chat")}>
-                🤖 Ask AI
+              <button className="submod-action-btn orange"
+                onClick={() => navigate(`/module/${encodeURIComponent(decoded)}/${classId}/${mod.id}?tab=qa`)}>
+                ❓ Q&amp;A
               </button>
             </div>
           </div>
@@ -76,7 +78,7 @@ export default function SubjectModules() {
 
           <a href={`https://www.youtube.com/results?search_query=South+Sudan+${encodeURIComponent(decoded)}+lesson`}
             target="_blank" rel="noreferrer" className="submod-bottom-card red">
-            <span>🎥</span>
+            <span><YouTubeIcon size={28} /></span>
             <strong>YouTube Tutorials</strong>
             <p>Watch video lessons for {decoded}</p>
           </a>
@@ -86,13 +88,6 @@ export default function SubjectModules() {
             <span>📝</span>
             <strong>Quizzes &amp; Exams</strong>
             <p>Test yourself on all {decoded} modules</p>
-          </button>
-
-          <button className="submod-bottom-card purple"
-            onClick={() => navigate("/chat")}>
-            <span>🤖</span>
-            <strong>AI Chat Assistant</strong>
-            <p>Ask the AI tutor anything about {decoded}</p>
           </button>
 
           <button className="submod-bottom-card orange"

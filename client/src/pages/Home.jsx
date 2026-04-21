@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import scienceImg from "../assets/science.jfif";
+import classroomImg from "../assets/classroom.jfif";
+import YouTubeIcon from "../components/YouTubeIcon";
 
 const classes = [
   { id: 1, emoji: "1️⃣", color: "#0f6b5b", desc: "15 core subjects — foundations in all areas" },
@@ -10,11 +13,10 @@ const classes = [
 
 const features = [
   { icon: "📖", label: "Full Notes", to: "/#classes" },
-  { icon: "🎥", label: "YouTube Tutorials", to: "/#classes" },
+  { icon: "🎥", label: "YouTube Tutorials", to: "/#classes", isYT: true },
   { icon: "❓", label: "Q&A Discussion", to: "/#classes" },
-  { icon: "🤖", label: "AI Chat Assistant", to: "/chat" },
   { icon: "📝", label: "Quizzes & Exams", to: "/#classes" },
-  { icon: "📊", label: "Student Progress", to: "/#classes" },
+  { icon: "�", label: "Student Progress", to: "/#classes" },
 ];
 
 export default function Home() {
@@ -29,16 +31,15 @@ export default function Home() {
           <h1>Learn Smarter.<br />Study Anywhere.</h1>
           <p className="home-abstract">
             Aligned with South Sudan curriculum and East African standards. Supporting Senior 1–4
-            with structured subjects, topics, notes, videos, quizzes, AI assistance, and past
+            with structured subjects, topics, notes, videos, quizzes and past
             examination papers.
           </p>
           <div className="home-owner-tag">
-            <span className="home-owner-label">Project by</span>
+            <span className="home-owner-label">Contact Developer</span>
             <span className="home-owner-name">Thiyang Koang</span>
           </div>
           <div className="home-hero-actions">
             <Link to="/streams/1" className="home-cta-btn">Start Learning →</Link>
-            <Link to="/chat" className="home-cta-ghost">Open AI Tutor 🤖</Link>
           </div>
         </div>
         <div className="home-hero-badge">
@@ -55,9 +56,11 @@ export default function Home() {
       {/* ── FEATURES ── */}
       <section className="home-features-row">
         {features.map((f) => (
-          f.to === "/chat"
-            ? <Link key={f.label} to="/chat" className="home-feature-chip"><span>{f.icon}</span><span>{f.label}</span></Link>
-            : <button key={f.label} className="home-feature-chip" onClick={() => document.getElementById("classes")?.scrollIntoView({ behavior: "smooth" })}><span>{f.icon}</span><span>{f.label}</span></button>
+          <button key={f.label} className="home-feature-chip"
+            onClick={() => document.getElementById("classes")?.scrollIntoView({ behavior: "smooth" })}>
+            <span>{f.isYT ? <YouTubeIcon size={18} /> : f.icon}</span>
+            <span>{f.label}</span>
+          </button>
         ))}
       </section>
 
@@ -65,7 +68,7 @@ export default function Home() {
       <section id="classes">
         <div className="home-section-head">
           <h2>Choose your class to start learning 👇</h2>
-          <p>Each class has full subject modules, notes, videos, quizzes, and AI help.</p>
+          <p>Each class has full subject modules, notes, videos, quizzes.</p>
         </div>
         {!isAuthenticated && (
           <div className="home-login-prompt">
@@ -102,13 +105,13 @@ export default function Home() {
           <p>Students choose a stream that matches their career goals.</p>
         </div>
         <div className="home-streams-grid">
-          <div className="home-stream-card natural-stream-card">
+          <div className="home-stream-card natural-stream-card" style={{ backgroundImage: `url(${scienceImg})` }}>
             <div className="home-stream-icon">🔬</div>
             <h3>Natural Sciences</h3>
             <p>English · Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics</p>
             <span className="home-stream-count">8 subjects</span>
           </div>
-          <div className="home-stream-card social-stream-card">
+          <div className="home-stream-card social-stream-card" style={{ backgroundImage: `url(${classroomImg})` }}>
             <div className="home-stream-icon">📚</div>
             <h3>Social Sciences</h3>
             <p>English · History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE</p>

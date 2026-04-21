@@ -27,11 +27,10 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const session = getStoredSession();
-
-  if (session?.token) {
+  // Only send token if it's a real JWT (not a local fallback token)
+  if (session?.token && session.token.startsWith("eyJ")) {
     config.headers.Authorization = `Bearer ${session.token}`;
   }
-
   return config;
 });
 

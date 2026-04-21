@@ -6,6 +6,7 @@ import Admin from "./pages/Admin";
 import ChapterDetails from "./pages/ChapterDetails";
 import Chapters from "./pages/Chapters";
 import ChatAI from "./pages/ChatAI";
+import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import ModuleDetail from "./pages/ModuleDetail";
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/" element={<MainLayout><Home /></MainLayout>} />
         <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
         <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
+        <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
 
         {/* ── Protected pages (must be logged in) ── */}
         <Route path="/streams/:id"            element={<Protected><Streams /></Protected>} />
@@ -42,7 +44,6 @@ export default function App() {
         <Route path="/chapters/:subjectId"    element={<Protected><Chapters /></Protected>} />
         <Route path="/chapter/:id"            element={<Protected><ChapterDetails /></Protected>} />
         <Route path="/quiz/:chapterId"        element={<Protected><Quiz /></Protected>} />
-        <Route path="/chat"                   element={<Protected><ChatAI /></Protected>} />
         <Route path="/textbooks"              element={<Protected><Textbooks /></Protected>} />
         <Route path="/past-papers"            element={<Protected><PastPapers /></Protected>} />
         <Route path="/admin"                  element={<Protected><Admin /></Protected>} />

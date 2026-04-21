@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import YouTubeIcon from "../components/YouTubeIcon";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { subjectModules } from "../data/curriculum";
 import { REAL_CONTENT } from "../data/realContent";
@@ -114,10 +115,9 @@ export default function ModuleDetail() {
 
   const TABS = [
     { key: "notes", label: "📖 Notes" },
-    { key: "video", label: "🎥 Video" },
+    { key: "video", label: <span style={{display:"flex",alignItems:"center",gap:5}}><YouTubeIcon size={16}/>Video</span> },
     { key: "qa",    label: "❓ Q&A" },
     { key: "quiz",  label: "📝 Quiz" },
-    { key: "ai",    label: "🤖 AI Help" },
   ];
 
   return (
@@ -250,9 +250,9 @@ export default function ModuleDetail() {
               <button className="primary-button" onClick={() => setTab("quiz")}>
                 📝 Take Quiz Now
               </button>
-              <button className="moddetail-submit-btn" style={{ background:"#e65100", padding:"12px 20px" }}
+              <button className="moddetail-submit-btn" style={{ background:"#FF0000", padding:"12px 20px", display:"flex", alignItems:"center", gap:6 }}
                 onClick={() => setTab("video")}>
-                🎥 Watch Video
+                <YouTubeIcon size={16} /> Watch Video
               </button>
               {modIndex < modules.length - 1 && (
                 <button className="primary-button"
@@ -268,7 +268,9 @@ export default function ModuleDetail() {
         {/* ── VIDEO ── */}
         {tab === "video" && (
           <div className="moddetail-video">
-            <h2 style={{ marginBottom:8 }}>🎥 {mod?.title}</h2>
+            <h2 style={{ marginBottom:8, display:"flex", alignItems:"center", gap:8 }}>
+              <YouTubeIcon size={24} /> {mod?.title}
+            </h2>
             <p style={{ color:"var(--muted)", marginBottom:16 }}>Watch the tutorial video for this module below.</p>
             {videoId && (
               <div className="moddetail-yt-embed">
@@ -280,8 +282,8 @@ export default function ModuleDetail() {
                 />
               </div>
             )}
-            <a href={ytSearch} target="_blank" rel="noreferrer" className="moddetail-yt-btn" style={{ marginTop:16, display:"inline-flex" }}>
-              🔍 Search More Videos on YouTube
+            <a href={ytSearch} target="_blank" rel="noreferrer" className="moddetail-yt-btn" style={{ marginTop:16, display:"inline-flex", alignItems:"center", gap:8 }}>
+              <YouTubeIcon size={18} /> Search More Videos on YouTube
             </a>
           </div>
         )}
