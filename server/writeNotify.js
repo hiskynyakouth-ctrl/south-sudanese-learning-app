@@ -1,41 +1,6 @@
-const express = require("express");
-const { register, login, me } = require("../controllers/authController");
-const authMiddleware = require("../middleware/authMiddleware");
+const fs = require('fs');
 
-const router = express.Router();
-
-router.post("/register", register);
-router.post("/login", login);
-router.get("/me", authMiddleware, me);
-
-router.post("/reset-password", require("../controllers/authController").resetPassword);
-
-router.post("/send-sms", async (req, res) => {
-  const { phone, code } = req.body;
-  if (!phone || !code) return res.status(400).json({ error: "Phone and code required." });
-  
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone  = process.env.TWILIO_PHONE;
-  
-  if (!accountSid || accountSid === "ACxxxxxxxxxxxxxxx") {
-    return res.status(503).json({ error: "SMS not configured. Add Twilio credentials to server/.env" });
-  }
-  
-  try {
-    const twilio = require("twilio")(accountSid, authToken);
-    await twilio.messages.create({
-      body: "Your South Sudan E-Learning reset code: " + code + " (valid 10 min)",
-      from: fromPhone,
-      to: phone,
-    });
-    res.json({ message: "SMS sent." });
-  } catch (err) {
-    res.status(500).json({ error: "SMS failed: " + err.message });
-  }
-});
-
-
+const notifyRoute = `
 // ── Send verification code via Email (Nodemailer/Gmail) ───
 router.post("/send-email", async (req, res) => {
   const { email, code } = req.body;
@@ -59,7 +24,7 @@ router.post("/send-email", async (req, res) => {
       from: '"South Sudan E-Learning" <' + gmailUser + '>',
       to: email,
       subject: "Your Password Reset Code - South Sudan E-Learning",
-      html: `
+      html: \`
         <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;background:#f9f9f9;border-radius:12px">
           <div style="background:linear-gradient(135deg,#0f6b5b,#1b3558);padding:20px;border-radius:10px;text-align:center;margin-bottom:20px">
             <h2 style="color:white;margin:0">South Sudan E-Learning</h2>
@@ -67,14 +32,14 @@ router.post("/send-email", async (req, res) => {
           </div>
           <p style="color:#333">Your verification code is:</p>
           <div style="background:#0f6b5b;color:white;font-size:36px;font-weight:bold;letter-spacing:10px;text-align:center;padding:24px;border-radius:10px;margin:16px 0">
-            ${code}
+            \${code}
           </div>
           <p style="color:#666;font-size:14px">This code expires in <strong>10 minutes</strong>.</p>
           <p style="color:#999;font-size:12px;border-top:1px solid #eee;padding-top:12px;margin-top:16px">
             Do not share this code with anyone. South Sudan E-Learning will never ask for your code.
           </p>
         </div>
-      `,
+      \`,
     });
 
     res.json({ message: "Email sent.", method: "gmail" });
@@ -139,5 +104,13 @@ router.post("/send-sms", async (req, res) => {
     res.status(500).json({ error: "SMS failed: " + err.message });
   }
 });
+`;
 
-module.exports = router;
+let routes = fs.readFileSync('routes/authRoutes.js', 'utf8');
+if (!routes.includes('send-email')) {
+  routes = routes.replace('module.exports = router;', notifyRoute + '\nmodule.exports = router;');
+  fs.writeFileSync('routes/authRoutes.js', routes, 'utf8');
+  console.log('Email + SMS routes added');
+} else {
+  console.log('Routes already exist');
+}

@@ -51,17 +51,14 @@ export const login = async (email, password) => {
 };
 
 // ── Register ─────────────────────────────────────────────
-export const register = async (name, email, password) => {
+export const register = async (name, email, password, phone = "") => {
   // 1. Try backend
   try {
-    const res = await authApi.post('/auth/register', { name, email, password });
+    const res = await authApi.post('/auth/register', { name, email, password, phone });
     return res.data;
   } catch (err) {
-    // 409 = already exists in DB — throw that error directly
     if (err.response?.status === 409) throw err;
-    // 500+ = server error — throw
     if (err.response && err.response.status >= 500) throw err;
-    // Offline or other — fall through to local
   }
 
   // 2. Local storage fallback
@@ -70,9 +67,9 @@ export const register = async (name, email, password) => {
     throw makeError("An account with this email already exists. Please login.");
   }
 
-  const user = { id: Date.now(), name, email, password, role: "student" };
+  const user = { id: Date.now(), name, email, phone, password, role: "student" };
   saveLocalUsers([...users, user]);
-  const safeUser = { id: user.id, name, email, role: "student" };
+  const safeUser = { id: user.id, name, email, phone, role: "student" };
   return { token: makeToken(safeUser), user: safeUser };
 };
 

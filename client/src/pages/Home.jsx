@@ -79,7 +79,7 @@ export default function Home() {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <Link to="/login" className="primary-link">Login</Link>
-              <Link to="/register" className="ghost-link">Register</Link>
+              <Link to="/register" className="home-register-link">Register</Link>
             </div>
           </div>
         )}
@@ -92,7 +92,7 @@ export default function Home() {
                 <strong>Senior {c.id}</strong>
                 <span>{c.desc}</span>
               </div>
-              <span className="home-class-arrow">{isAuthenticated ? "→" : "🔒"}</span>
+              <span className="home-class-arrow">{isAuthenticated ? "→" : ""}</span>
             </Link>
           ))}
         </div>

@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { IconTrash, IconEdit } from "../components/Icons";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const GRADES = ["Senior 1", "Senior 2", "Senior 3", "Senior 4"];
@@ -27,7 +28,7 @@ const TABS = [
   { key: "users",     label: "Users",        icon: "👥" },
   { key: "subjects",  label: "Subjects",     icon: "📚" },
   { key: "papers",    label: "Past Papers",  icon: "📄" },
-  { key: "settings",  label: "Settings",     icon: "⚙️" },
+  { key: "settings",  label: "Settings",     icon: "⚙" },
 ];
 
 // ── Default form states ────────────────────────────────────────────────────
@@ -330,9 +331,9 @@ export default function Admin() {
               <div className="admin-action-grid">
                 {[
                   { label: "Manage Users",   icon: "👥", tab: "users"     },
-                  { label: "Add Subject",    icon: "➕", tab: "subjects"  },
+                  { label: "Add Subject",    icon: "+", tab: "subjects"  },
                   { label: "Add Past Paper", icon: "📄", tab: "papers"    },
-                  { label: "Settings",       icon: "⚙️", tab: "settings"  },
+                  { label: "Settings",       icon: "⚙", tab: "settings"  },
                 ].map(a => (
                   <button key={a.label} className="admin-action-btn" onClick={() => setTab(a.tab)}>
                     <span>{a.icon}</span>
@@ -383,7 +384,7 @@ export default function Admin() {
                       <td>{u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}</td>
                       <td>
                         <button className="admin-del-btn" onClick={() => deleteUser(u.id)} title="Delete user">
-                          🗑️
+                          <IconTrash size={14}/>
                         </button>
                       </td>
                     </tr>
@@ -406,7 +407,7 @@ export default function Admin() {
 
             {/* ── Add / Edit form ── */}
             <div className="admin-form-card">
-              <h2>{editSubject ? "✏️ Edit Subject" : "➕ Add New Subject"}</h2>
+              <h2>{editSubject ? "Edit Subject" : "Add New Subject"}</h2>
               <form className="admin-form-grid" onSubmit={editSubject ? saveEditSubject : addSubject}>
 
                 {/* Subject name */}
@@ -500,14 +501,14 @@ export default function Admin() {
                                 stream_name: s.stream_name || streamLabel(s.stream_id),
                               })}
                             >
-                              ✏️
+                              <IconEdit size={14}/>
                             </button>
                             <button
                               className="admin-del-btn"
                               title="Delete subject"
                               onClick={() => deleteSubject(s.id)}
                             >
-                              🗑️
+                              <IconTrash size={14}/>
                             </button>
                           </div>
                         </div>
@@ -533,7 +534,7 @@ export default function Admin() {
 
             {/* ── Add paper form ── */}
             <div className="admin-form-card">
-              <h2>➕ Add New Past Paper</h2>
+              <h2>Add New Past Paper</h2>
               <form className="admin-form-grid" onSubmit={addPaper}>
 
                 {/* Subject */}
@@ -673,7 +674,7 @@ export default function Admin() {
                               title="Delete paper"
                               onClick={() => deletePaper(p.id)}
                             >
-                              🗑️
+                              <IconTrash size={14}/>
                             </button>
                           </div>
                         ))}
@@ -695,7 +696,7 @@ export default function Admin() {
         ════════════════════════════════════════════════════════════ */}
         {tab === "settings" && (
           <div className="admin-section">
-            <h1>⚙️ Settings</h1>
+            <h1>Settings</h1>
 
             {/* Session info */}
             <div className="admin-status-card">
@@ -715,7 +716,7 @@ export default function Admin() {
 
               {/* DB test */}
               <div className="admin-setting-card">
-                <h3>🗄️ Database</h3>
+                <h3>Database</h3>
                 <p>PostgreSQL · <strong>south sudan e-learning</strong></p>
                 <p>Host: localhost:5432</p>
                 <button
@@ -732,7 +733,7 @@ export default function Admin() {
 
               {/* Set admin role */}
               <div className="admin-setting-card">
-                <h3>🔑 Set Admin Role</h3>
+                <h3>Set Admin Role</h3>
                 <p>Promote your current account to admin in local storage.</p>
                 <button
                   className="primary-button"
@@ -751,7 +752,7 @@ export default function Admin() {
 
               {/* Backup */}
               <div className="admin-setting-card">
-                <h3>💾 Backup</h3>
+                <h3>Backup</h3>
                 <p>Export all local data to a JSON file.</p>
                 <button
                   className="primary-button"
@@ -775,7 +776,7 @@ export default function Admin() {
 
               {/* Platform info */}
               <div className="admin-setting-card">
-                <h3>📱 Platform</h3>
+                <h3>Platform</h3>
                 <p>South Sudan E-Learning · v1.0.0</p>
                 <p style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
                   Senior 1–4 · 15+ subjects · AI Tutor

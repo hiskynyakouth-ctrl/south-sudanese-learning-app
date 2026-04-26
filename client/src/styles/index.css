@@ -3027,8 +3027,21 @@ iframe {
 }
 .home-login-prompt > span { font-size: 1.8rem; }
 .home-login-prompt > div { flex: 1; }
-.home-login-prompt strong { display: block; font-size: 0.95rem; }
-.home-login-prompt p { margin: 3px 0 0; color: var(--muted); font-size: 0.85rem; }
+.home-login-prompt strong { display: block; font-size: 0.95rem; color: #5d4037; }
+.home-login-prompt p { margin: 3px 0 0; color: #795548; font-size: 0.85rem; }
+
+/* Dark mode fix */
+[data-theme="dark"] .home-login-prompt {
+  background: rgba(255, 248, 225, 0.08);
+  border-color: rgba(255, 224, 130, 0.3);
+}
+[data-theme="dark"] .home-login-prompt strong { color: #ffe082; }
+[data-theme="dark"] .home-login-prompt p { color: rgba(255,255,255,0.65); }
+[data-theme="dark"] .home-login-prompt .ghost-link {
+  color: rgba(255,255,255,0.85) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  background: rgba(255,255,255,0.08) !important;
+}
 
 /* ── Admin status card ──────────────────────────────────── */
 .admin-status-card {
@@ -4227,3 +4240,170 @@ iframe {
   width: 100%;
 }
 .fp-code-input:focus { border-color: var(--primary) !important; outline: none; }
+
+/* ── Email sent banner ──────────────────────────────────── */
+.fp-email-sent {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: var(--radius-md);
+  margin: 4px 0;
+}
+.fp-email-sent > span { font-size: 1.8rem; flex-shrink: 0; }
+.fp-email-sent strong { display: block; font-size: 0.95rem; margin-bottom: 4px; }
+.fp-email-sent p { margin: 0; color: var(--muted); font-size: 0.82rem; }
+
+/* ── Method selector (Email vs SMS) ─────────────────────── */
+.fp-method-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0;
+}
+.fp-method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--line);
+  background: white;
+  cursor: pointer;
+  transition: 0.15s;
+  text-align: center;
+}
+.fp-method-btn span { font-size: 1.8rem; }
+.fp-method-btn strong { font-size: 0.95rem; }
+.fp-method-btn small { font-size: 0.72rem; color: var(--muted); }
+.fp-method-btn:hover { border-color: var(--primary); }
+.fp-method-btn.active {
+  border-color: var(--primary);
+  background: rgba(15,107,91,0.08);
+}
+.fp-method-btn.active strong { color: var(--primary); }
+
+/* ── Force all icons to render as clean SVG (no pixel emojis) ── */
+.admin-del-btn, .admin-edit-btn, .tb-circle-del,
+.theme-toggle, .nav-hamburger {
+  font-family: "Segoe UI Symbol", "Segoe UI", sans-serif !important;
+}
+
+/* Replace pixel emoji icons with clean SVG via react-icons */
+.nav-admin-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+}
+.nav-admin-link svg { flex-shrink: 0; }
+
+/* Clean delete button */
+.admin-del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ef5350;
+  background: #ffebee;
+  color: #c62828;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.admin-del-btn:hover { background: #ef5350; color: white; }
+.admin-del-btn svg { pointer-events: none; }
+
+/* Clean edit button */
+.admin-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  cursor: pointer;
+  transition: 0.15s;
+  color: var(--ink);
+}
+.admin-edit-btn:hover { background: #e3f2fd; border-color: #1565c0; color: #1565c0; }
+
+/* Clean theme toggle */
+.theme-toggle {
+  display: grid;
+  place-items: center;
+}
+.theme-toggle svg { display: block; }
+
+/* Mobile menu links with icons */
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mobile-nav-link svg { flex-shrink: 0; }
+
+/* Textbook read button */
+.tb-circle-read-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.tb-circle-read-btn svg { flex-shrink: 0; }
+
+/* Trash icon in circle */
+.tb-circle-del {
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.6;
+  transition: 0.15s;
+}
+.tb-circle-del:hover { opacity: 1; }
+
+/* Register link in login prompt — always visible */
+.home-register-link {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-weight: 600;
+  transition: 0.18s;
+  text-decoration: none;
+}
+.home-register-link:hover { background: rgba(0,0,0,0.06); }
+[data-theme="dark"] .home-register-link {
+  border-color: rgba(255,255,255,0.5);
+  color: white;
+}
+[data-theme="dark"] .home-register-link:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Not configured warning ─────────────────────────────── */
+.fp-not-configured {
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-left: 4px solid #e65100;
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: grid;
+  gap: 8px;
+}
+.fp-not-configured-icon { font-size: 1.5rem; }
+.fp-not-configured strong { font-size: 0.95rem; color: #bf360c; }
+.fp-not-configured p { margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+.fp-not-configured ul { margin: 4px 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; }
+.fp-not-configured code { background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem; }
+[data-theme="dark"] .fp-not-configured { background: rgba(230,81,0,0.1); border-color: rgba(230,81,0,0.3); }
+[data-theme="dark"] .fp-not-configured strong { color: #ffab40; }

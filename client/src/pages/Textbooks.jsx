@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import YouTubeIcon from "../components/YouTubeIcon";
+import SubjectIcon, { getSubjectStyle } from "../components/SubjectIcon";
+import { IconBookOpen, IconTrash } from "../components/Icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -198,36 +200,30 @@ export default function Textbooks() {
       ) : (
         <div className="tb-circles-grid">
           {filtered.map((book, i) => {
+            const subStyle = getSubjectStyle(book.subject);
             const subIcon = book.subject === "Citizenship"
               ? <img src="https://flagcdn.com/w40/ss.png" alt="SS Flag" style={{ width:36, height:24, borderRadius:3, objectFit:"cover" }} onError={e=>{e.target.onerror=null;e.target.style.display="none";}} />
-              : (subjectIcons[book.subject] ?? "📚");
-            const colors = [
-              { bg:"#e3f2fd", border:"#1565c0" },
-              { bg:"#e8f5e9", border:"#2e7d32" },
-              { bg:"#fce4ec", border:"#c62828" },
-              { bg:"#fff3e0", border:"#e65100" },
-              { bg:"#f3e5f5", border:"#6a1b9a" },
-              { bg:"#e0f7fa", border:"#006064" },
-              { bg:"#f9fbe7", border:"#558b2f" },
-              { bg:"#fff8e1", border:"#f57f17" },
-            ];
-            const c = colors[i % colors.length];
+              : <SubjectIcon subject={book.subject} size={38} />;
             return (
               <a key={book.filename || i}
                 href={`${API_BASE}${book.url}`}
                 target="_blank" rel="noreferrer"
                 className="tb-circle-item">
-                <div className="tb-circle-wrap" style={{ background: c.bg, borderColor: c.border }}>
-                  <div className="tb-circle-grade" style={{ background: c.border }}>
+                <div className="tb-circle-wrap" style={{ background: subStyle.bg, borderColor: subStyle.color }}>
+                  <div className="tb-circle-grade" style={{ background: subStyle.color }}>
                     {(book.grade || "").replace("Senior ","S")}
                   </div>
-                  <span className="tb-circle-emoji">{subIcon}</span>
+                  {subIcon}
                 </div>
                 <div className="tb-circle-label">{book.subject}</div>
                 <div className="tb-circle-grade-label">{book.grade}</div>
-                <div className="tb-circle-read-btn" style={{ background: c.border }}>📖 Read</div>
+                <div className="tb-circle-read-btn" style={{ background: subStyle.color }}>
+                  <IconBookOpen size={13} color="white" /> Read
+                </div>
                 {isAdmin && (
-                  <button className="tb-circle-del" onClick={(e) => { e.preventDefault(); deleteBook(book); }}>🗑️</button>
+                  <button className="tb-circle-del" onClick={(e) => { e.preventDefault(); deleteBook(book); }}>
+                    <IconTrash size={14} color="#ef5350" />
+                  </button>
                 )}
               </a>
             );

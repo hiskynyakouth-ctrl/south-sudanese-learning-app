@@ -56,7 +56,7 @@ const GoogleIcon = () => (
 export default function Register() {
   const navigate = useNavigate();
   const { saveSession } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function Register() {
     if (strength.score < 2) { setError("Password is too weak. Use the suggestion below or make it stronger."); return; }
     try {
       setLoading(true);
-      const data = await register(form.name, form.email, form.password);
+      const data = await register(form.name, form.email, form.password, form.phone);
       saveSession({ token: data.token, user: data.user });
       navigate("/");
     } catch (err) {
@@ -144,7 +144,7 @@ export default function Register() {
         <label>
           Email address
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">✉️</span>
+            <span className="auth-input-icon"></span>
             <input name="email" type="email" value={form.email} onChange={handleChange}
               placeholder="your@gmail.com" required />
           </div>
@@ -152,9 +152,19 @@ export default function Register() {
         </label>
 
         <label>
+          Phone Number (for SMS verification)
+          <div className="auth-input-wrap">
+            <span className="auth-input-icon"></span>
+            <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+              placeholder="+251 912 345 678" />
+          </div>
+          <small className="auth-hint">Include country code (e.g. +211 for South Sudan). Used for SMS password reset.</small>
+        </label>
+
+        <label>
           Password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">🔒</span>
+            <span className="auth-input-icon"></span>
             <input name="password" type={showPw ? "text" : "password"} value={form.password}
               onChange={handleChange} placeholder="Create a strong password" required />
             <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
@@ -187,7 +197,7 @@ export default function Register() {
           {/* Suggest strong password */}
           {(!form.password || strength.score < 3) && (
             <button type="button" className="pw-suggest-btn" onClick={useSuggested}>
-              ✨ {copied ? "Copied to clipboard!" : "Suggest a strong password"}
+               {copied ? "Copied to clipboard!" : "Suggest a strong password"}
             </button>
           )}
         </label>
@@ -195,7 +205,7 @@ export default function Register() {
         <label>
           Confirm password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">🔒</span>
+            <span className="auth-input-icon"></span>
             <input name="confirm" type={showPw ? "text" : "password"} value={form.confirm}
               onChange={handleChange} placeholder="Repeat your password" required />
           </div>

@@ -74,7 +74,7 @@ export default function Login() {
 
       <span className="eyebrow">Student access</span>
       <h1>Welcome back 👋</h1>
-      <p>Login to access your subjects, notes, quizzes, and AI tutor.</p>
+      <p>Login to access your subjects, notes, quizzes.</p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
 
@@ -98,7 +98,7 @@ export default function Login() {
             </button>
           </div>
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">🔒</span>
+            <span className="auth-input-icon"></span>
             <input name="password" type={showPassword ? "text" : "password"} value={form.password}
               onChange={handleChange} placeholder="Enter your password" required />
             <button type="button" className="auth-eye" onClick={() => setShowPassword(!showPassword)}>
