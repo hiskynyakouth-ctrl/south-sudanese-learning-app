@@ -42,14 +42,9 @@ export default function Textbooks() {
   const loadBooks = async () => {
     try {
       const res = await api.get("/upload/list/textbooks");
-      const local = getLocal();
-      const merged = res.data.map(f => {
-        const meta = local.find(l => l.filename === f.filename) || {};
-        return { ...f, ...meta };
-      });
-      setBooks(merged);
+      setBooks(res.data);
     } catch {
-      setBooks(getLocal());
+      setBooks([]);
     }
   };
 
@@ -63,19 +58,14 @@ export default function Textbooks() {
     try {
       const fd = new FormData();
       fd.append("pdf", selectedFile);
+      fd.append("subject", form.subject);
+      fd.append("grade", form.grade);
+      fd.append("description", form.description);
       const res = await api.post("/upload/textbook", fd, { headers: { "Content-Type": "multipart/form-data" } });
-      const entry = {
-        filename: res.data.filename, url: res.data.url,
-        subject: form.subject, grade: form.grade,
-        grade_id: GRADE_MAP[form.grade], description: form.description,
-        originalName: res.data.originalName, size: res.data.size,
-        uploadedAt: new Date().toISOString(),
-      };
-      const updated = [...getLocal(), entry];
-      setLocal(updated); setBooks(updated);
       setForm({ subject:"", grade:"Senior 1", description:"" });
       setSelectedFile(null); setShowForm(false);
       flash(`"${form.subject}" uploaded!`);
+      await loadBooks();
     } catch (err) {
       flash(err.response?.data?.error || "Upload failed. Make sure the server is running.");
     } finally { setUploading(false); }
@@ -84,8 +74,7 @@ export default function Textbooks() {
   const deleteBook = async (book) => {
     if (!window.confirm(`Delete "${book.subject}"?`)) return;
     try { await api.delete(`/upload/textbooks/${book.filename}`); } catch {}
-    const updated = getLocal().filter(b => b.filename !== book.filename);
-    setLocal(updated); setBooks(updated);
+    await loadBooks();
     flash("Deleted.");
   };
 

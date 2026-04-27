@@ -53,6 +53,7 @@ router.post("/send-email", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user: gmailUser, pass: gmailPass },
+      tls: { rejectUnauthorized: false },
     });
 
     await transporter.sendMail({
