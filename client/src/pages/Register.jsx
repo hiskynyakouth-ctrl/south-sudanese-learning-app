@@ -184,7 +184,7 @@ export default function Register() {
           </div>
         </div>
 
-        <h1>Set Your Password 🔐</h1>
+        <h1>Set Your Password </h1>
         <p>
           Create a platform password for <strong>{googleProfile.email}</strong>.
           You'll use this to log in with email if Google is unavailable.
@@ -194,7 +194,7 @@ export default function Register() {
           <label>
             Create a password
             <div className="auth-input-wrap">
-              <span className="auth-input-icon">🔒</span>
+              <span className="auth-input-icon"></span>
               <input type={showGooglePw ? "text" : "password"} value={googlePw}
                 onChange={e => setGooglePw(e.target.value)}
                 placeholder="At least 6 characters" required autoFocus />
@@ -222,17 +222,13 @@ export default function Register() {
                 {googleStrength.tips.map((t, i) => <div key={i} className="pw-tip">💡 {t}</div>)}
               </div>
             )}
-            {(!googlePw || googleStrength.score < 3) && (
-              <button type="button" className="pw-suggest-btn" onClick={useSuggestedGoogle}>
-                🔑 {copied ? "Copied!" : "Suggest a strong password"}
-              </button>
-            )}
+
           </label>
 
           <label>
             Confirm password
             <div className="auth-input-wrap">
-              <span className="auth-input-icon">🔒</span>
+              <span className="auth-input-icon"></span>
               <input type={showGooglePw ? "text" : "password"} value={googlePwConfirm}
                 onChange={e => setGooglePwConfirm(e.target.value)}
                 placeholder="Repeat your password" required />
@@ -315,7 +311,7 @@ export default function Register() {
         <label>
           Password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">🔒</span>
+            <span className="auth-input-icon"></span>
             <input name="password" type={showPw ? "text" : "password"} value={form.password}
               onChange={handleChange} placeholder="Create a strong password" required />
             <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
@@ -338,17 +334,13 @@ export default function Register() {
               {strength.tips.map((t, i) => <div key={i} className="pw-tip">💡 {t}</div>)}
             </div>
           )}
-          {(!form.password || strength.score < 3) && (
-            <button type="button" className="pw-suggest-btn" onClick={useSuggested}>
-              🔑 {copied ? "Copied to clipboard!" : "Suggest a strong password"}
-            </button>
-          )}
+
         </label>
 
         <label>
           Confirm password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">🔒</span>
+            <span className="auth-input-icon"></span>
             <input name="confirm" type={showPw ? "text" : "password"} value={form.confirm}
               onChange={handleChange} placeholder="Repeat your password" required />
           </div>
