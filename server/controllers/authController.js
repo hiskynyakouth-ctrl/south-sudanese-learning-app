@@ -27,6 +27,35 @@ exports.register = async (req, res) => {
   }
 };
 
+// ── Google register / login ───────────────────────────────
+exports.googleAuth = async (req, res) => {
+  const { name, email, password, googleId, picture } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ error: "Name, email, and password are required." });
+  try {
+    // Check if user already exists
+    const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
+    if (existing.rows.length > 0) {
+      // Return existing user (login)
+      const user = existing.rows[0];
+      const safe = { id: user.id, name: user.name, email: user.email, role: user.role };
+      return res.json({ message: "Login successful.", token: sign(safe), user: safe });
+    }
+    // New user — create account
+    const hash = await bcrypt.hash(password, 10);
+    const r = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, role",
+      [name, email.toLowerCase(), hash]
+    );
+    const user = r.rows[0];
+    res.status(201).json({ message: "Account created.", token: sign(user), user });
+  } catch (err) {
+    if (err.code === "23505")
+      return res.status(409).json({ error: "An account with this email already exists." });
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)

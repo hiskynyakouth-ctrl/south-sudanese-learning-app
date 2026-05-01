@@ -73,7 +73,35 @@ export const register = async (name, email, password, phone = "") => {
   return { token: makeToken(safeUser), user: safeUser };
 };
 
-// ── Reset password ────────────────────────────────────────
+// ── Google register / login ───────────────────────────────
+export const googleRegister = async (name, email, password, googleId, picture) => {
+  // 1. Try backend
+  try {
+    const res = await authApi.post('/auth/google', { name, email, password, googleId, picture });
+    // Also save to localStorage as backup
+    const users = getLocalUsers();
+    if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+      saveLocalUsers([...users, { id: res.data.user.id, name, email, password, role: "student", googleId, loginMethod: "google", picture }]);
+    }
+    return res.data;
+  } catch (err) {
+    if (err.response?.status === 409) throw err;
+    if (err.response && err.response.status >= 500) throw err;
+    // Backend offline — fall through to localStorage
+  }
+
+  // 2. Local storage fallback
+  const users = getLocalUsers();
+  const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (existing) {
+    const safeUser = { id: existing.id, name: existing.name, email: existing.email, role: existing.role || "student" };
+    return { token: makeToken(safeUser), user: safeUser };
+  }
+  const user = { id: Date.now(), name, email, password, role: "student", googleId, loginMethod: "google", picture };
+  saveLocalUsers([...users, user]);
+  const safeUser = { id: user.id, name, email, role: "student" };
+  return { token: makeToken(safeUser), user: safeUser };
+};
 export const resetPassword = (email, newPassword) => {
   const users = getLocalUsers();
   const idx = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase());

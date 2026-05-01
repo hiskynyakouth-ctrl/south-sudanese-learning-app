@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { login } from "../services/authService";
+import { login as loginService } from "../services/authService";
 import { signInWithGoogle } from "../services/googleAuth";
+import { googleRegister } from "../services/authService";
 import { emailError } from "../utils/validateEmail";
 
 export default function Login() {
@@ -26,7 +27,7 @@ export default function Login() {
     if (emailErr) { setError(emailErr); return; }
     try {
       setLoading(true);
-      const data = await login(form.email, form.password);
+      const data = await loginService(form.email, form.password);
       saveSession({ token: data.token, user: data.user });
       navigate(from, { replace: true });
     } catch (err) {
@@ -43,23 +44,13 @@ export default function Login() {
       const profile = await signInWithGoogle();
       const KEY = "ss_users";
       const users = JSON.parse(localStorage.getItem(KEY) || "[]");
-      const existing = users.find(u => u.email === profile.email);
-
-      if (!existing) {
+      const existing = users.find(u => u.email === profile.email);      if (!existing) {
         if (profile.password) {
-          // New user with password from popup — create account and log in
-          const newUser = {
-            id: Date.now(), name: profile.name, email: profile.email,
-            password: profile.password, role: "student",
-            googleId: profile.googleId, loginMethod: "google", picture: profile.picture,
-          };
-          localStorage.setItem(KEY, JSON.stringify([...users, newUser]));
-          const safeUser = { id: newUser.id, name: newUser.name, email: newUser.email,
-            role: "student", picture: profile.picture, loginMethod: "google" };
-          saveSession({ token: `local_${newUser.id}_${Date.now()}`, user: safeUser });
+          // New user — save to DB + localStorage
+          const data = await googleRegister(profile.name, profile.email, profile.password, profile.googleId, profile.picture);
+          saveSession({ token: data.token, user: { ...data.user, picture: profile.picture, loginMethod: "google" } });
           navigate(from, { replace: true });
         } else {
-          // Real Google OAuth new user — send to Register
           navigate("/register", { state: { googleProfile: profile } });
         }
         return;
