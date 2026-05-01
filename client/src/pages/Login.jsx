@@ -43,17 +43,18 @@ export default function Login() {
       const profile = await signInWithGoogle();
       const KEY = "ss_users";
       const users = JSON.parse(localStorage.getItem(KEY) || "[]");
-      let user = users.find(u => u.email === profile.email);
-      if (!user) {
-        // Auto-register if first time
-        user = { id: Date.now(), name: profile.name, email: profile.email,
-          password: `google_${profile.googleId}`, role: "student",
-          googleId: profile.googleId, loginMethod: "google" };
-        localStorage.setItem(KEY, JSON.stringify([...users, user]));
+      const existing = users.find(u => u.email === profile.email);
+
+      if (!existing) {
+        // New user — send to Register to set a password first
+        navigate("/register", { state: { googleProfile: profile } });
+        return;
       }
-      const safeUser = { id: user.id, name: user.name, email: user.email,
-        role: user.role || "student", picture: profile.picture, loginMethod: "google" };
-      saveSession({ token: `local_${user.id}_${Date.now()}`, user: safeUser });
+
+      // Returning user — log straight in
+      const safeUser = { id: existing.id, name: existing.name, email: existing.email,
+        role: existing.role || "student", picture: profile.picture, loginMethod: "google" };
+      saveSession({ token: `local_${existing.id}_${Date.now()}`, user: safeUser });
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.message || "Google login failed. Please try again.");

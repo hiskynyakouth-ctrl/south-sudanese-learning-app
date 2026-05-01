@@ -17,20 +17,18 @@ const checkStrength = (pw) => {
   if (/[0-9]/.test(pw)) score++; else tips.push("Add a number (0-9)");
   if (/[^A-Za-z0-9]/.test(pw)) score++; else tips.push("Add a special character (!@#$%)");
   if (/(.)\1{2,}/.test(pw)) { score--; tips.push("Avoid repeating characters (aaa, 111)"); }
-
   const levels = [
-    { label: "Too weak",  color: "#ef5350" },
-    { label: "Weak",      color: "#ff7043" },
-    { label: "Fair",      color: "#ffa726" },
-    { label: "Good",      color: "#66bb6a" },
-    { label: "Strong",    color: "#26a69a" },
+    { label: "Too weak",    color: "#ef5350" },
+    { label: "Weak",        color: "#ff7043" },
+    { label: "Fair",        color: "#ffa726" },
+    { label: "Good",        color: "#66bb6a" },
+    { label: "Strong",      color: "#26a69a" },
     { label: "Very strong", color: "#1565c0" },
   ];
   const s = Math.max(0, Math.min(score, 5));
   return { score: s, ...levels[s], tips };
 };
 
-// ── Generate strong password ──────────────────────────────
 const generatePassword = () => {
   const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
   const lower = "abcdefghjkmnpqrstuvwxyz";
@@ -57,13 +55,22 @@ const GoogleIcon = () => (
 export default function Register() {
   const navigate = useNavigate();
   const { saveSession } = useAuth();
+
+  // Email/phone form state
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Google set-password step
+  const [googleProfile, setGoogleProfile] = useState(null); // holds Google profile while waiting for password
+  const [googlePw, setGooglePw] = useState("");
+  const [googlePwConfirm, setGooglePwConfirm] = useState("");
+  const [showGooglePw, setShowGooglePw] = useState(false);
+
   const strength = checkStrength(form.password);
+  const googleStrength = checkStrength(googlePw);
   const handleChange = (e) => setForm((c) => ({ ...c, [e.target.name]: e.target.value }));
 
   const useSuggested = () => {
@@ -73,6 +80,13 @@ export default function Register() {
     navigator.clipboard?.writeText(pw).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
 
+  const useSuggestedGoogle = () => {
+    const pw = generatePassword();
+    setGooglePw(pw); setGooglePwConfirm(pw); setShowGooglePw(true);
+    navigator.clipboard?.writeText(pw).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  };
+
+  // ── Email/phone register ──────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -93,29 +107,162 @@ export default function Register() {
     } finally { setLoading(false); }
   };
 
+  // ── Step 1: Google button clicked — get profile ───────
   const handleGoogle = async () => {
     setError(""); setLoading(true);
     try {
       const profile = await signInWithGoogle();
       const KEY = "ss_users";
       const users = JSON.parse(localStorage.getItem(KEY) || "[]");
-      let user = users.find(u => u.email === profile.email);
-      if (!user) {
-        // Save Google user — password is their Google ID (they never need to type it)
-        user = { id: Date.now(), name: profile.name, email: profile.email,
-          password: `google_${profile.googleId}`, role: "student",
-          googleId: profile.googleId, loginMethod: "google" };
-        localStorage.setItem(KEY, JSON.stringify([...users, user]));
+      const existing = users.find(u => u.email === profile.email);
+
+      if (existing) {
+        // Returning Google user — log straight in
+        const safeUser = { id: existing.id, name: existing.name, email: existing.email,
+          role: existing.role || "student", picture: profile.picture, loginMethod: "google" };
+        saveSession({ token: `local_${existing.id}_${Date.now()}`, user: safeUser });
+        navigate("/");
+      } else {
+        // New user — ask them to set a platform password
+        setGoogleProfile(profile);
       }
-      const safeUser = { id: user.id, name: user.name, email: user.email,
-        role: user.role || "student", picture: profile.picture, loginMethod: "google" };
-      saveSession({ token: `local_${user.id}_${Date.now()}`, user: safeUser });
-      navigate("/");
     } catch (err) {
       setError(err.message || "Google sign-up failed.");
     } finally { setLoading(false); }
   };
 
+  // ── Step 2: Save Google user with their chosen password ─
+  const handleGoogleSetPassword = (e) => {
+    e.preventDefault();
+    setError("");
+    if (googlePw.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (googlePw !== googlePwConfirm) { setError("Passwords do not match."); return; }
+    if (googleStrength.score < 2) { setError("Password is too weak. Please make it stronger."); return; }
+
+    const KEY = "ss_users";
+    const users = JSON.parse(localStorage.getItem(KEY) || "[]");
+    const newUser = {
+      id: Date.now(),
+      name: googleProfile.name,
+      email: googleProfile.email,
+      password: googlePw,           // real password they chose
+      role: "student",
+      googleId: googleProfile.googleId,
+      loginMethod: "google",
+      picture: googleProfile.picture,
+    };
+    localStorage.setItem(KEY, JSON.stringify([...users, newUser]));
+
+    const safeUser = { id: newUser.id, name: newUser.name, email: newUser.email,
+      role: "student", picture: googleProfile.picture, loginMethod: "google" };
+    saveSession({ token: `local_${newUser.id}_${Date.now()}`, user: safeUser });
+    navigate("/");
+  };
+
+  // ══════════════════════════════════════════════════════
+  // RENDER: Google set-password step
+  // ══════════════════════════════════════════════════════
+  if (googleProfile) {
+    return (
+      <div className="auth-card">
+        <div className="auth-logo">
+          <img src="https://flagcdn.com/w80/ss.png" alt="South Sudan" style={{ width: 56, borderRadius: 8 }} />
+          <div>
+            <strong>South Sudan E-Learning</strong>
+            <small>One last step</small>
+          </div>
+        </div>
+
+        {/* Google profile preview */}
+        <div className="google-profile-banner">
+          {googleProfile.picture
+            ? <img src={googleProfile.picture} alt={googleProfile.name} className="google-profile-pic" />
+            : <div className="google-profile-initial">{googleProfile.name[0]}</div>}
+          <div>
+            <strong>{googleProfile.name}</strong>
+            <small>{googleProfile.email}</small>
+          </div>
+        </div>
+
+        <h1>Set Your Password 🔐</h1>
+        <p>
+          Create a platform password for <strong>{googleProfile.email}</strong>.
+          You'll use this to log in with email if Google is unavailable.
+        </p>
+
+        <form className="auth-form" onSubmit={handleGoogleSetPassword}>
+          <label>
+            Create a password
+            <div className="auth-input-wrap">
+              <span className="auth-input-icon">🔒</span>
+              <input type={showGooglePw ? "text" : "password"} value={googlePw}
+                onChange={e => setGooglePw(e.target.value)}
+                placeholder="At least 6 characters" required autoFocus />
+              <button type="button" className="auth-eye" onClick={() => setShowGooglePw(v => !v)}>
+                {showGooglePw ? "🙈" : "👁️"}
+              </button>
+            </div>
+
+            {/* Strength meter */}
+            {googlePw && (
+              <div className="pw-strength">
+                <div className="pw-strength-bar">
+                  {[0,1,2,3,4].map(i => (
+                    <div key={i} className="pw-bar-seg"
+                      style={{ background: i < googleStrength.score ? googleStrength.color : "var(--line)" }} />
+                  ))}
+                </div>
+                <span className="pw-strength-label" style={{ color: googleStrength.color }}>
+                  {googleStrength.label}
+                </span>
+              </div>
+            )}
+            {googlePw && googleStrength.tips.length > 0 && (
+              <div className="pw-tips">
+                {googleStrength.tips.map((t, i) => <div key={i} className="pw-tip">💡 {t}</div>)}
+              </div>
+            )}
+            {(!googlePw || googleStrength.score < 3) && (
+              <button type="button" className="pw-suggest-btn" onClick={useSuggestedGoogle}>
+                🔑 {copied ? "Copied!" : "Suggest a strong password"}
+              </button>
+            )}
+          </label>
+
+          <label>
+            Confirm password
+            <div className="auth-input-wrap">
+              <span className="auth-input-icon">🔒</span>
+              <input type={showGooglePw ? "text" : "password"} value={googlePwConfirm}
+                onChange={e => setGooglePwConfirm(e.target.value)}
+                placeholder="Repeat your password" required />
+            </div>
+            {googlePwConfirm && googlePw !== googlePwConfirm && (
+              <span className="auth-email-warning">❌ Passwords do not match</span>
+            )}
+            {googlePwConfirm && googlePw === googlePwConfirm && googlePwConfirm.length > 0 && (
+              <span style={{ color:"#2e7d32", fontSize:"0.78rem", fontWeight:700 }}>✅ Passwords match</span>
+            )}
+          </label>
+
+          {error && <div className="message-card error">{error}</div>}
+
+          <button type="submit" className="primary-button auth-submit-btn">
+            Complete Registration →
+          </button>
+          <button type="button" className="ghost-button"
+            style={{ width:"100%", marginTop:4 }}
+            onClick={() => { setGoogleProfile(null); setGooglePw(""); setGooglePwConfirm(""); setError(""); }}>
+            ← Use a different account
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════
+  // RENDER: Normal register form
+  // ══════════════════════════════════════════════════════
   return (
     <div className="auth-card">
       <div className="auth-logo">
@@ -129,7 +276,6 @@ export default function Register() {
       <h1>Join the platform 🎓</h1>
       <p>Register to save your progress and take quizzes.</p>
 
-      {/* Google sign-up first */}
       <button type="button" className="auth-google-btn" onClick={handleGoogle} disabled={loading}>
         <GoogleIcon /> Continue with Google
       </button>
@@ -146,7 +292,7 @@ export default function Register() {
         <label>
           Email address
           <div className="auth-input-wrap">
-            <span className="auth-input-icon"></span>
+            <span className="auth-input-icon">✉️</span>
             <input name="email" type="email" value={form.email} onChange={handleChange}
               placeholder="your@gmail.com" required />
           </div>
@@ -160,30 +306,22 @@ export default function Register() {
               value={form.countryCode || "+211"}
               onChange={v => setForm(f => ({ ...f, countryCode: v }))}
             />
-            <input
-              name="phone"
-              type="tel"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="xxxxxxxx"
-              className="phone-number-input"
-            />
+            <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+              placeholder="912 345 678" className="phone-number-input" />
           </div>
-          <small className="auth-hint">Your phone number will be used for SMS password reset only.</small>
+          <small className="auth-hint">Used for SMS password reset only.</small>
         </label>
 
         <label>
           Password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon"></span>
+            <span className="auth-input-icon">🔒</span>
             <input name="password" type={showPw ? "text" : "password"} value={form.password}
               onChange={handleChange} placeholder="Create a strong password" required />
             <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
               {showPw ? "🙈" : "👁️"}
             </button>
           </div>
-
-          {/* Strength meter */}
           {form.password && (
             <div className="pw-strength">
               <div className="pw-strength-bar">
@@ -192,23 +330,17 @@ export default function Register() {
                     style={{ background: i < strength.score ? strength.color : "var(--line)" }} />
                 ))}
               </div>
-              <span className="pw-strength-label" style={{ color: strength.color }}>
-                {strength.label}
-              </span>
+              <span className="pw-strength-label" style={{ color: strength.color }}>{strength.label}</span>
             </div>
           )}
-
-          {/* Tips */}
           {form.password && strength.tips.length > 0 && (
             <div className="pw-tips">
               {strength.tips.map((t, i) => <div key={i} className="pw-tip">💡 {t}</div>)}
             </div>
           )}
-
-          {/* Suggest strong password */}
           {(!form.password || strength.score < 3) && (
             <button type="button" className="pw-suggest-btn" onClick={useSuggested}>
-               {copied ? "Copied to clipboard!" : "Suggest a strong password"}
+              🔑 {copied ? "Copied to clipboard!" : "Suggest a strong password"}
             </button>
           )}
         </label>
@@ -216,7 +348,7 @@ export default function Register() {
         <label>
           Confirm password
           <div className="auth-input-wrap">
-            <span className="auth-input-icon"></span>
+            <span className="auth-input-icon">🔒</span>
             <input name="confirm" type={showPw ? "text" : "password"} value={form.confirm}
               onChange={handleChange} placeholder="Repeat your password" required />
           </div>
