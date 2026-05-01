@@ -4678,3 +4678,14 @@ iframe {
 /* Instagram & LinkedIn follow dot colors */
 .home-follow-dot.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
 .home-follow-dot.linkedin  { background: #0a66c2; }
+
+/* ── Dark mode: More Resources cards (submod-bottom-card) ── */
+[data-theme="dark"] .submod-bottom-card.green  { background: rgba(46,125,50,0.18); }
+[data-theme="dark"] .submod-bottom-card.red    { background: rgba(230,81,0,0.18); }
+[data-theme="dark"] .submod-bottom-card.blue   { background: rgba(21,101,192,0.18); }
+[data-theme="dark"] .submod-bottom-card.orange { background: rgba(198,40,40,0.18); }
+[data-theme="dark"] .submod-bottom-card.teal   { background: rgba(0,131,143,0.18); }
+[data-theme="dark"] .submod-bottom-card.purple { background: rgba(106,27,154,0.18); }
+
+[data-theme="dark"] .submod-bottom-card strong { color: var(--ink); }
+[data-theme="dark"] .submod-bottom-card p      { color: var(--muted); }
