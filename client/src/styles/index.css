@@ -4407,3 +4407,274 @@ iframe {
 .fp-not-configured code { background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem; }
 [data-theme="dark"] .fp-not-configured { background: rgba(230,81,0,0.1); border-color: rgba(230,81,0,0.3); }
 [data-theme="dark"] .fp-not-configured strong { color: #ffab40; }
+
+
+/* ══════════════════════════════════════════════
+   PHONE NUMBER INPUT WITH COUNTRY CODE
+══════════════════════════════════════════════ */
+.phone-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.phone-country-select {
+  flex-shrink: 0;
+  padding: 12px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: 0.18s ease;
+  min-width: 155px;
+  max-width: 175px;
+}
+.phone-country-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15,107,91,0.12);
+}
+
+.phone-number-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  font-size: 0.95rem;
+  outline: none;
+  transition: 0.18s ease;
+  min-width: 0;
+}
+.phone-number-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15,107,91,0.12);
+}
+.phone-number-input::placeholder { color: var(--muted); }
+
+/* Dark mode */
+[data-theme="dark"] .phone-country-select,
+[data-theme="dark"] .phone-number-input {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .phone-country-select option {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Auth form selects (general) */
+.auth-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  font-size: 0.95rem;
+  outline: none;
+  transition: 0.18s ease;
+  cursor: pointer;
+}
+.auth-form select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15,107,91,0.12);
+}
+[data-theme="dark"] .auth-form select {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+/* ── Responsive phone input ─────────────────────────────── */
+@media (max-width: 480px) {
+  .phone-input-row { flex-direction: column; }
+  .phone-country-select { max-width: 100%; min-width: 0; width: 100%; }
+}
+
+
+/* ══════════════════════════════════════════════
+   COUNTRY CODE PICKER
+══════════════════════════════════════════════ */
+.ccp-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ccp-trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.18s ease;
+  white-space: nowrap;
+  min-width: 90px;
+}
+.ccp-trigger:hover {
+  border-color: var(--primary);
+  background: rgba(15,107,91,0.04);
+}
+
+.ccp-flag {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.ccp-code {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ccp-chevron {
+  color: var(--muted);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+.ccp-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.ccp-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(18,32,51,0.14);
+  min-width: 210px;
+  overflow: hidden;
+  animation: ccpFadeIn 0.15s ease;
+}
+
+@keyframes ccpFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ccp-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.13s ease;
+  color: var(--ink);
+}
+.ccp-option:hover {
+  background: rgba(15,107,91,0.07);
+}
+.ccp-option.selected {
+  background: rgba(15,107,91,0.1);
+  color: var(--primary);
+}
+
+.ccp-option-code {
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 38px;
+}
+.ccp-option-name {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ccp-option.selected .ccp-option-name {
+  color: var(--primary);
+}
+
+/* Dark mode */
+[data-theme="dark"] .ccp-trigger {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .ccp-dropdown {
+  background: var(--surface);
+  border-color: var(--line);
+}
+[data-theme="dark"] .ccp-option:hover {
+  background: rgba(78,204,163,0.1);
+}
+[data-theme="dark"] .ccp-option.selected {
+  background: rgba(78,204,163,0.12);
+}
+[data-theme="dark"] .ccp-option-name {
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ccp-dropdown { min-width: 180px; }
+}
+
+
+/* ══════════════════════════════════════════════
+   FOLLOW / SOCIAL SECTION (Home)
+══════════════════════════════════════════════ */
+.home-follow-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 0 8px;
+}
+
+.home-follow-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.home-follow-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-follow-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  flex-shrink: 0;
+}
+.home-follow-dot:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+}
+
+.home-follow-dot.facebook { background: #1877f2; }
+.home-follow-dot.whatsapp { background: #25d366; }
+.home-follow-dot.tiktok   { background: #010101; }
+
+/* Instagram & LinkedIn follow dot colors */
+.home-follow-dot.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.home-follow-dot.linkedin  { background: #0a66c2; }

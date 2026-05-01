@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Admin from "./pages/Admin";
 import ChapterDetails from "./pages/ChapterDetails";
 import Chapters from "./pages/Chapters";
-import ChatAI from "./pages/ChatAI";
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import Login from "./pages/Login";

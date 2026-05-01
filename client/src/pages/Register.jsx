@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { register } from "../services/authService";
 import { signInWithGoogle } from "../services/googleAuth";
 import { emailError, emailWarning } from "../utils/validateEmail";
+import CountryCodePicker from "../components/CountryCodePicker";
 
 // ── Password strength checker ─────────────────────────────
 const checkStrength = (pw) => {
@@ -83,7 +84,8 @@ export default function Register() {
     if (strength.score < 2) { setError("Password is too weak. Use the suggestion below or make it stronger."); return; }
     try {
       setLoading(true);
-      const data = await register(form.name, form.email, form.password, form.phone);
+      const fullPhone = form.phone ? (form.countryCode || "+211") + form.phone.replace(/^0/, "") : "";
+      const data = await register(form.name, form.email, form.password, fullPhone);
       saveSession({ token: data.token, user: data.user });
       navigate("/");
     } catch (err) {
@@ -153,12 +155,21 @@ export default function Register() {
 
         <label>
           Phone Number (for SMS verification)
-          <div className="auth-input-wrap">
-            <span className="auth-input-icon"></span>
-            <input name="phone" type="tel" value={form.phone} onChange={handleChange}
-              placeholder="+251 912 345 678" />
+          <div className="phone-input-row">
+            <CountryCodePicker
+              value={form.countryCode || "+211"}
+              onChange={v => setForm(f => ({ ...f, countryCode: v }))}
+            />
+            <input
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="xxxxxxxx"
+              className="phone-number-input"
+            />
           </div>
-          <small className="auth-hint">Include country code (e.g. +211 for South Sudan). Used for SMS password reset.</small>
+          <small className="auth-hint">Your phone number will be used for SMS password reset only.</small>
         </label>
 
         <label>

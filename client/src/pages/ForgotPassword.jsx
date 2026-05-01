@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { genCode, sendEmailCode, sendSMSCode } from "../services/sendCode";
+import CountryCodePicker from "../components/CountryCodePicker";
 
 const LOCAL_KEY = "ss_users";
 const getLocalUsers = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]"); } catch { return []; } };
@@ -12,6 +13,7 @@ export default function ForgotPassword() {
   const [step, setStep] = useState(1);
   const [method, setMethod] = useState("email");
   const [contact, setContact] = useState("");
+  const [countryCode, setCountryCode] = useState("+211");
   const [sentCode, setSentCode] = useState("");
   const [delivered, setDelivered] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState("");
@@ -34,9 +36,11 @@ export default function ForgotPassword() {
     let result = { ok: false };
 
     if (method === "email") {
-      result = await sendEmailCode(contact, code);
+      result = await sendEmailCode(contact.trim(), code);
     } else {
-      result = await sendSMSCode(contact, code);
+      // Combine country code + phone number (strip leading 0 from local number)
+      const fullPhone = countryCode + contact.trim().replace(/^0/, "");
+      result = await sendSMSCode(fullPhone, code);
     }
 
     if (result.ok) {
@@ -102,9 +106,10 @@ export default function ForgotPassword() {
   const resend = async () => {
     setLoading(true);
     const code = genCode();
+    const fullPhone = countryCode + contact.trim().replace(/^0/, "");
     const result = method === "email"
-      ? await sendEmailCode(contact, code)
-      : await sendSMSCode(contact, code);
+      ? await sendEmailCode(contact.trim(), code)
+      : await sendSMSCode(fullPhone, code);
 
     if (result.ok) {
       setSentCode(code); setDelivered(true);
@@ -169,12 +174,14 @@ export default function ForgotPassword() {
             ) : (
               <label>
                 Phone number
-                <div className="auth-input-wrap">
-                  <span className="auth-input-icon">📱</span>
+                <div className="phone-input-row">
+                  <CountryCodePicker
+                    value={countryCode}
+                    onChange={setCountryCode}
+                  />
                   <input type="tel" value={contact} onChange={e => setContact(e.target.value)}
-                    placeholder="+211 912 345 678" required autoFocus />
+                    placeholder="912 345 678" className="phone-number-input" required autoFocus />
                 </div>
-                <small className="auth-hint">Include country code (e.g. +211 for South Sudan)</small>
               </label>
             )}
             {error && <div className="message-card error">{error}</div>}
@@ -195,7 +202,7 @@ export default function ForgotPassword() {
           <div className="fp-email-sent">
             <span>{method === "email" ? "📧" : "📱"}</span>
             <div>
-              <strong>Code sent to {contact}</strong>
+              <strong>Code sent to {method === "sms" ? countryCode + " " + contact : contact}</strong>
               <p>
                 Check your {method === "email" ? "inbox (and spam folder)" : "SMS messages"}.
                 Enter the 6-digit code below. Valid for 10 minutes.
@@ -233,13 +240,13 @@ export default function ForgotPassword() {
       {step === 3 && (
         <>
           <span className="eyebrow">Step 3 of 3</span>
-          <h1>Set New Password 🔒</h1>
+          <h1>Set New Password </h1>
           <p>Create a new password for <strong>{contact}</strong></p>
           <form className="auth-form" onSubmit={handleReset}>
             <label>
               New Password
               <div className="auth-input-wrap">
-                <span className="auth-input-icon">🔒</span>
+                <span className="auth-input-icon"></span>
                 <input type={showPw ? "text" : "password"} value={newPassword}
                   onChange={e => setNewPassword(e.target.value)} placeholder="At least 6 characters" required autoFocus />
                 <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
@@ -250,7 +257,7 @@ export default function ForgotPassword() {
             <label>
               Confirm New Password
               <div className="auth-input-wrap">
-                <span className="auth-input-icon">🔒</span>
+                <span className="auth-input-icon"></span>
                 <input type={showPw ? "text" : "password"} value={confirm}
                   onChange={e => setConfirm(e.target.value)} placeholder="Repeat new password" required />
               </div>

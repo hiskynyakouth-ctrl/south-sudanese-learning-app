@@ -80,7 +80,7 @@ export default function Textbooks() {
 
   // Filter: if came from a subject card, show only that subject
   const filtered = books.filter(b => {
-    const gradeMatch = activeGrade === "All" || b.grade === activeGrade;
+    const gradeMatch = activeGrade === "All" || (b.grade || "") === activeGrade;
     const subjectMatch = !urlSubject || (b.subject || "").toLowerCase() === urlSubject.toLowerCase();
     return gradeMatch && subjectMatch;
   });

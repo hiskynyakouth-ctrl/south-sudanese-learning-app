@@ -10,32 +10,6 @@ router.get("/me", authMiddleware, me);
 
 router.post("/reset-password", require("../controllers/authController").resetPassword);
 
-router.post("/send-sms", async (req, res) => {
-  const { phone, code } = req.body;
-  if (!phone || !code) return res.status(400).json({ error: "Phone and code required." });
-  
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone  = process.env.TWILIO_PHONE;
-  
-  if (!accountSid || accountSid === "ACxxxxxxxxxxxxxxx") {
-    return res.status(503).json({ error: "SMS not configured. Add Twilio credentials to server/.env" });
-  }
-  
-  try {
-    const twilio = require("twilio")(accountSid, authToken);
-    await twilio.messages.create({
-      body: "Your South Sudan E-Learning reset code: " + code + " (valid 10 min)",
-      from: fromPhone,
-      to: phone,
-    });
-    res.json({ message: "SMS sent." });
-  } catch (err) {
-    res.status(500).json({ error: "SMS failed: " + err.message });
-  }
-});
-
-
 // ── Send verification code via Email (Nodemailer/Gmail) ───
 router.post("/send-email", async (req, res) => {
   const { email, code } = req.body;
@@ -46,6 +20,10 @@ router.post("/send-email", async (req, res) => {
 
   if (!gmailUser || gmailUser === "your@gmail.com") {
     return res.status(503).json({ error: "Email not configured. Add GMAIL_USER and GMAIL_APP_PASSWORD to server/.env" });
+  }
+
+  if (!gmailPass || gmailPass === "xxxx xxxx xxxx xxxx") {
+    return res.status(503).json({ error: "Gmail App Password not set. Go to myaccount.google.com/apppasswords and add it to server/.env as GMAIL_APP_PASSWORD" });
   }
 
   try {
