@@ -46,8 +46,22 @@ export default function Login() {
       const existing = users.find(u => u.email === profile.email);
 
       if (!existing) {
-        // New user — send to Register to set a password first
-        navigate("/register", { state: { googleProfile: profile } });
+        if (profile.password) {
+          // New user with password from popup — create account and log in
+          const newUser = {
+            id: Date.now(), name: profile.name, email: profile.email,
+            password: profile.password, role: "student",
+            googleId: profile.googleId, loginMethod: "google", picture: profile.picture,
+          };
+          localStorage.setItem(KEY, JSON.stringify([...users, newUser]));
+          const safeUser = { id: newUser.id, name: newUser.name, email: newUser.email,
+            role: "student", picture: profile.picture, loginMethod: "google" };
+          saveSession({ token: `local_${newUser.id}_${Date.now()}`, user: safeUser });
+          navigate(from, { replace: true });
+        } else {
+          // Real Google OAuth new user — send to Register
+          navigate("/register", { state: { googleProfile: profile } });
+        }
         return;
       }
 

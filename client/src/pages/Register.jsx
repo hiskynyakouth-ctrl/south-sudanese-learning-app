@@ -123,8 +123,22 @@ export default function Register() {
         saveSession({ token: `local_${existing.id}_${Date.now()}`, user: safeUser });
         navigate("/");
       } else {
-        // New user — ask them to set a platform password
-        setGoogleProfile(profile);
+        // New user — password already collected in the popup
+        if (profile.password) {
+          const newUser = {
+            id: Date.now(), name: profile.name, email: profile.email,
+            password: profile.password, role: "student",
+            googleId: profile.googleId, loginMethod: "google", picture: profile.picture,
+          };
+          localStorage.setItem(KEY, JSON.stringify([...users, newUser]));
+          const safeUser = { id: newUser.id, name: newUser.name, email: newUser.email,
+            role: "student", picture: profile.picture, loginMethod: "google" };
+          saveSession({ token: `local_${newUser.id}_${Date.now()}`, user: safeUser });
+          navigate("/");
+        } else {
+          // Real Google OAuth — ask for password on next step
+          setGoogleProfile(profile);
+        }
       }
     } catch (err) {
       setError(err.message || "Google sign-up failed.");
