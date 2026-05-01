@@ -103,19 +103,6 @@ export default function Home() {
           <h2>Choose Your Class</h2>
           <p>Each class has full subject modules, notes, videos and quizzes.</p>
         </div>
-        {!isAuthenticated && (
-          <div className="home-login-prompt">
-            <span></span>
-            <div>
-              <strong>Login required to access subjects</strong>
-              <p>Create a free account or login to start learning.</p>
-            </div>
-            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-              <Link to="/login" className="primary-link">Login</Link>
-              <Link to="/register" className="home-register-link">Register Free</Link>
-            </div>
-          </div>
-        )}
         <div className="home-class-grid">
           {classes.map((c) => (
             <Link key={c.id} to={isAuthenticated ? `/streams/${c.id}` : "/login"}
@@ -182,7 +169,7 @@ export default function Home() {
         <span className="eyebrow">About This Platform</span>
         <p>
           This platform supports South Sudan secondary school students from Senior 1 to Senior 4
-          with structured learning materials — notes, videos, quizzes, and AI-powered assistance.
+          with structured learning materials — notes, videos, quizzes.
           Subjects are divided into Natural Sciences and Social Sciences streams matching the
           official South Sudan Ministry of Education curriculum.
         </p>

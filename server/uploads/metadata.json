@@ -1,4 +1,15 @@
 {
-  "textbooks": [],
+  "textbooks": [
+    {
+      "filename": "1777664807071_ICT_SB_2.pdf",
+      "url": "/uploads/textbooks/1777664807071_ICT_SB_2.pdf",
+      "originalName": "ICT SB 2.pdf",
+      "size": 9997099,
+      "subject": "Computer Studies",
+      "grade": "Senior 2",
+      "description": "Cover full Computer Studies",
+      "uploadedAt": "2026-05-01T19:46:47.304Z"
+    }
+  ],
   "papers": []
 }

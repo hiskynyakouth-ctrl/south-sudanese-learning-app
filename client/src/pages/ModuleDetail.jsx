@@ -37,7 +37,7 @@ const getQA = (subject, title) => {
     { q: `What is the main idea of ${title}?`, a: `${title} is a core topic in ${subject} covering fundamental concepts needed for the South Sudan secondary curriculum.` },
     { q: `How does ${title} apply in real life?`, a: `The concepts in ${title} are used in everyday life and help develop critical thinking skills valuable in any career.` },
     { q: "What are the most important points to remember?", a: "Focus on key definitions, main principles, and how to apply concepts to solve problems." },
-    { q: "How should I prepare for the exam on this topic?", a: "Re-read notes, write a summary from memory, complete the quiz, and ask the AI tutor to explain anything difficult." },
+    { q: "How should I prepare for the exam on this topic?", a: "Re-read notes, write a summary from memory, complete the quiz." },
   ];
 };
 
@@ -223,8 +223,7 @@ export default function ModuleDetail() {
                 <ul>
                   <li>Learn all key definitions by heart</li>
                   <li>Practice past paper questions</li>
-                  <li>Use the AI tutor for difficult parts</li>
-                  <li>Review this module the night before</li>
+                  <li>Review this module and textbooks the night before</li>
                 </ul>
               </div>
             </div>
