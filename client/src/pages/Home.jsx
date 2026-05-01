@@ -157,7 +157,7 @@ export default function Home() {
 
       {/* ── CONTACT / FOLLOW ── */}
       <section className="home-follow-section">
-        <small className="home-follow-label"></small>
+        <small className="home-follow-label">Follow Me Here</small>
         <div className="home-follow-row">
 
           {/* Facebook */}

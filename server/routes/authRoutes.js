@@ -68,7 +68,7 @@ router.post("/send-sms", async (req, res) => {
   const { phone, code } = req.body;
   if (!phone || !code) return res.status(400).json({ error: "Phone and code required." });
 
-  // Try Twilio first
+  // Try Twilio first (if configured)
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken  = process.env.TWILIO_AUTH_TOKEN;
   const fromPhone  = process.env.TWILIO_PHONE;
@@ -84,20 +84,25 @@ router.post("/send-sms", async (req, res) => {
       return res.json({ message: "SMS sent via Twilio.", method: "twilio" });
     } catch (err) {
       console.error("Twilio error:", err.message);
+      // fall through to TextBelt
     }
   }
 
-  // Fallback: TextBelt (1 free SMS/day, no CORS issue from backend)
+  // Fallback: TextBelt free tier (1 SMS/day per IP — works without signup)
   try {
     const https = require("https");
-    const params = new URLSearchParams({ phone, message: "South Sudan E-Learning reset code: " + code + " (valid 10 min). Do not share.", key: "textbelt" });
+    const message = "South Sudan E-Learning reset code: " + code + " (valid 10 min). Do not share.";
+    const params = new URLSearchParams({ phone, message, key: "textbelt" });
     const postData = params.toString();
 
     const options = {
       hostname: "textbelt.com",
       path: "/text",
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(postData) },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": Buffer.byteLength(postData),
+      },
     };
 
     const tbReq = https.request(options, (tbRes) => {
@@ -106,12 +111,27 @@ router.post("/send-sms", async (req, res) => {
       tbRes.on("end", () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.success) return res.json({ message: "SMS sent via TextBelt.", method: "textbelt" });
-          res.status(503).json({ error: "TextBelt: " + (parsed.error || "Failed") });
-        } catch { res.status(500).json({ error: "SMS parse error" }); }
+          console.log("TextBelt response:", parsed);
+          if (parsed.success) {
+            return res.json({ message: "SMS sent.", method: "textbelt" });
+          }
+          // TextBelt quota exceeded — tell user to use email instead
+          if (parsed.error === "LIMIT_EXCEEDED" || parsed.quotaRemaining === 0) {
+            return res.status(503).json({
+              error: "Daily SMS limit reached. Please use Email verification instead, or try again tomorrow.",
+            });
+          }
+          res.status(503).json({ error: "SMS failed: " + (parsed.error || "Unknown error from TextBelt") });
+        } catch {
+          res.status(500).json({ error: "SMS response parse error." });
+        }
       });
     });
-    tbReq.on("error", (e) => res.status(500).json({ error: "SMS request failed: " + e.message }));
+
+    tbReq.on("error", (e) => {
+      console.error("TextBelt request error:", e.message);
+      res.status(500).json({ error: "Could not reach SMS service. Please use Email verification instead." });
+    });
     tbReq.write(postData);
     tbReq.end();
   } catch (err) {
