@@ -1,18 +1,45 @@
-// Root build file to bridge the Android project
+// TOP-LEVEL BUILD FILE: The "Master Bridge"
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
-        classpath 'com.google.gms:google-services:4.4.0'
+        classpath 'com.android.tools.build:gradle:8.4.0'
+        classpath 'com.google.gms:google-services:4.4.1'
     }
+}
+
+// Global variables to fix red lines in Manifest and Activity classes
+ext {
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    minSdkVersion = 22
+    
+    // Capacitor & AndroidX versions (Matching your variables.gradle)
+    androidxActivityVersion = '1.9.2'
+    androidxAppCompatVersion = '1.7.0'
+    androidxCoordinatorLayoutVersion = '1.2.0'
+    androidxCoreVersion = '1.13.1'
+    androidxFragmentVersion = '1.8.4'
+    coreSplashScreenVersion = '1.0.1'
+    androidxWebkitVersion = '1.12.1'
+    junitVersion = '4.13.2'
+    androidxJunitVersion = '1.2.1'
+    androidxEspressoCoreVersion = '3.6.1'
+    cordovaAndroidVersion = '13.0.0'
 }
 
 allprojects {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs 'client/android/capacitor-cordova-android-plugins/src/main/libs', 'client/android/app/libs'
+        }
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

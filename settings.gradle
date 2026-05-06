@@ -1,3 +1,14 @@
-// Root settings file to help Android Studio find the app module
+// MASTER BRIDGE: Force module detection
+rootProject.name = "South Sudanese learning App"
+
 include ':app'
-project(':app').projectDir = new File('client/android/app')
+project(':app').projectDir = new File(settingsDir, 'client/android/app')
+
+include ':capacitor-android'
+project(':capacitor-android').projectDir = new File(settingsDir, 'client/node_modules/@capacitor/android/capacitor')
+
+include ':capacitor-cordova-android-plugins'
+project(':capacitor-cordova-android-plugins').projectDir = new File(settingsDir, 'client/android/capacitor-cordova-android-plugins')
+
+// Apply Capacitor plugin settings from the client/android folder
+apply from: 'client/android/capacitor.settings.gradle'

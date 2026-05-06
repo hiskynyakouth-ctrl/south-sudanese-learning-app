@@ -36,3 +36,14 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# Android Gradle build cache (very long filenames, not source code)
+caches/
+.gradle/
+client/android/.gradle/
+client/android/app/build/
+client/android/build/
+
+# Uploads (large binary files)
+server/uploads/textbooks/
+server/uploads/papers/
