@@ -23,15 +23,17 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!form.email || !form.password) { setError("Please enter your email and password."); return; }
-    const emailErr = emailError(form.email);
-    if (emailErr) { setError(emailErr); return; }
+    // Skip email domain validation for login — only validate format
+    const trimmed = form.email.trim();
+    const emailFormatOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    if (!emailFormatOk) { setError("Please enter a valid email address."); return; }
     try {
       setLoading(true);
-      const data = await loginService(form.email, form.password);
+      const data = await loginService(trimmed, form.password);
       saveSession({ token: data.token, user: data.user });
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed. Please try again.");
+      setError(err.response?.data?.error || err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
