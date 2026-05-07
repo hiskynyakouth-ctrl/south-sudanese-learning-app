@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { login as loginService } from "../services/authService";
 import { signInWithGoogle } from "../services/googleAuth";
 import { googleRegister } from "../services/authService";
-import { emailError } from "../utils/validateEmail";
 
 export default function Login() {
   const navigate = useNavigate();

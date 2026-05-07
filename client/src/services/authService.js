@@ -3,7 +3,7 @@ import axios from 'axios';
 const LOCAL_USERS_KEY = "ss_users";
 const API = process.env.REACT_APP_API_URL || "http://localhost:5001/api";
 
-const authApi = axios.create({ baseURL: API, timeout: 4000 });
+const authApi = axios.create({ baseURL: API, timeout: 10000 }); // 10 seconds
 
 const getLocalUsers = () => {
   try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "[]"); }
@@ -21,55 +21,50 @@ const makeError = (msg) => {
 
 // ── Login ────────────────────────────────────────────────
 export const login = async (email, password) => {
-  // 1. Try backend
   try {
-    const res = await authApi.post('/auth/login', { email, password });
+    const res = await authApi.post('/auth/login', { email: email.trim(), password });
     return res.data;
   } catch (err) {
-    // 401 = wrong password, 409 = conflict — throw immediately, don't fall through
-    if (err.response && err.response.status === 401) throw err;
-    if (err.response && err.response.status === 409) throw err;
-    // 500+ server error — throw
-    if (err.response && err.response.status >= 500) throw err;
-    // No response = backend offline — fall through to localStorage
+    // Server reachable but rejected — show the real error, no fallback
+    if (err.response) throw err;
+    // Server completely offline (no response at all) — try localStorage
   }
 
-  // 2. Local storage fallback (only when backend is offline)
+  // localStorage fallback — only when server is offline
   const users = getLocalUsers();
-  const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-  if (!user) throw makeError("No account found with this email. Please register first.");
-
+  const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+  if (!user) throw makeError("Server is offline and no local account found. Please start the server.");
   if (user.loginMethod === "google" || user.password?.startsWith("google_")) {
     throw makeError("This account uses Google login. Please click 'Continue with Google'.");
   }
-
   if (user.password !== password) throw makeError("Incorrect password. Please try again.");
-
   const safeUser = { id: user.id, name: user.name, email: user.email, role: user.role || "student" };
   return { token: makeToken(safeUser), user: safeUser };
 };
 
 // ── Register ─────────────────────────────────────────────
 export const register = async (name, email, password, phone = "") => {
-  // 1. Try backend
   try {
-    const res = await authApi.post('/auth/register', { name, email, password, phone });
+    const res = await authApi.post('/auth/register', { name, email: email.trim(), password, phone });
+    // Also cache in localStorage for offline fallback
+    const users = getLocalUsers();
+    if (!users.find(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
+      saveLocalUsers([...users, { id: res.data.user.id, name, email: email.trim(), password, phone, role: "student" }]);
+    }
     return res.data;
   } catch (err) {
     if (err.response?.status === 409) throw err;
-    if (err.response && err.response.status >= 500) throw err;
+    if (err.response) throw err;
+    // Server offline — register locally
   }
 
-  // 2. Local storage fallback
   const users = getLocalUsers();
-  if (users.find((u) => u.email.toLowerCase() === email.toLowerCase())) {
+  if (users.find(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
     throw makeError("An account with this email already exists. Please login.");
   }
-
-  const user = { id: Date.now(), name, email, phone, password, role: "student" };
+  const user = { id: Date.now(), name, email: email.trim(), phone, password, role: "student" };
   saveLocalUsers([...users, user]);
-  const safeUser = { id: user.id, name, email, phone, role: "student" };
+  const safeUser = { id: user.id, name, email: email.trim(), phone, role: "student" };
   return { token: makeToken(safeUser), user: safeUser };
 };
 
