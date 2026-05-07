@@ -26,20 +26,20 @@ export const login = async (email, password) => {
     const res = await authApi.post('/auth/login', { email, password });
     return res.data;
   } catch (err) {
-    // Backend returned 401 or 404 — try local storage
-    // Backend offline (no response) — also try local storage
-    // Only re-throw for server errors (500+)
+    // 401 = wrong password, 409 = conflict — throw immediately, don't fall through
+    if (err.response && err.response.status === 401) throw err;
+    if (err.response && err.response.status === 409) throw err;
+    // 500+ server error — throw
     if (err.response && err.response.status >= 500) throw err;
-    // Fall through to local for 401, 404, or no response
+    // No response = backend offline — fall through to localStorage
   }
 
-  // 2. Local storage fallback
+  // 2. Local storage fallback (only when backend is offline)
   const users = getLocalUsers();
   const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
   if (!user) throw makeError("No account found with this email. Please register first.");
 
-  // Google users — they login via Google button, not password
   if (user.loginMethod === "google" || user.password?.startsWith("google_")) {
     throw makeError("This account uses Google login. Please click 'Continue with Google'.");
   }
