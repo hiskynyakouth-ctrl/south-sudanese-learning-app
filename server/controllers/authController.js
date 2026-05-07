@@ -61,7 +61,8 @@ exports.login = async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ error: "Email and password are required." });
   try {
-    const r = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    // Case-insensitive email lookup
+    const r = await pool.query("SELECT * FROM users WHERE LOWER(email) = LOWER($1)", [email.trim()]);
     if (r.rows.length === 0)
       return res.status(401).json({ error: "No account found with this email." });
     const user = r.rows[0];
