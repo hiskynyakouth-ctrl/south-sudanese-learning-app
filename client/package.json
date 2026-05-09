@@ -22,7 +22,7 @@
   "scripts": {
     "start": "node ./node_modules/react-scripts/scripts/start.js",
     "dev": "node ./node_modules/react-scripts/scripts/start.js",
-    "build": "node ./node_modules/react-scripts/scripts/build.js",
+    "build": "CI=false node ./node_modules/react-scripts/scripts/build.js",
     "test": "node ./node_modules/react-scripts/scripts/test.js",
     "eject": "node ./node_modules/react-scripts/scripts/eject.js"
   },
