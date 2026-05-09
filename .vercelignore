@@ -1,0 +1,15 @@
+node_modules
+client/node_modules
+server/node_modules
+client/src
+client/public
+server/uploads
+caches
+.gradle
+android
+daemon
+gradle
+native
+wrapper
+*.jfif
+*.map
