@@ -1,17 +1,26 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  host:     process.env.DB_HOST     || 'localhost',
-  user:     process.env.DB_USER     || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME     || 'south sudan e-learning',
-  port:     parseInt(process.env.DB_PORT || '5432'),
-});
+// Railway/Render provide DATABASE_URL; local uses individual vars
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    })
+  : new Pool({
+      host:     process.env.DB_HOST     || 'localhost',
+      user:     process.env.DB_USER     || 'postgres',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME     || 'south sudan e-learning',
+      port:     parseInt(process.env.DB_PORT || '5432'),
+    });
 
 pool.connect((err, client, release) => {
   if (err) { console.error('PostgreSQL connection failed:', err.message); }
-  else { console.log('Connected to PostgreSQL database:', process.env.DB_NAME); release(); }
+  else {
+    console.log('Connected to PostgreSQL database:', process.env.DB_NAME || process.env.DATABASE_URL?.split('/').pop());
+    release();
+  }
 });
 
 function ph(sql) {

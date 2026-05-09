@@ -4,11 +4,27 @@ require("dotenv").config();
 
 const app = express();
 
+// Allow localhost dev + Vercel production frontend
+const allowedOrigins = [
+  "http://localhost:3002",
+  "http://localhost:3000",
+  process.env.CLIENT_URL,
+  /\.vercel\.app$/,   // any vercel.app subdomain
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      const allowed = allowedOrigins.some(o =>
+        typeof o === "string" ? o === origin : o.test(origin)
+      );
+      callback(null, allowed ? origin : false);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 app.use(express.json());
