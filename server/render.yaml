@@ -1,11 +1,27 @@
 services:
   - type: web
-    name: ss-elearning-backend
+    name: ss-elearning-api
     env: node
+    region: oregon
+    plan: free
+    rootDir: server
     buildCommand: npm install
     startCommand: node index.js
     envVars:
-      - key: PORT
-        value: 10000
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        value: ss_elearning_jwt_secret_2024
+      - key: GMAIL_USER
+        value: thiyangkoang77@gmail.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ss-elearning-db
+          property: connectionString
+
+databases:
+  - name: ss-elearning-db
+    plan: free
+    region: oregon
