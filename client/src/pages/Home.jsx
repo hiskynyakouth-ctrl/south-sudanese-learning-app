@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import scienceImg from "../assets/science.jfif";
-import classroomImg from "../assets/classroom.jfif";
+import scienceImg from "../assets/science.jpg";
+import classroomImg from "../assets/classroom.jpg";
 import YouTubeIcon from "../components/YouTubeIcon";
 
 const classes = [

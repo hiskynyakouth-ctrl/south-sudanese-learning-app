@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { coreSubjects, streams, subjectIcons } from "../data/curriculum";
-import scienceImg from "../assets/science.jfif";
-import classroomImg from "../assets/classroom.jfif";
+import scienceImg from "../assets/science.jpg";
+import classroomImg from "../assets/classroom.jpg";
 
 const classNames = { 1: "Senior 1", 2: "Senior 2", 3: "Senior 3", 4: "Senior 4" };
 
