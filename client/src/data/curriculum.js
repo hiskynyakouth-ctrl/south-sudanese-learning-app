@@ -54,6 +54,8 @@ export const streams = {
       "Agriculture",
       "Christian Religious Education",
       "Additional Mathematics",
+      "Citizenship",
+      "Computer Studies",
     ],
   },
   social: {
@@ -69,6 +71,8 @@ export const streams = {
       "Accounting",
       "English Literature",
       "Christian Religious Education",
+      "Citizenship",
+      "Computer Studies",
     ],
   },
 };

@@ -130,14 +130,14 @@ export default function Home() {
           <div className="home-stream-card natural-stream-card" style={{ backgroundImage: `url(${scienceImg})` }}>
             <div className="home-stream-icon">🔬</div>
             <h3>Natural Sciences</h3>
-            <p>English · Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics</p>
-            <span className="home-stream-count">8 subjects</span>
+            <p>English · Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics · Citizenship · Computer Studies</p>
+            <span className="home-stream-count">10 subjects</span>
           </div>
           <div className="home-stream-card social-stream-card" style={{ backgroundImage: `url(${classroomImg})` }}>
             <div className="home-stream-icon">📚</div>
             <h3>Social Sciences</h3>
-            <p>English · History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE</p>
-            <span className="home-stream-count">9 subjects</span>
+            <p>English · History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE · Citizenship · Computer Studies</p>
+            <span className="home-stream-count">11 subjects</span>
           </div>
         </div>
       </section>

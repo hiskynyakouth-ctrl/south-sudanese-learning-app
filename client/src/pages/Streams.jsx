@@ -98,8 +98,8 @@ export default function Streams() {
               <div className="stream-picker-body">
                 <span className="stream-picker-icon">🔬</span>
                 <h2>Natural Sciences</h2>
-                <p>Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics · English</p>
-                <div className="stream-picker-count">8 subjects</div>
+                <p>Mathematics · Physics · Chemistry · Biology · Agriculture · CRE · Additional Mathematics · English · Citizenship · Computer Studies</p>
+                <div className="stream-picker-count">10 subjects</div>
                 <div className="stream-picker-btn">Choose Natural Sciences →</div>
               </div>
             </button>
@@ -113,8 +113,8 @@ export default function Streams() {
               <div className="stream-picker-body">
                 <span className="stream-picker-icon">📚</span>
                 <h2>Social Sciences</h2>
-                <p>History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE · English</p>
-                <div className="stream-picker-count">9 subjects</div>
+                <p>History · Geography · Economics · Mathematics · Fine Art · Accounting · English Literature · CRE · English · Citizenship · Computer Studies</p>
+                <div className="stream-picker-count">11 subjects</div>
                 <div className="stream-picker-btn">Choose Social Sciences →</div>
               </div>
             </button>
