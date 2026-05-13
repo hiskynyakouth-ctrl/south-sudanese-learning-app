@@ -9,7 +9,10 @@ const allowedOrigins = [
   "http://localhost:3002",
   "http://localhost:3000",
   process.env.CLIENT_URL,
-  /\.vercel\.app$/,   // any vercel.app subdomain
+  "https://south-sudanese-learning-app.vercel.app",
+  "https://south-sudanese-learning-app-1.onrender.com",
+  /\.vercel\.app$/,
+  /\.onrender\.com$/,
 ].filter(Boolean);
 
 app.use(
