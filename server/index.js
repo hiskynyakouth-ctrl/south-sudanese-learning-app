@@ -16,9 +16,16 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // ── Health check (always works, no DB needed) ────────────
-app.get("/",     (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API" }));
-app.get("/api",  (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API v1" }));
+app.get("/",       (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API" }));
+app.get("/api",    (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API v1" }));
 app.get("/health", (req, res) => res.json({ status: "ok" }));
+app.get("/debug",  (req, res) => res.json({
+  status: "ok",
+  env: process.env.NODE_ENV,
+  hasDB: !!process.env.DATABASE_URL,
+  hasJWT: !!process.env.JWT_SECRET,
+  port: process.env.PORT,
+}));
 
 // ── Routes (wrapped in try-catch so one bad route doesn't kill the server) ──
 const safeRequire = (path) => {
