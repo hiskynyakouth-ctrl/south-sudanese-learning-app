@@ -1,78 +1,191 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useAuth } from "../context/AuthContext";
 
+// ── Real flag images ──────────────────────────────────────
 const FLAG = ({ iso, size = 32 }) => (
-  <img
-    src={`https://flagcdn.com/w40/${iso}.png`}
-    alt={iso}
+  <img src={`https://flagcdn.com/w40/${iso}.png`} alt={iso}
     style={{ width: size, height: size * 0.67, objectFit: "cover", borderRadius: 4, display: "block" }}
-    onError={e => { e.target.onerror = null; e.target.style.display = "none"; }}
-  />
+    onError={e => { e.target.onerror = null; e.target.style.display = "none"; }} />
 );
 
+// ── Pricing plans ─────────────────────────────────────────
 const PLANS = [
   {
     region: "South Sudan",
     flagEl: <FLAG iso="ss" size={36} />,
-    price: "20,000 SSP",
+    price: "10,000 SSP",
+    amount: 10000,
+    currency: "SSP",
     period: "per 2 months",
     color: "#0f6b5b",
-    contact: "Pay via mobile money or bank. Contact: +211 912 345 678",
+    payMethod: "flutterwave",
+    payNote: "Mobile Money / Bank Transfer",
   },
   {
     region: "Uganda",
     flagEl: <FLAG iso="ug" size={36} />,
-    price: "15,000 UGX",
+    price: "10,000 UGX",
+    amount: 10000,
+    currency: "UGX",
     period: "per 2 months",
     color: "#d4a017",
-    contact: "Pay via MTN Mobile Money. Contact: +256 700 000 000",
+    payMethod: "flutterwave",
+    payNote: "MTN Mobile Money / Airtel",
   },
   {
     region: "Ethiopia",
     flagEl: <FLAG iso="et" size={36} />,
     price: "200 ETB",
+    amount: 200,
+    currency: "ETB",
     period: "per 2 months",
     color: "#078930",
-    contact: "Pay via Telebirr. Contact: +251 900 000 000",
+    payMethod: "flutterwave",
+    payNote: "Telebirr / Bank Transfer",
   },
   {
     region: "Kenya",
     flagEl: <FLAG iso="ke" size={36} />,
-    price: "400 KES",
+    price: "100 KES",
+    amount: 100,
+    currency: "KES",
     period: "per 2 months",
     color: "#006600",
-    contact: "Pay via M-Pesa. Contact: +254 700 000 000",
+    payMethod: "flutterwave",
+    payNote: "M-Pesa / Airtel Money",
   },
   {
     region: "Western World",
     flagEl: <span style={{ fontSize: "2rem", lineHeight: 1 }}>🌍</span>,
     price: "$20 USD",
+    amount: 20,
+    currency: "USD",
     period: "per 2 months",
     color: "#1565c0",
-    contact: "Pay via PayPal or bank transfer. Email: thiyangkoang77@gmail.com",
+    payMethod: "paypal",
+    payNote: "PayPal / Credit Card",
   },
   {
     region: "Schools & Institutions",
     flagEl: <span style={{ fontSize: "2rem", lineHeight: 1 }}>🏫</span>,
-    price: "$2,000 USD",
+    price: "$500 USD",
+    amount: 500,
+    currency: "USD",
     period: "per year",
     color: "#6a1b9a",
     badge: "INSTITUTION",
-    contact: "Full school license for unlimited students. Email: thiyangkoang77@gmail.com",
+    payMethod: "paypal",
+    payNote: "PayPal / Bank Transfer",
   },
 ];
+
+// ── Load Flutterwave inline script ────────────────────────
+function loadFlutterwave() {
+  return new Promise((resolve) => {
+    if (window.FlutterwaveCheckout) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = "https://checkout.flutterwave.com/v3.js";
+    s.onload = resolve;
+    document.head.appendChild(s);
+  });
+}
 
 export default function Subscription() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isTrialActive, trialDaysRemaining, isSubscribed, daysRemaining } = useSubscription();
+  const { isTrialActive, trialDaysRemaining, isSubscribed, daysRemaining, grantSubscription } = useSubscription();
   const [selected, setSelected] = useState(null);
+  const [paying, setPaying] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const trialLeft = trialDaysRemaining();
   const subbed = isSubscribed();
   const trialOn = isTrialActive();
+
+  // ── Flutterwave payment ───────────────────────────────
+  const payWithFlutterwave = async (plan) => {
+    setPaying(true);
+    await loadFlutterwave();
+
+    const FLW_KEY = process.env.REACT_APP_FLW_PUBLIC_KEY || "FLWPUBK_TEST-XXXX"; // replace with real key
+
+    window.FlutterwaveCheckout({
+      public_key: FLW_KEY,
+      tx_ref: `ss-elearn-${Date.now()}`,
+      amount: plan.amount,
+      currency: plan.currency,
+      payment_options: "mobilemoney,card,banktransfer,ussd",
+      customer: {
+        email: user?.email || "",
+        name: user?.name || "",
+      },
+      customizations: {
+        title: "South Sudan E-Learning",
+        description: `${plan.region} Subscription — ${plan.price} ${plan.period}`,
+        logo: "https://flagcdn.com/w40/ss.png",
+      },
+      callback: (response) => {
+        if (response.status === "successful" || response.status === "completed") {
+          grantSubscription(60); // grant 60 days
+          setSuccess(true);
+          setPaying(false);
+          // Save to server
+          fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5001/api"}/auth/subscribe`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: user?.email,
+              plan: plan.region,
+              txRef: response.tx_ref,
+              amount: plan.amount,
+              currency: plan.currency,
+            }),
+          }).catch(() => {});
+        } else {
+          setPaying(false);
+        }
+      },
+      onclose: () => setPaying(false),
+    });
+  };
+
+  // ── PayPal redirect ───────────────────────────────────
+  const payWithPayPal = (plan) => {
+    // Replace with your real PayPal.me link or PayPal button
+    const paypalEmail = "thiyangkoang77@gmail.com";
+    const note = encodeURIComponent(`SS E-Learning ${plan.region} ${plan.price}`);
+    window.open(
+      `https://www.paypal.com/paypalme/${paypalEmail}/${plan.amount}${plan.currency}?note=${note}`,
+      "_blank"
+    );
+  };
+
+  const handlePay = (plan) => {
+    if (plan.payMethod === "flutterwave") {
+      payWithFlutterwave(plan);
+    } else {
+      payWithPayPal(plan);
+    }
+  };
+
+  // ── Success screen ────────────────────────────────────
+  if (success) {
+    return (
+      <div className="sub-shell" style={{ textAlign: "center", placeItems: "center" }}>
+        <div style={{ fontSize: "5rem" }}>🎉</div>
+        <h1>Payment Successful!</h1>
+        <p style={{ color: "var(--muted)" }}>
+          Your subscription is now active. You have full access for 2 months.
+        </p>
+        <button className="primary-button" style={{ padding: "14px 32px" }}
+          onClick={() => navigate("/streams/1")}>
+          Start Learning →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="sub-shell">
@@ -83,7 +196,6 @@ export default function Subscription() {
         <h1>Subscription Plans</h1>
         <p>Full access to all subjects, textbooks, quizzes, notes and past papers.</p>
 
-        {/* Status banner */}
         {subbed ? (
           <div className="sub-trial-banner active">
             <span>✅</span>
@@ -148,51 +260,33 @@ export default function Subscription() {
               {plan.badge && <div>✅ Unlimited students</div>}
             </div>
 
-            <button className="sub-card-btn"
-              style={{ background: selected === i ? plan.color : undefined }}
-              onClick={e => { e.stopPropagation(); setSelected(i); }}>
-              {selected === i ? "✓ Selected" : "Select Plan"}
+            <div className="sub-pay-method">
+              <span>💳 {plan.payNote}</span>
+            </div>
+
+            <button
+              className="sub-card-btn sub-pay-btn"
+              style={{ background: plan.color, color: "white", border: "none" }}
+              disabled={paying}
+              onClick={e => { e.stopPropagation(); handlePay(plan); }}>
+              {paying && selected === i ? "Processing..." : `Pay ${plan.price} →`}
             </button>
           </div>
         ))}
       </div>
 
-      {/* Payment instructions */}
-      {selected !== null && (
-        <div className="sub-payment-box">
-          <h3>💳 How to Pay — {PLANS[selected].region}</h3>
-          <div className="sub-payment-amount">
-            <span className="sub-payment-flag">{PLANS[selected].flagEl}</span>
-            <strong>{PLANS[selected].price}</strong>
-            <span>{PLANS[selected].period}</span>
-          </div>
+      {/* Setup note */}
+      <div className="sub-setup-note">
+        <strong>🔑 Payment Setup Required</strong>
+        <p>
+          To activate real payments, add your Flutterwave public key to <code>client/.env</code>:
+          <br /><code>REACT_APP_FLW_PUBLIC_KEY=FLWPUBK-xxxxxxxxxxxxxxxx</code>
+          <br />Get your free key at <a href="https://dashboard.flutterwave.com" target="_blank" rel="noreferrer">dashboard.flutterwave.com</a>
+        </p>
+      </div>
 
-          <div className="sub-payment-steps">
-            <div className="sub-step">
-              <span className="sub-step-num">1</span>
-              <p>{PLANS[selected].contact}</p>
-            </div>
-            <div className="sub-step">
-              <span className="sub-step-num">2</span>
-              <p>Send your <strong>full name</strong> and <strong>registered email ({user?.email})</strong> with the payment proof.</p>
-            </div>
-            <div className="sub-step">
-              <span className="sub-step-num">3</span>
-              <p>Your account will be activated within <strong>24 hours</strong> after payment is confirmed.</p>
-            </div>
-          </div>
-
-          <a href={`mailto:thiyangkoang77@gmail.com?subject=Subscription - ${PLANS[selected].region}&body=Name: ${user?.name || ""}%0AEmail: ${user?.email || ""}%0APlan: ${PLANS[selected].region} - ${PLANS[selected].price}`}
-            className="primary-button sub-contact-btn">
-            📧 Send Payment Confirmation
-          </a>
-        </div>
-      )}
-
-      <button className="ghost-button" style={{ justifySelf:"start", marginTop:8 }}
-        onClick={() => navigate(-1)}>
-        ← Back
-      </button>
+      <button className="ghost-button" style={{ justifySelf: "start" }}
+        onClick={() => navigate(-1)}>← Back</button>
 
     </div>
   );

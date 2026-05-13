@@ -1,6 +1,7 @@
 const express = require("express");
 const { register, login, me, googleAuth } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
+const { pool } = require("../config/db");
 
 const router = express.Router();
 
@@ -10,6 +11,24 @@ router.post("/google", googleAuth);
 router.get("/me", authMiddleware, me);
 
 router.post("/reset-password", require("../controllers/authController").resetPassword);
+
+// ── Record subscription after payment ────────────────────
+router.post("/subscribe", async (req, res) => {
+  const { email, plan, txRef, amount, currency } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required." });
+  try {
+    // Update user subscription expiry (60 days from now)
+    const expiry = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+    await pool.query(
+      "UPDATE users SET subscription_expiry=$1, subscription_plan=$2 WHERE LOWER(email)=LOWER($3)",
+      [expiry.toISOString(), plan, email]
+    ).catch(() => {}); // ignore if columns don't exist yet
+    console.log(`✅ Subscription recorded: ${email} | ${plan} | ${txRef}`);
+    res.json({ message: "Subscription activated.", expiry });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ── Send verification code via Email (Nodemailer/Gmail) ───
 router.post("/send-email", async (req, res) => {
