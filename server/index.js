@@ -17,10 +17,10 @@ app.get("/",        (req, res) => res.json({ status: "ok", message: "South Sudan
 app.get("/health",  (req, res) => res.json({ status: "ok" }));
 app.get("/api",     (req, res) => res.json({ status: "ok", version: "2.1" }));
 app.get("/debug",   (req, res) => res.json({
-  status: "ok", version: "2.2",
+  status: "ok", version: "2.3",
   env: process.env.NODE_ENV || "development",
   hasDB: !!process.env.DATABASE_URL,
-  dbUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 40) + "..." : "NOT SET",
+  dbUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
   hasJWT: !!process.env.JWT_SECRET,
   port: process.env.PORT || 5001,
   loadedRoutes: loadedRoutes,
