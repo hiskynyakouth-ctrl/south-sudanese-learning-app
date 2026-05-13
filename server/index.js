@@ -25,6 +25,8 @@ app.get("/debug",  (req, res) => res.json({
   hasDB: !!process.env.DATABASE_URL,
   hasJWT: !!process.env.JWT_SECRET,
   port: process.env.PORT,
+  version: "2.0",
+  routes: ["/api/auth", "/api/upload", "/api/admin"],
 }));
 
 // ── Routes (wrapped in try-catch so one bad route doesn't kill the server) ──
