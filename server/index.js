@@ -35,64 +35,68 @@ app.use(express.json());
 
 // ── Initialize database schema on startup ────────────────
 async function initializeDatabase() {
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(20) DEFAULT 'student',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS grades (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(50) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS streams (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(50) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS subjects (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      grade_id INT,
+      stream_id INT
+    )`,
+    `CREATE TABLE IF NOT EXISTS topics (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(150) NOT NULL,
+      subject_id INT
+    )`,
+    `CREATE TABLE IF NOT EXISTS chapters (
+      id SERIAL PRIMARY KEY,
+      subject_id INT,
+      title VARCHAR(255) NOT NULL,
+      content TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS quizzes (
+      id SERIAL PRIMARY KEY,
+      chapter_id INT,
+      title VARCHAR(255) NOT NULL,
+      questions JSONB
+    )`,
+    `CREATE TABLE IF NOT EXISTS past_papers (
+      id SERIAL PRIMARY KEY,
+      subject_id INT,
+      year INT,
+      file_url TEXT,
+      title VARCHAR(255)
+    )`,
+    `CREATE TABLE IF NOT EXISTS textbooks (
+      id SERIAL PRIMARY KEY,
+      subject_id INT,
+      title VARCHAR(255) NOT NULL,
+      author VARCHAR(255),
+      grade VARCHAR(50),
+      url TEXT
+    )`
+  ];
+
   try {
     console.log("Initializing database schema...");
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(20) DEFAULT 'student',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE TABLE IF NOT EXISTS grades (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(50) NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS streams (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(50) NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS subjects (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        grade_id INT,
-        stream_id INT
-      );
-      CREATE TABLE IF NOT EXISTS topics (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(150) NOT NULL,
-        subject_id INT
-      );
-      CREATE TABLE IF NOT EXISTS chapters (
-        id SERIAL PRIMARY KEY,
-        subject_id INT,
-        title VARCHAR(255) NOT NULL,
-        content TEXT
-      );
-      CREATE TABLE IF NOT EXISTS quizzes (
-        id SERIAL PRIMARY KEY,
-        chapter_id INT,
-        title VARCHAR(255) NOT NULL,
-        questions JSONB
-      );
-      CREATE TABLE IF NOT EXISTS past_papers (
-        id SERIAL PRIMARY KEY,
-        subject_id INT,
-        year INT,
-        file_url TEXT,
-        title VARCHAR(255)
-      );
-      CREATE TABLE IF NOT EXISTS textbooks (
-        id SERIAL PRIMARY KEY,
-        subject_id INT,
-        title VARCHAR(255) NOT NULL,
-        author VARCHAR(255),
-        grade VARCHAR(50),
-        url TEXT
-      );
-    `);
+    for (const statement of statements) {
+      await pool.query(statement);
+    }
     console.log("Database schema initialized successfully.");
   } catch (err) {
     console.error("Database initialization error:", err.message);
