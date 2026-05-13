@@ -10,7 +10,7 @@ app.use(cors({
   origin: "*",
   methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
   allowedHeaders: ["Content-Type","Authorization"],
-  credentials: true,
+  credentials: false,
 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -20,18 +20,28 @@ app.get("/",     (req, res) => res.json({ status: "ok", message: "South Sudan E-
 app.get("/api",  (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API v1" }));
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
-// ── Routes ────────────────────────────────────────────────
-app.use("/api/auth",        require("./routes/authRoutes"));
-app.use("/api/subjects",    require("./routes/subjectRoutes"));
-app.use("/api/chapters",    require("./routes/chapterRoutes"));
-app.use("/api/quizzes",     require("./routes/quizRoutes"));
-app.use("/api/chat",        require("./routes/chatRoutes"));
-app.use("/api/textbooks",   require("./routes/textbookRoutes"));
-app.use("/api/grades",      require("./routes/gradeRoutes"));
-app.use("/api/topics",      require("./routes/topicRoutes"));
-app.use("/api/past-papers", require("./routes/pastPaperRoutes"));
-app.use("/api/admin",       require("./routes/adminRoutes"));
-app.use("/api/upload",      require("./routes/uploadRoutes"));
+// ── Routes (wrapped in try-catch so one bad route doesn't kill the server) ──
+const safeRequire = (path) => {
+  try { return require(path); }
+  catch (err) {
+    console.error(`Failed to load route ${path}:`, err.message);
+    const r = require("express").Router();
+    r.all("*", (req, res) => res.status(503).json({ error: `Route unavailable: ${err.message}` }));
+    return r;
+  }
+};
+
+app.use("/api/auth",        safeRequire("./routes/authRoutes"));
+app.use("/api/subjects",    safeRequire("./routes/subjectRoutes"));
+app.use("/api/chapters",    safeRequire("./routes/chapterRoutes"));
+app.use("/api/quizzes",     safeRequire("./routes/quizRoutes"));
+app.use("/api/chat",        safeRequire("./routes/chatRoutes"));
+app.use("/api/textbooks",   safeRequire("./routes/textbookRoutes"));
+app.use("/api/grades",      safeRequire("./routes/gradeRoutes"));
+app.use("/api/topics",      safeRequire("./routes/topicRoutes"));
+app.use("/api/past-papers", safeRequire("./routes/pastPaperRoutes"));
+app.use("/api/admin",       safeRequire("./routes/adminRoutes"));
+app.use("/api/upload",      safeRequire("./routes/uploadRoutes"));
 
 // ── Static uploads ────────────────────────────────────────
 app.use("/uploads", (req, res, next) => {

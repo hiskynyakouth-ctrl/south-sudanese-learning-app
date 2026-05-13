@@ -16,6 +16,18 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Pre-seed admin in localStorage so it works even when server is offline
+  useState(() => {
+    const KEY = "ss_users";
+    const users = JSON.parse(localStorage.getItem(KEY) || "[]");
+    if (!users.find(u => u.email === "admin@school.com")) {
+      localStorage.setItem(KEY, JSON.stringify([...users, {
+        id: 3, name: "Admin", email: "admin@school.com",
+        password: "Admin@2024", role: "admin"
+      }]));
+    }
+  });
+
   const handleChange = (e) => setForm((c) => ({ ...c, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {

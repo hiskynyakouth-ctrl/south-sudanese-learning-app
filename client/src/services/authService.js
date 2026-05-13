@@ -25,15 +25,18 @@ export const login = async (email, password) => {
     const res = await authApi.post('/auth/login', { email: email.trim(), password });
     return res.data;
   } catch (err) {
-    // Server reachable but rejected — show the real error, no fallback
-    if (err.response) throw err;
-    // Server completely offline (no response at all) — try localStorage
+    // 401 = wrong password → show real error
+    if (err.response?.status === 401) throw err;
+    // 400 = bad request → show real error
+    if (err.response?.status === 400) throw err;
+    // 404 = route not found (server not ready) OR 5xx = server error → fall through to localStorage
+    // No response = server offline → fall through to localStorage
   }
 
-  // localStorage fallback — only when server is offline
+  // localStorage fallback
   const users = getLocalUsers();
   const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-  if (!user) throw makeError("Server is offline and no local account found. Please start the server.");
+  if (!user) throw makeError("No account found. Please register first or check your internet connection.");
   if (user.loginMethod === "google" || user.password?.startsWith("google_")) {
     throw makeError("This account uses Google login. Please click 'Continue with Google'.");
   }
