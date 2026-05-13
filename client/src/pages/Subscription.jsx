@@ -3,10 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useAuth } from "../context/AuthContext";
 
+const FLAG = ({ iso, size = 32 }) => (
+  <img
+    src={`https://flagcdn.com/w40/${iso}.png`}
+    alt={iso}
+    style={{ width: size, height: size * 0.67, objectFit: "cover", borderRadius: 4, display: "block" }}
+    onError={e => { e.target.onerror = null; e.target.style.display = "none"; }}
+  />
+);
+
 const PLANS = [
   {
     region: "South Sudan",
-    flag: "🇸🇸",
+    flagEl: <FLAG iso="ss" size={36} />,
     price: "20,000 SSP",
     period: "per 2 months",
     color: "#0f6b5b",
@@ -14,7 +23,7 @@ const PLANS = [
   },
   {
     region: "Uganda",
-    flag: "🇺🇬",
+    flagEl: <FLAG iso="ug" size={36} />,
     price: "15,000 UGX",
     period: "per 2 months",
     color: "#d4a017",
@@ -22,7 +31,7 @@ const PLANS = [
   },
   {
     region: "Ethiopia",
-    flag: "🇪🇹",
+    flagEl: <FLAG iso="et" size={36} />,
     price: "200 ETB",
     period: "per 2 months",
     color: "#078930",
@@ -30,7 +39,7 @@ const PLANS = [
   },
   {
     region: "Kenya",
-    flag: "🇰🇪",
+    flagEl: <FLAG iso="ke" size={36} />,
     price: "400 KES",
     period: "per 2 months",
     color: "#006600",
@@ -38,7 +47,7 @@ const PLANS = [
   },
   {
     region: "Western World",
-    flag: "🌍",
+    flagEl: <span style={{ fontSize: "2rem", lineHeight: 1 }}>🌍</span>,
     price: "$20 USD",
     period: "per 2 months",
     color: "#1565c0",
@@ -46,7 +55,7 @@ const PLANS = [
   },
   {
     region: "Schools & Institutions",
-    flag: "🏫",
+    flagEl: <span style={{ fontSize: "2rem", lineHeight: 1 }}>🏫</span>,
     price: "$2,000 USD",
     period: "per year",
     color: "#6a1b9a",
@@ -122,7 +131,7 @@ export default function Subscription() {
             {plan.badge && <div className="sub-badge">{plan.badge}</div>}
 
             <div className="sub-card-top">
-              <span className="sub-card-flag">{plan.flag}</span>
+              <span className="sub-card-flag">{plan.flagEl}</span>
               <span className="sub-card-region">{plan.region}</span>
             </div>
             <div className="sub-card-price">{plan.price}</div>
@@ -153,7 +162,7 @@ export default function Subscription() {
         <div className="sub-payment-box">
           <h3>💳 How to Pay — {PLANS[selected].region}</h3>
           <div className="sub-payment-amount">
-            <span className="sub-payment-flag">{PLANS[selected].flag}</span>
+            <span className="sub-payment-flag">{PLANS[selected].flagEl}</span>
             <strong>{PLANS[selected].price}</strong>
             <span>{PLANS[selected].period}</span>
           </div>
