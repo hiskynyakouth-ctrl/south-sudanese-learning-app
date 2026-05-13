@@ -45,10 +45,10 @@ export default function SubscriptionGate({ children }) {
           textbooks, quizzes, notes and past papers.
         </p>
         <div className="sub-paywall-prices">
-          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ss.png" alt="SS" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>20,000 SSP</strong></div>
-          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ug.png" alt="UG" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>15,000 UGX</strong></div>
+          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ss.png" alt="SS" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>10,000 SSP</strong></div>
+          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ug.png" alt="UG" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>10,000 UGX</strong></div>
           <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/et.png" alt="ET" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>200 ETB</strong></div>
-          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ke.png" alt="KE" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>400 KES</strong></div>
+          <div className="sub-paywall-price"><img src="https://flagcdn.com/w20/ke.png" alt="KE" style={{width:20,borderRadius:2,verticalAlign:"middle",marginRight:5}} /> <strong>100 KES</strong></div>
           <div className="sub-paywall-price">🌍 <strong>$20 USD</strong></div>
         </div>
         <p className="sub-paywall-period">per 2 months · 1 month free for new users</p>
