@@ -1,103 +1,109 @@
 const express = require("express");
 const cors    = require("cors");
 const path    = require("path");
-require("dotenv").config();
+
+// Load env
+try { require("dotenv").config(); } catch(e) {}
 
 const app = express();
 
-// ── CORS ─────────────────────────────────────────────────
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
-  allowedHeaders: ["Content-Type","Authorization"],
-  credentials: false,
-}));
+// ── CORS — allow everything ───────────────────────────────
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"], allowedHeaders: ["Content-Type","Authorization"] }));
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ── Health check (always works, no DB needed) ────────────
-app.get("/",       (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API" }));
-app.get("/api",    (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API v1" }));
-app.get("/health", (req, res) => res.json({ status: "ok" }));
-app.get("/debug",  (req, res) => res.json({
-  status: "ok",
-  env: process.env.NODE_ENV,
+// ── Health / debug (always works) ────────────────────────
+app.get("/",        (req, res) => res.json({ status: "ok", message: "South Sudan E-Learning API" }));
+app.get("/health",  (req, res) => res.json({ status: "ok" }));
+app.get("/api",     (req, res) => res.json({ status: "ok", version: "2.1" }));
+app.get("/debug",   (req, res) => res.json({
+  status: "ok", version: "2.1",
+  env: process.env.NODE_ENV || "development",
   hasDB: !!process.env.DATABASE_URL,
   hasJWT: !!process.env.JWT_SECRET,
-  port: process.env.PORT,
-  version: "2.0",
-  routes: ["/api/auth", "/api/upload", "/api/admin"],
+  port: process.env.PORT || 5001,
+  loadedRoutes: loadedRoutes,
+  failedRoutes: failedRoutes,
 }));
 
-// ── Routes (wrapped in try-catch so one bad route doesn't kill the server) ──
-const safeRequire = (path) => {
-  try { return require(path); }
-  catch (err) {
-    console.error(`Failed to load route ${path}:`, err.message);
-    const r = require("express").Router();
-    r.all("*", (req, res) => res.status(503).json({ error: `Route unavailable: ${err.message}` }));
-    return r;
-  }
-};
+// ── Safe route loader ─────────────────────────────────────
+const loadedRoutes = [];
+const failedRoutes = [];
 
-app.use("/api/auth",        safeRequire("./routes/authRoutes"));
-app.use("/api/subjects",    safeRequire("./routes/subjectRoutes"));
-app.use("/api/chapters",    safeRequire("./routes/chapterRoutes"));
-app.use("/api/quizzes",     safeRequire("./routes/quizRoutes"));
-app.use("/api/chat",        safeRequire("./routes/chatRoutes"));
-app.use("/api/textbooks",   safeRequire("./routes/textbookRoutes"));
-app.use("/api/grades",      safeRequire("./routes/gradeRoutes"));
-app.use("/api/topics",      safeRequire("./routes/topicRoutes"));
-app.use("/api/past-papers", safeRequire("./routes/pastPaperRoutes"));
-app.use("/api/admin",       safeRequire("./routes/adminRoutes"));
-app.use("/api/upload",      safeRequire("./routes/uploadRoutes"));
+function safeRoute(mountPath, routeFile) {
+  try {
+    const router = require(routeFile);
+    app.use(mountPath, router);
+    loadedRoutes.push(mountPath);
+    console.log(`✅ Route loaded: ${mountPath}`);
+  } catch (err) {
+    failedRoutes.push({ path: mountPath, error: err.message });
+    console.error(`❌ Route failed: ${mountPath} — ${err.message}`);
+    // Mount a fallback so the path returns a useful error instead of 404
+    app.use(mountPath, (req, res) => res.status(503).json({ error: `Route unavailable: ${err.message}` }));
+  }
+}
+
+// ── Load all routes ───────────────────────────────────────
+safeRoute("/api/auth",        "./routes/authRoutes");
+safeRoute("/api/subjects",    "./routes/subjectRoutes");
+safeRoute("/api/chapters",    "./routes/chapterRoutes");
+safeRoute("/api/quizzes",     "./routes/quizRoutes");
+safeRoute("/api/chat",        "./routes/chatRoutes");
+safeRoute("/api/textbooks",   "./routes/textbookRoutes");
+safeRoute("/api/grades",      "./routes/gradeRoutes");
+safeRoute("/api/topics",      "./routes/topicRoutes");
+safeRoute("/api/past-papers", "./routes/pastPaperRoutes");
+safeRoute("/api/admin",       "./routes/adminRoutes");
+safeRoute("/api/upload",      "./routes/uploadRoutes");
 
 // ── Static uploads ────────────────────────────────────────
-app.use("/uploads", (req, res, next) => {
-  res.setHeader("Content-Disposition", "inline");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  next();
-}, express.static(path.join(__dirname, "uploads")));
+try {
+  const uploadsDir = path.join(__dirname, "uploads");
+  require("fs").mkdirSync(uploadsDir, { recursive: true });
+  app.use("/uploads", (req, res, next) => {
+    res.setHeader("Content-Disposition", "inline");
+    next();
+  }, express.static(uploadsDir));
+} catch(e) { console.error("Uploads dir error:", e.message); }
 
 // ── 404 handler ───────────────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` });
+  res.status(404).json({ error: `Not found: ${req.method} ${req.path}`, loadedRoutes });
+});
+
+// ── Error handler ─────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ error: err.message });
 });
 
 // ── Start server ──────────────────────────────────────────
-const PORT = process.env.PORT || 5001;
+const PORT = parseInt(process.env.PORT) || 5001;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`Database: ${process.env.DATABASE_URL ? "Render PostgreSQL" : process.env.DB_NAME || "local"}`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🗄️  Database: ${process.env.DATABASE_URL ? "Render PostgreSQL ✅" : process.env.DB_NAME || "local"}`);
+  console.log(`✅ Loaded routes: ${loadedRoutes.join(", ")}`);
+  if (failedRoutes.length) console.error(`❌ Failed routes: ${failedRoutes.map(r=>r.path).join(", ")}`);
 });
 
-// ── Initialize DB schema (non-blocking) ──────────────────
-const { pool } = require("./config/db");
-const DB_INIT = [
-  `CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) DEFAULT 'student',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`,
-  `CREATE TABLE IF NOT EXISTS grades (id SERIAL PRIMARY KEY, name VARCHAR(50) NOT NULL)`,
-  `CREATE TABLE IF NOT EXISTS streams (id SERIAL PRIMARY KEY, name VARCHAR(50) NOT NULL)`,
-  `CREATE TABLE IF NOT EXISTS subjects (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, grade_id INT, stream_id INT)`,
-  `CREATE TABLE IF NOT EXISTS topics (id SERIAL PRIMARY KEY, name VARCHAR(150) NOT NULL, subject_id INT)`,
-  `CREATE TABLE IF NOT EXISTS chapters (id SERIAL PRIMARY KEY, subject_id INT, title VARCHAR(255) NOT NULL, content TEXT)`,
-  `CREATE TABLE IF NOT EXISTS quizzes (id SERIAL PRIMARY KEY, chapter_id INT, title VARCHAR(255) NOT NULL, questions JSONB)`,
-  `CREATE TABLE IF NOT EXISTS past_papers (id SERIAL PRIMARY KEY, subject_id INT, year INT, file_url TEXT, title VARCHAR(255))`,
-  `CREATE TABLE IF NOT EXISTS textbooks (id SERIAL PRIMARY KEY, subject_id INT, title VARCHAR(255) NOT NULL, author VARCHAR(255), grade VARCHAR(50), url TEXT)`,
-];
-
-(async () => {
+// ── Init DB schema (non-blocking) ────────────────────────
+setTimeout(async () => {
   try {
-    for (const sql of DB_INIT) await pool.query(sql);
-    console.log("Database schema ready.");
-  } catch (err) {
-    console.error("DB init warning:", err.message);
+    const { pool } = require("./config/db");
+    const tables = [
+      `CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, role VARCHAR(20) DEFAULT 'student', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
+      `CREATE TABLE IF NOT EXISTS grades (id SERIAL PRIMARY KEY, name VARCHAR(50))`,
+      `CREATE TABLE IF NOT EXISTS subjects (id SERIAL PRIMARY KEY, name VARCHAR(100), grade_id INT)`,
+      `CREATE TABLE IF NOT EXISTS chapters (id SERIAL PRIMARY KEY, subject_id INT, title VARCHAR(255), content TEXT)`,
+      `CREATE TABLE IF NOT EXISTS quizzes (id SERIAL PRIMARY KEY, chapter_id INT, title VARCHAR(255), questions JSONB)`,
+      `CREATE TABLE IF NOT EXISTS past_papers (id SERIAL PRIMARY KEY, subject_id INT, year INT, file_url TEXT, title VARCHAR(255))`,
+      `CREATE TABLE IF NOT EXISTS textbooks (id SERIAL PRIMARY KEY, subject_id INT, title VARCHAR(255), grade VARCHAR(50), url TEXT)`,
+    ];
+    for (const sql of tables) await pool.query(sql).catch(()=>{});
+    console.log("✅ Database schema ready.");
+  } catch(err) {
+    console.error("⚠️  DB init error:", err.message);
   }
-})();
+}, 1000);
