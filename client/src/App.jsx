@@ -18,11 +18,16 @@ import SubjectModules from "./pages/SubjectModules";
 import Subjects from "./pages/Subjects";
 import Subscription from "./pages/Subscription";
 import Textbooks from "./pages/Textbooks";
+import SubscriptionGate from "./components/SubscriptionGate";
 
-// Wrap a page with MainLayout + ProtectedRoute
+// Wrap a page with MainLayout + ProtectedRoute + SubscriptionGate
 const Protected = ({ children }) => (
   <MainLayout>
-    <ProtectedRoute>{children}</ProtectedRoute>
+    <ProtectedRoute>
+      <SubscriptionGate>
+        {children}
+      </SubscriptionGate>
+    </ProtectedRoute>
   </MainLayout>
 );
 

@@ -37,6 +37,7 @@ export default function Navbar() {
           <NavLink to="/" className="nav-link">Home</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
           <NavLink to="/past-papers" className="nav-link">Past Papers</NavLink>
+          <NavLink to="/subscription" className="nav-link nav-sub-link">⭐ Subscribe</NavLink>
           <NavLink to="/subscription" className="nav-link nav-subscribe-link">
             Subscribe
             {trialActive && (

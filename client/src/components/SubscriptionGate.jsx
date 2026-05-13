@@ -1,0 +1,66 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../context/SubscriptionContext";
+
+// Wrap protected content — shows paywall if trial/subscription expired
+export default function SubscriptionGate({ children }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { hasAccess, isSubscribed, trialDaysRemaining, initTrial } = useSubscription();
+
+  // Start trial on first access
+  initTrial();
+
+  // Admin always has access
+  if (user?.role === "admin" || user?.email?.includes("admin")) return children;
+
+  const trialLeft = trialDaysRemaining();
+  const access = hasAccess();
+
+  if (access) {
+    return (
+      <>
+        {/* Warning banner when trial is almost over */}
+        {!isSubscribed() && trialLeft <= 7 && trialLeft > 0 && (
+          <div className="sub-reminder-bar">
+            <span>⏰ {trialLeft} day{trialLeft !== 1 ? "s" : ""} left in your free trial</span>
+            <button onClick={() => navigate("/subscription")} className="sub-reminder-btn">
+              Subscribe Now →
+            </button>
+          </div>
+        )}
+        {children}
+      </>
+    );
+  }
+
+  // Paywall screen
+  return (
+    <div className="sub-paywall">
+      <div className="sub-paywall-inner">
+        <div className="sub-paywall-icon">🔒</div>
+        <h2>Your Free Trial Has Ended</h2>
+        <p>
+          Your 30-day free trial is over. Subscribe to continue accessing all subjects,
+          textbooks, quizzes, notes and past papers.
+        </p>
+        <div className="sub-paywall-prices">
+          <div className="sub-paywall-price">🇸🇸 <strong>20,000 SSP</strong></div>
+          <div className="sub-paywall-price">🇺🇬 <strong>15,000 UGX</strong></div>
+          <div className="sub-paywall-price">🇪🇹 <strong>200 ETB</strong></div>
+          <div className="sub-paywall-price">🇰🇪 <strong>400 KES</strong></div>
+          <div className="sub-paywall-price">🌍 <strong>$20 USD</strong></div>
+        </div>
+        <p className="sub-paywall-period">per 2 months · 1 month free for new users</p>
+        <button className="primary-button sub-paywall-btn"
+          onClick={() => navigate("/subscription")}>
+          View Plans &amp; Subscribe →
+        </button>
+        <button className="ghost-button" style={{ marginTop:8, width:"100%" }}
+          onClick={() => navigate("/")}>
+          ← Back to Home
+        </button>
+      </div>
+    </div>
+  );
+}

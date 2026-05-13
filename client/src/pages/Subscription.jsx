@@ -1,288 +1,190 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useAuth } from "../context/AuthContext";
 
-// ── Pricing data ──────────────────────────────────────────
 const PLANS = [
   {
-    id: "ss",
-    country: "South Sudan",
-    flag: "ss",
-    currency: "SSP",
-    price: "20,000",
-    symbol: "SSP",
-    featured: true,
-    description: "For students & teachers in South Sudan",
+    region: "South Sudan",
+    flag: "🇸🇸",
+    price: "20,000 SSP",
+    period: "per 2 months",
+    color: "#0f6b5b",
+    contact: "Pay via mobile money or bank. Contact: +211 912 345 678",
   },
   {
-    id: "ug",
-    country: "Uganda",
-    flag: "ug",
-    currency: "UGX",
-    price: "15,000",
-    symbol: "UGX",
-    featured: false,
-    description: "For students & teachers in Uganda",
+    region: "Uganda",
+    flag: "🇺🇬",
+    price: "15,000 UGX",
+    period: "per 2 months",
+    color: "#d4a017",
+    contact: "Pay via MTN Mobile Money. Contact: +256 700 000 000",
   },
   {
-    id: "et",
-    country: "Ethiopia",
-    flag: "et",
-    currency: "ETB",
-    price: "200",
-    symbol: "ETB",
-    featured: false,
-    description: "For students & teachers in Ethiopia",
+    region: "Ethiopia",
+    flag: "🇪🇹",
+    price: "200 ETB",
+    period: "per 2 months",
+    color: "#078930",
+    contact: "Pay via Telebirr. Contact: +251 900 000 000",
   },
   {
-    id: "ke",
-    country: "Kenya",
-    flag: "ke",
-    currency: "KES",
-    price: "400",
-    symbol: "KES",
-    featured: false,
-    description: "For students & teachers in Kenya",
+    region: "Kenya",
+    flag: "🇰🇪",
+    price: "400 KES",
+    period: "per 2 months",
+    color: "#006600",
+    contact: "Pay via M-Pesa. Contact: +254 700 000 000",
   },
   {
-    id: "intl",
-    country: "International",
-    flag: "un",
-    currency: "USD",
-    price: "20",
-    symbol: "$",
-    featured: false,
-    description: "Western world & international users",
+    region: "Western World",
+    flag: "🌍",
+    price: "$20 USD",
+    period: "per 2 months",
+    color: "#1565c0",
+    contact: "Pay via PayPal or bank transfer. Email: thiyangkoang77@gmail.com",
+  },
+  {
+    region: "Schools & Institutions",
+    flag: "🏫",
+    price: "$2,000 USD",
+    period: "per year",
+    color: "#6a1b9a",
+    badge: "INSTITUTION",
+    contact: "Full school license for unlimited students. Email: thiyangkoang77@gmail.com",
   },
 ];
 
-const INSTITUTION_PLAN = {
-  id: "institution",
-  country: "School / Institution",
-  flag: "ss",
-  currency: "USD",
-  price: "2,000",
-  symbol: "$",
-  description: "Full school or institution license — unlimited students & teachers",
-};
-
-const FEATURES = [
-  "Full textbook access",
-  "All modules & notes",
-  "Quizzes & exams",
-  "Past papers",
-  "YouTube tutorials",
-];
-
-// ── Sub-components ────────────────────────────────────────
-function PricingCard({ plan, onSubscribe }) {
-  return (
-    <div className={`sub-card${plan.featured ? " featured" : ""}`}>
-      {plan.featured && <div className="sub-card-badge">Most Popular</div>}
-
-      <div className="sub-card-flag">
-        <img
-          src={`https://flagcdn.com/w80/${plan.flag}.png`}
-          alt={`${plan.country} flag`}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "https://flagcdn.com/w80/ss.png";
-          }}
-        />
-      </div>
-
-      <div className="sub-card-country">{plan.country}</div>
-      <p className="sub-card-desc">{plan.description}</p>
-
-      <div className="sub-card-price">
-        <span className="sub-price-amount">
-          {plan.symbol !== plan.currency ? plan.symbol : ""}{plan.price}
-        </span>
-        <span className="sub-price-currency"> {plan.currency}</span>
-      </div>
-      <div className="sub-price-period">per 2 months</div>
-
-      <ul className="sub-features">
-        {FEATURES.map((f) => (
-          <li key={f}>
-            <span className="sub-check">✅</span> {f}
-          </li>
-        ))}
-      </ul>
-
-      <button className="sub-subscribe-btn" onClick={() => onSubscribe(plan)}>
-        Subscribe Now
-      </button>
-    </div>
-  );
-}
-
-function InstitutionCard({ onSubscribe }) {
-  return (
-    <div className="sub-card sub-card-institution">
-      <div className="sub-card-flag">
-        <img src="https://flagcdn.com/w80/ss.png" alt="Institution" />
-      </div>
-      <div className="sub-card-country">🏫 {INSTITUTION_PLAN.country}</div>
-      <p className="sub-card-desc">{INSTITUTION_PLAN.description}</p>
-
-      <div className="sub-card-price">
-        <span className="sub-price-amount">${INSTITUTION_PLAN.price}</span>
-        <span className="sub-price-currency"> USD</span>
-      </div>
-      <div className="sub-price-period">annual license</div>
-
-      <ul className="sub-features">
-        {[...FEATURES, "Unlimited student accounts", "Teacher dashboard", "Admin controls"].map((f) => (
-          <li key={f}>
-            <span className="sub-check">✅</span> {f}
-          </li>
-        ))}
-      </ul>
-
-      <button className="sub-subscribe-btn sub-subscribe-btn-institution" onClick={() => onSubscribe(INSTITUTION_PLAN)}>
-        Contact for License
-      </button>
-    </div>
-  );
-}
-
-function PaymentModal({ plan, onClose }) {
-  if (!plan) return null;
-
-  return (
-    <div className="sub-modal-overlay" onClick={onClose}>
-      <div className="sub-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="sub-modal-close" onClick={onClose} aria-label="Close">✕</button>
-
-        <div className="sub-modal-icon">💳</div>
-        <h2>Activate Your Subscription</h2>
-        <p className="sub-modal-plan">
-          Plan: <strong>{plan.country}</strong> — {plan.symbol !== plan.currency ? plan.symbol : ""}{plan.price} {plan.currency}
-          {plan.id !== "institution" ? " / 2 months" : " / year"}
-        </p>
-
-        <div className="sub-modal-steps">
-          <div className="sub-modal-step">
-            <span className="sub-step-num">1</span>
-            <span>Send payment via <strong>Mobile Money</strong> or <strong>Bank Transfer</strong></span>
-          </div>
-          <div className="sub-modal-step">
-            <span className="sub-step-num">2</span>
-            <span>WhatsApp your <strong>payment receipt</strong> to the admin</span>
-          </div>
-          <div className="sub-modal-step">
-            <span className="sub-step-num">3</span>
-            <span>Your account will be <strong>activated within 24 hours</strong></span>
-          </div>
-        </div>
-
-        <a
-          href="https://wa.me/message/YZO6RMBL5DPCO1"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="sub-modal-whatsapp"
-        >
-          <span>💬</span> Contact Admin on WhatsApp
-        </a>
-
-        <p className="sub-modal-note">
-          After payment confirmation, your subscription will be activated and you'll have full access for{" "}
-          {plan.id === "institution" ? "1 year" : "2 months"}.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────
 export default function Subscription() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { isTrialActive, trialDaysRemaining, isSubscribed, daysRemaining } = useSubscription();
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selected, setSelected] = useState(null);
 
-  const trialActive = isTrialActive();
-  const subscribed = isSubscribed();
+  const trialLeft = trialDaysRemaining();
+  const subbed = isSubscribed();
+  const trialOn = isTrialActive();
 
   return (
-    <div className="sub-page">
-      {/* Hero */}
-      <div className="sub-hero">
-        <div className="sub-hero-inner">
-          <div className="eyebrow">South Sudan E-Learning</div>
-          <h1>Choose Your Plan</h1>
-          <p>
-            Unlock full access to textbooks, modules, past papers, quizzes, and YouTube tutorials
-            for secondary school students across East Africa.
-          </p>
+    <div className="sub-shell">
 
-          {/* Status banner */}
-          {trialActive && (
-            <div className="sub-status-banner trial">
-              🎓 Free trial active — <strong>{trialDaysRemaining()} days remaining</strong>
+      {/* Header */}
+      <div className="sub-header">
+        <span className="eyebrow">South Sudan E-Learning Platform</span>
+        <h1>Subscription Plans</h1>
+        <p>Full access to all subjects, textbooks, quizzes, notes and past papers.</p>
+
+        {/* Status banner */}
+        {subbed ? (
+          <div className="sub-trial-banner active">
+            <span>✅</span>
+            <div>
+              <strong>You are subscribed — {daysRemaining()} days remaining</strong>
+              <p>You have full access to all content.</p>
             </div>
-          )}
-          {subscribed && (
-            <div className="sub-status-banner subscribed">
-              ✅ Subscribed — <strong>{daysRemaining()} days remaining</strong>
+          </div>
+        ) : trialOn ? (
+          <div className="sub-trial-banner active">
+            <span>🎉</span>
+            <div>
+              <strong>{trialLeft} day{trialLeft !== 1 ? "s" : ""} left in your free trial</strong>
+              <p>Subscribe before your trial ends to keep learning without interruption.</p>
             </div>
-          )}
-          {!trialActive && !subscribed && (
-            <div className="sub-status-banner expired">
-              ⚠️ Your free trial has ended. Subscribe below to continue.
+          </div>
+        ) : (
+          <div className="sub-trial-banner expired">
+            <span>⏰</span>
+            <div>
+              <strong>Your free trial has ended</strong>
+              <p>Choose a plan below to continue accessing all content.</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Trial banner */}
-      <div className="sub-trial-banner">
-        <span className="sub-trial-icon">🎁</span>
+      {/* Free trial highlight */}
+      <div className="sub-free-card">
+        <div className="sub-free-icon">🆓</div>
         <div>
-          <strong>2 Weeks Free for New Users!</strong>
-          <span> — No payment needed. Start learning immediately after registration.</span>
+          <h3>1 Month Free for New Users</h3>
+          <p>Every new student and teacher gets <strong>30 days completely free</strong> — no payment, no card needed. After that, choose a plan to continue.</p>
         </div>
       </div>
 
-      {/* Pricing grid */}
-      <div className="sub-section">
-        <h2 className="sub-section-title">Individual Plans</h2>
-        <p className="sub-section-sub">Pick the plan for your country. All plans include 2 months of full access.</p>
-        <div className="sub-grid">
-          {PLANS.map((plan) => (
-            <PricingCard key={plan.id} plan={plan} onSubscribe={setSelectedPlan} />
-          ))}
-        </div>
-      </div>
+      {/* Plans grid */}
+      <div className="sub-grid">
+        {PLANS.map((plan, i) => (
+          <div key={i}
+            className={`sub-card${selected === i ? " selected" : ""}${plan.badge ? " institution" : ""}`}
+            style={{ "--plan-color": plan.color }}
+            onClick={() => setSelected(i)}>
 
-      {/* Institution card */}
-      <div className="sub-section">
-        <h2 className="sub-section-title">Institution License</h2>
-        <p className="sub-section-sub">For schools, colleges, and educational institutions.</p>
-        <div className="sub-institution-wrap">
-          <InstitutionCard onSubscribe={setSelectedPlan} />
-        </div>
-      </div>
+            {plan.badge && <div className="sub-badge">{plan.badge}</div>}
 
-      {/* FAQ / info */}
-      <div className="sub-section sub-faq">
-        <h2 className="sub-section-title">How it works</h2>
-        <div className="sub-faq-grid">
-          {[
-            { icon: "🎓", title: "Free Trial", body: "All new users get 14 days of free access. No credit card required." },
-            { icon: "📱", title: "Easy Payment", body: "Pay via Mobile Money or bank transfer, then WhatsApp your receipt to the admin." },
-            { icon: "⚡", title: "Fast Activation", body: "Your account is activated within 24 hours of payment confirmation." },
-            { icon: "📚", title: "Full Access", body: "Get 2 months of unlimited access to all content on the platform." },
-          ].map((item) => (
-            <div key={item.title} className="sub-faq-card">
-              <span className="sub-faq-icon">{item.icon}</span>
-              <strong>{item.title}</strong>
-              <p>{item.body}</p>
+            <div className="sub-card-top">
+              <span className="sub-card-flag">{plan.flag}</span>
+              <span className="sub-card-region">{plan.region}</span>
             </div>
-          ))}
-        </div>
+            <div className="sub-card-price">{plan.price}</div>
+            <div className="sub-card-period">{plan.period}</div>
+
+            <div className="sub-card-divider" />
+
+            <div className="sub-card-features">
+              <div>✅ All subjects &amp; modules</div>
+              <div>✅ Full notes &amp; quizzes</div>
+              <div>✅ Official textbooks</div>
+              <div>✅ Past exam papers</div>
+              <div>✅ YouTube tutorials</div>
+              {plan.badge && <div>✅ Unlimited students</div>}
+            </div>
+
+            <button className="sub-card-btn"
+              style={{ background: selected === i ? plan.color : undefined }}
+              onClick={e => { e.stopPropagation(); setSelected(i); }}>
+              {selected === i ? "✓ Selected" : "Select Plan"}
+            </button>
+          </div>
+        ))}
       </div>
 
-      {/* Payment modal */}
-      <PaymentModal plan={selectedPlan} onClose={() => setSelectedPlan(null)} />
+      {/* Payment instructions */}
+      {selected !== null && (
+        <div className="sub-payment-box">
+          <h3>💳 How to Pay — {PLANS[selected].region}</h3>
+          <div className="sub-payment-amount">
+            <span className="sub-payment-flag">{PLANS[selected].flag}</span>
+            <strong>{PLANS[selected].price}</strong>
+            <span>{PLANS[selected].period}</span>
+          </div>
+
+          <div className="sub-payment-steps">
+            <div className="sub-step">
+              <span className="sub-step-num">1</span>
+              <p>{PLANS[selected].contact}</p>
+            </div>
+            <div className="sub-step">
+              <span className="sub-step-num">2</span>
+              <p>Send your <strong>full name</strong> and <strong>registered email ({user?.email})</strong> with the payment proof.</p>
+            </div>
+            <div className="sub-step">
+              <span className="sub-step-num">3</span>
+              <p>Your account will be activated within <strong>24 hours</strong> after payment is confirmed.</p>
+            </div>
+          </div>
+
+          <a href={`mailto:thiyangkoang77@gmail.com?subject=Subscription - ${PLANS[selected].region}&body=Name: ${user?.name || ""}%0AEmail: ${user?.email || ""}%0APlan: ${PLANS[selected].region} - ${PLANS[selected].price}`}
+            className="primary-button sub-contact-btn">
+            📧 Send Payment Confirmation
+          </a>
+        </div>
+      )}
+
+      <button className="ghost-button" style={{ justifySelf:"start", marginTop:8 }}
+        onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+
     </div>
   );
 }

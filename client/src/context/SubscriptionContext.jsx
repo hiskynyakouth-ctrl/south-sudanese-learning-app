@@ -4,7 +4,7 @@ const SubscriptionContext = createContext(null);
 
 const TRIAL_KEY   = "ss_trial_start";
 const EXPIRY_KEY  = "ss_sub_expiry";
-const TRIAL_DAYS  = 14;   // 2 weeks
+const TRIAL_DAYS  = 30;   // 1 month free
 const SUB_DAYS    = 60;   // 2 months
 
 // ── helpers ──────────────────────────────────────────────
