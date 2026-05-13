@@ -235,19 +235,17 @@ export default function PastPapers() {
                   <div className="admin-year-label">{year}</div>
                   <div className="tb-papers-row">
                     {yPapers.map((p, i) => (
-                      <div key={p.filename || i} className="tb-paper-card">
+                      <div key={p.filename || i} className="tb-paper-card" onContextMenu={e => e.preventDefault()}>
                         <div className="tb-paper-icon">{getIcon(p.subject)}</div>
                         <div className="tb-paper-info">
                           <strong>{p.title || `${p.subject} ${p.year} — ${p.paper}`}</strong>
                           <span>{p.subject} · {p.paper} · {p.year}</span>
                         </div>
                         <div className="tb-paper-btns">
-                          <a href={`${API_BASE}${p.url}`} target="_blank" rel="noreferrer" className="tb-read-btn">
+                          <button className="tb-read-btn"
+                            onClick={() => window.open(`${API_BASE}${p.url}#toolbar=0&navpanes=0`, "_blank", "noopener,noreferrer")}>
                             📖 View
-                          </a>
-                          <a href={`${API_BASE}${p.url}`} download className="tb-dl-btn">
-                            ⬇️ Download
-                          </a>
+                          </button>
                           {isAdmin && (
                             <button className="admin-del-btn" onClick={() => deletePaper(p)}>🗑️</button>
                           )}

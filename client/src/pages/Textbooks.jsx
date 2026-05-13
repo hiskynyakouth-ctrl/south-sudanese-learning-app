@@ -194,10 +194,15 @@ export default function Textbooks() {
               ? <img src="https://flagcdn.com/w40/ss.png" alt="SS Flag" style={{ width:36, height:24, borderRadius:3, objectFit:"cover" }} onError={e=>{e.target.onerror=null;e.target.style.display="none";}} />
               : <SubjectIcon subject={book.subject} size={38} />;
             return (
-              <a key={book.filename || i}
-                href={`${API_BASE}${book.url}`}
-                target="_blank" rel="noreferrer"
-                className="tb-circle-item">
+              <div key={book.filename || i}
+                className="tb-circle-item"
+                style={{ cursor:"pointer" }}
+                onClick={() => {
+                  // Open in viewer — no download toolbar
+                  const url = `${API_BASE}${book.url}#toolbar=0&navpanes=0&scrollbar=0`;
+                  window.open(url, "_blank", "noopener,noreferrer");
+                }}
+                onContextMenu={e => e.preventDefault()}>
                 <div className="tb-circle-wrap" style={{ background: subStyle.bg, borderColor: subStyle.color }}>
                   <div className="tb-circle-grade" style={{ background: subStyle.color }}>
                     {(book.grade || "").replace("Senior ","S")}
@@ -210,11 +215,11 @@ export default function Textbooks() {
                   <IconBookOpen size={13} color="white" /> Read
                 </div>
                 {isAdmin && (
-                  <button className="tb-circle-del" onClick={(e) => { e.preventDefault(); deleteBook(book); }}>
+                  <button className="tb-circle-del" onClick={(e) => { e.stopPropagation(); deleteBook(book); }}>
                     <IconTrash size={14} color="#ef5350" />
                   </button>
                 )}
-              </a>
+              </div>
             );
           })}
         </div>
