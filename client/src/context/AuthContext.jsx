@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
+const TRIAL_KEY = "ss_trial_start";
+
 const AuthContext = createContext(null);
 
 const STORAGE_KEY = "sslauth";
@@ -29,6 +31,10 @@ export const AuthProvider = ({ children }) => {
   const saveSession = useCallback((nextSession) => {
     setSession(nextSession);
     setStored(nextSession);
+    // Set trial start date on first login/registration if not already set
+    if (nextSession && !localStorage.getItem(TRIAL_KEY)) {
+      localStorage.setItem(TRIAL_KEY, new Date().toISOString());
+    }
   }, []);
 
   const logout = useCallback(() => {

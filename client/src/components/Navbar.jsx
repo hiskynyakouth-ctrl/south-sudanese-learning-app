@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useSubscription } from "../context/SubscriptionContext";
 import {
   IconSun, IconMoon, IconAdmin, IconMenu, IconClose,
   IconHome, IconBook, IconFile, IconLogout, IconUser,
@@ -10,10 +11,14 @@ import {
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggle } = useTheme();
+  const { isTrialActive, trialDaysRemaining } = useSubscription();
   const [menuOpen, setMenuOpen] = useState(false);
   const isAdmin = user?.role === "admin" || user?.email?.includes("admin");
   const close = () => setMenuOpen(false);
   const initial = (user?.name || "S")[0].toUpperCase();
+
+  const trialActive = isTrialActive();
+  const trialDays = trialActive ? trialDaysRemaining() : 0;
 
   return (
     <header className="topbar">
@@ -32,6 +37,12 @@ export default function Navbar() {
           <NavLink to="/" className="nav-link">Home</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
           <NavLink to="/past-papers" className="nav-link">Past Papers</NavLink>
+          <NavLink to="/subscription" className="nav-link nav-subscribe-link">
+            Subscribe
+            {trialActive && (
+              <span className="nav-trial-badge">{trialDays}d left</span>
+            )}
+          </NavLink>
           {isAdmin && (
             <NavLink to="/admin" className="nav-link nav-admin-link">
               <IconAdmin size={16} /> Admin
@@ -77,6 +88,12 @@ export default function Navbar() {
           </NavLink>
           <NavLink to="/past-papers" className="mobile-nav-link" onClick={close}>
             <IconFile size={16} /> Past Papers
+          </NavLink>
+          <NavLink to="/subscription" className="mobile-nav-link" onClick={close}>
+            💳 Subscribe
+            {trialActive && (
+              <span className="nav-trial-badge" style={{ marginLeft: 8 }}>{trialDays}d left</span>
+            )}
           </NavLink>
           {isAdmin && (
             <NavLink to="/admin" className="mobile-nav-link" onClick={close}>
