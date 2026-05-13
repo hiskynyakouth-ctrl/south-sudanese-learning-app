@@ -15,11 +15,12 @@ const pool = process.env.DATABASE_URL
       port:     parseInt(process.env.DB_PORT || '5432'),
     });
 
-pool.connect((err, client, release) => {
-  if (err) { console.error('PostgreSQL connection failed:', err.message); }
-  else {
+// Test connection asynchronously without blocking startup
+pool.query('SELECT NOW()', (err, result) => {
+  if (err) { 
+    console.error('PostgreSQL connection failed:', err.message); 
+  } else {
     console.log('Connected to PostgreSQL database:', process.env.DB_NAME || process.env.DATABASE_URL?.split('/').pop());
-    release();
   }
 });
 
@@ -40,3 +41,5 @@ const db = {
 };
 
 module.exports = db;
+module.exports.pool = pool;
+module.exports.db = db;

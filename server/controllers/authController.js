@@ -23,7 +23,8 @@ exports.register = async (req, res) => {
   } catch (err) {
     if (err.code === "23505")
       return res.status(409).json({ error: "An account with this email already exists." });
-    res.status(500).json({ error: err.message });
+    console.error("Register error:", err);
+    res.status(500).json({ error: "Registration failed: " + (err.message || "Database error") });
   }
 };
 
@@ -52,7 +53,8 @@ exports.googleAuth = async (req, res) => {
   } catch (err) {
     if (err.code === "23505")
       return res.status(409).json({ error: "An account with this email already exists." });
-    res.status(500).json({ error: err.message });
+    console.error("Google auth error:", err);
+    res.status(500).json({ error: "Google auth failed: " + (err.message || "Database error") });
   }
 };
 
@@ -70,7 +72,8 @@ exports.login = async (req, res) => {
     const safe = { id: user.id, name: user.name, email: user.email, role: user.role };
     res.json({ message: "Login successful.", token: sign(safe), user: safe });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Login failed: " + (err.message || "Database error") });
   }
 };
 
@@ -91,6 +94,7 @@ exports.resetPassword = async (req, res) => {
       return res.status(404).json({ error: "No account found with this email." });
     res.json({ message: "Password reset successfully." });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Reset password error:", err);
+    res.status(500).json({ error: "Reset failed: " + (err.message || "Database error") });
   }
 };
