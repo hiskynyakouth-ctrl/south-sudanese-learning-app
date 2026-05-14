@@ -47,6 +47,17 @@ export const SubscriptionProvider = ({ children }) => {
 
   /** True if user can access content */
   const hasAccess = useCallback(() => {
+    // Check if current user is admin via localStorage session
+    try {
+      const session = JSON.parse(localStorage.getItem("sslauth") || "{}");
+      const user = session?.user;
+      if (user?.role === "admin" ||
+          user?.email?.toLowerCase().includes("admin") ||
+          user?.email?.toLowerCase() === "thiyangkoang77@gmail.com" ||
+          user?.email?.toLowerCase() === "admin@school.com") {
+        return true; // Admin always has access — free forever
+      }
+    } catch {}
     return isTrialActive() || isSubscribed();
   }, [isTrialActive, isSubscribed]);
 

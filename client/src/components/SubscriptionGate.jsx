@@ -2,6 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
 
+// ── Admin check helper ────────────────────────────────────
+const isAdminUser = (user) => {
+  if (!user) return false;
+  return (
+    user.role === "admin" ||
+    user.email?.toLowerCase().includes("admin") ||
+    user.email?.toLowerCase() === "thiyangkoang77@gmail.com" ||
+    user.email?.toLowerCase() === "admin@school.com"
+  );
+};
+
 // Wrap protected content — shows paywall if trial/subscription expired
 export default function SubscriptionGate({ children }) {
   const navigate = useNavigate();
@@ -11,8 +22,8 @@ export default function SubscriptionGate({ children }) {
   // Start trial on first access
   initTrial();
 
-  // Admin always has access
-  if (user?.role === "admin" || user?.email?.includes("admin")) return children;
+  // ── Admin: always free, full access, no subscription needed ──
+  if (isAdminUser(user)) return children;
 
   const trialLeft = trialDaysRemaining();
   const access = hasAccess();
