@@ -37,13 +37,15 @@ export default function Navbar() {
           <NavLink to="/" className="nav-link">Home</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
           <NavLink to="/past-papers" className="nav-link">Past Papers</NavLink>
-          <NavLink to="/subscription" className="nav-link nav-sub-link">⭐ Subscribe</NavLink>
-          <NavLink to="/subscription" className="nav-link nav-subscribe-link">
-            Subscribe
-            {trialActive && (
-              <span className="nav-trial-badge">{trialDays}d left</span>
-            )}
-          </NavLink>
+          {/* Subscribe — hidden for admin */}
+          {!isAdmin && (
+            <NavLink to="/subscription" className="nav-link nav-sub-link">
+              ⭐ Subscribe
+              {trialActive && trialDays <= 7 && (
+                <span className="nav-trial-badge">{trialDays}d left</span>
+              )}
+            </NavLink>
+          )}
           {isAdmin && (
             <NavLink to="/admin" className="nav-link nav-admin-link">
               <IconAdmin size={16} /> Admin
@@ -90,12 +92,15 @@ export default function Navbar() {
           <NavLink to="/past-papers" className="mobile-nav-link" onClick={close}>
             <IconFile size={16} /> Past Papers
           </NavLink>
-          <NavLink to="/subscription" className="mobile-nav-link" onClick={close}>
-            💳 Subscribe
-            {trialActive && (
-              <span className="nav-trial-badge" style={{ marginLeft: 8 }}>{trialDays}d left</span>
-            )}
-          </NavLink>
+          {/* Subscribe — hidden for admin */}
+          {!isAdmin && (
+            <NavLink to="/subscription" className="mobile-nav-link" onClick={close}>
+              💳 Subscribe
+              {trialActive && trialDays <= 7 && (
+                <span className="nav-trial-badge" style={{ marginLeft: 8 }}>{trialDays}d left</span>
+              )}
+            </NavLink>
+          )}
           {isAdmin && (
             <NavLink to="/admin" className="mobile-nav-link" onClick={close}>
               <IconAdmin size={16} /> Admin
