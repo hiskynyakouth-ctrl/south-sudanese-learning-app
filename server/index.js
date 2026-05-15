@@ -7,8 +7,12 @@ try { require("dotenv").config(); } catch(e) {}
 
 const app = express();
 
-// ── CORS — allow everything ───────────────────────────────
-app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"], allowedHeaders: ["Content-Type","Authorization"] }));
+app.use(cors({
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
+  allowedHeaders: ["Content-Type","Authorization"],
+  credentials: false,
+}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
