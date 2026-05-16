@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 // ── Pricing data (no JSX in array — rendered inline) ──────
 const PLANS = [
-  { region: "South Sudan",          iso: "ss", price: "10,000 SSP", amount: 10000, currency: "SSP", period: "per 2 months", color: "#0f6b5b", payMethod: "flutterwave", payNote: "Mobile Money / Bank Transfer" },
+  { region: "South Sudan",          iso: "ss", price: "5,000 SSP", amount: 10000, currency: "SSP", period: "per 2 months", color: "#0f6b5b", payMethod: "flutterwave", payNote: "Mobile Money / Bank Transfer" },
   { region: "Uganda",               iso: "ug", price: "10,000 UGX", amount: 10000, currency: "UGX", period: "per 2 months", color: "#d4a017", payMethod: "flutterwave", payNote: "MTN Mobile Money / Airtel" },
   { region: "Ethiopia",             iso: "et", price: "200 ETB",    amount: 200,   currency: "ETB", period: "per 2 months", color: "#078930", payMethod: "flutterwave", payNote: "Telebirr / Bank Transfer" },
   { region: "Kenya",                iso: "ke", price: "100 KES",    amount: 100,   currency: "KES", period: "per 2 months", color: "#006600", payMethod: "flutterwave", payNote: "M-Pesa / Airtel Money" },
