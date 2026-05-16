@@ -12,7 +12,26 @@ router.get("/me", authMiddleware, me);
 
 router.post("/reset-password", require("../controllers/authController").resetPassword);
 
-// ── Record subscription after payment ────────────────────
+// ── One-time admin setup (only works if no admin exists yet) ─
+router.post("/setup-admin", async (req, res) => {
+  const { secret, email, password } = req.body;
+  if (secret !== "ss_setup_2024_hisky") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const bcrypt = require("bcryptjs");
+    const hash = await bcrypt.hash(password || "Admin@2024", 10);
+    // Update existing user or create new
+    const upd = await pool.query(
+      "UPDATE users SET role='admin', password=$1 WHERE LOWER(email)=LOWER($2) RETURNING id, email, role",
+      [hash, email || "admin@school.com"]
+    );
+    if (upd.rows.length > 0) return res.json({ message: "Admin updated", user: upd.rows[0] });
+    const ins = await pool.query(
+      "INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,'admin') RETURNING id,email,role",
+      ["Admin", email || "admin@school.com", hash]
+    );
+    res.json({ message: "Admin created", user: ins.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 router.post("/subscribe", async (req, res) => {
   const { email, plan, txRef, amount, currency } = req.body;
   if (!email) return res.status(400).json({ error: "Email required." });
