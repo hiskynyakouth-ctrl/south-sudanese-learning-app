@@ -19,6 +19,9 @@ export default function Navbar() {
   const isAdmin = user?.role === "admin" || user?.email?.includes("admin");
   const close = () => setMenuOpen(false);
   const initial = (user?.name || "S")[0].toUpperCase();
+  // Load avatar from localStorage
+  const avatarKey = user ? `ss_avatar_${user.id || user.email}` : null;
+  const avatarImg = avatarKey ? localStorage.getItem(avatarKey) : null;
 
   const trialActive = isTrialActive();
   const trialDays = trialActive ? trialDaysRemaining() : 0;
@@ -79,8 +82,11 @@ export default function Navbar() {
 
               {/* Avatar — click to go to profile */}
               <button className="user-avatar-circle nav-avatar-btn" title={user?.name}
-                onClick={() => navigate("/profile")}>
-                {initial}
+                onClick={() => navigate("/profile")}
+                style={avatarImg ? { padding:0, overflow:"hidden" } : {}}>
+                {avatarImg
+                  ? <img src={avatarImg} alt={user?.name} style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} />
+                  : initial}
               </button>
               <span className="user-role-badge">{isAdmin ? "Admin" : "Student"}</span>
               <button className="ghost-button nav-logout" onClick={logout}>
@@ -135,7 +141,11 @@ export default function Navbar() {
                 🔔 Notifications {notifCount > 0 && <span className="nav-notif-badge" style={{marginLeft:6}}>{notifCount}</span>}
               </NavLink>
               <div className="mobile-user-row">
-                <div className="user-avatar-circle">{initial}</div>
+                <div className="user-avatar-circle" style={avatarImg ? { padding:0, overflow:"hidden" } : {}}>
+                  {avatarImg
+                    ? <img src={avatarImg} alt={user?.name} style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} />
+                    : initial}
+                </div>
                 <span>{isAdmin ? "Admin" : "Student"}</span>
               </div>
               <button className="mobile-nav-link mobile-logout" onClick={() => { logout(); close(); }}>

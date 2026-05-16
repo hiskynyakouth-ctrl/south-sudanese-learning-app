@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useProgress } from "../context/ProgressContext";
 import api from "../services/api";
+
+// ── Avatar helpers ────────────────────────────────────────
+const getAvatarKey = (user) => `ss_avatar_${user?.id || user?.email}`;
+const getStoredAvatar = (user) => {
+  try { return localStorage.getItem(getAvatarKey(user)) || null; } catch { return null; }
+};
+const saveAvatar = (user, dataUrl) => {
+  try { localStorage.setItem(getAvatarKey(user), dataUrl); } catch {}
+};
 
 export default function Profile() {
   const { user, saveSession, token } = useAuth();
@@ -16,6 +25,8 @@ export default function Profile() {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [avatar, setAvatar] = useState(() => getStoredAvatar(user));
+  const avatarRef = useRef();
 
   const stats = getStats();
   const results = getAllQuizResults().sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)).slice(0, 10);
@@ -25,6 +36,26 @@ export default function Profile() {
   const flash = (m, isErr = false) => {
     if (isErr) setError(m); else setMsg(m);
     setTimeout(() => { setMsg(""); setError(""); }, 3000);
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { flash("Image must be under 2MB.", true); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setAvatar(dataUrl);
+      saveAvatar(user, dataUrl);
+      flash("Profile picture updated!");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAvatar = () => {
+    setAvatar(null);
+    try { localStorage.removeItem(getAvatarKey(user)); } catch {}
+    flash("Profile picture removed.");
   };
 
   const handleSave = async (e) => {
@@ -63,13 +94,29 @@ export default function Profile() {
 
       {/* ── Header card ── */}
       <div className="profile-header-card">
-        <div className="profile-avatar-lg">{initial}</div>
+        <div className="profile-avatar-wrap">
+          {avatar
+            ? <img src={avatar} alt="Profile" className="profile-avatar-img" />
+            : <div className="profile-avatar-lg">{initial}</div>
+          }
+          <button className="profile-avatar-edit" onClick={() => avatarRef.current?.click()} title="Change photo">
+            📷
+          </button>
+          <input ref={avatarRef} type="file" accept="image/*" style={{ display:"none" }}
+            onChange={handleAvatarChange} />
+        </div>
         <div className="profile-header-info">
           <h1>{user?.name}</h1>
           <span className={`profile-role-badge ${isAdmin ? "admin" : "student"}`}>
             {isAdmin ? "👑 Admin" : "🎓 Student"}
           </span>
           <p>{user?.email}</p>
+          {avatar && (
+            <button onClick={removeAvatar}
+              style={{ background:"none", border:"none", color:"rgba(255,255,255,0.6)", fontSize:"0.75rem", cursor:"pointer", padding:0, marginTop:4 }}>
+              Remove photo
+            </button>
+          )}
         </div>
       </div>
 
