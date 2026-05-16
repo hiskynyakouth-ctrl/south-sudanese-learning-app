@@ -9,8 +9,10 @@ const PLANS = [
   { region: "Uganda",               iso: "ug", price: "10,000 UGX", amount: 10000, currency: "UGX", period: "per 2 months", color: "#d4a017", payMethod: "flutterwave", payNote: "MTN Mobile Money / Airtel" },
   { region: "Ethiopia",             iso: "et", price: "200 ETB",    amount: 200,   currency: "ETB", period: "per 2 months", color: "#078930", payMethod: "flutterwave", payNote: "Telebirr / Bank Transfer" },
   { region: "Kenya",                iso: "ke", price: "100 KES",    amount: 100,   currency: "KES", period: "per 2 months", color: "#006600", payMethod: "flutterwave", payNote: "M-Pesa / Airtel Money" },
-  { region: "Western World",        iso: null, price: "$20 USD",    amount: 20,    currency: "USD", period: "per 2 months", color: "#1565c0", payMethod: "paypal",      payNote: "PayPal / Credit Card",    emoji: "🌍" },
-  { region: "Schools & Institutions", iso: null, price: "$500 USD", amount: 500,   currency: "USD", period: "per year",     color: "#6a1b9a", payMethod: "paypal",      payNote: "PayPal / Bank Transfer",  emoji: "🏫", badge: "INSTITUTION" },
+  { region: "Egypt",                iso: "eg", price: "100 EGP",    amount: 100,   currency: "EGP", period: "per 2 months", color: "#c8102e", payMethod: "flutterwave", payNote: "Card / Bank Transfer" },
+  { region: "Sudan",                iso: "sd", price: "600 SDG",    amount: 600,   currency: "SDG", period: "per 2 months", color: "#d21034", payMethod: "flutterwave", payNote: "Mobile Money / Bank Transfer" },
+  { region: "Western World",        iso: null, price: "$20 USD",    amount: 20,    currency: "USD", period: "per 2 months", color: "#1565c0", payMethod: "paypal",      payNote: "PayPal / Credit Card",   emoji: "🌍" },
+  { region: "Schools & Institutions", iso: null, price: "$500 USD", amount: 500,   currency: "USD", period: "per year",     color: "#6a1b9a", payMethod: "paypal",      payNote: "PayPal / Bank Transfer", emoji: "🏫", badge: "INSTITUTION" },
 ];
 
 // ── Flag image component ──────────────────────────────────
