@@ -8,19 +8,20 @@ const q = (sql, params = []) => pool.query(sql, params).then(r => r.rows);
 // ── Stats ─────────────────────────────────────────────────
 router.get("/stats", async (req, res) => {
   try {
-    const [u, s, c, p] = await Promise.all([
+    const [u, p] = await Promise.all([
       q("SELECT COUNT(*) AS count FROM users"),
-      q("SELECT COUNT(*) AS count FROM subjects"),
-      q("SELECT COUNT(*) AS count FROM chapters"),
       q("SELECT COUNT(*) AS count FROM past_papers"),
     ]);
+    // subjects and chapters may not exist yet — handle gracefully
+    let subjects = 0, chapters = 0;
+    try { subjects = parseInt((await q("SELECT COUNT(*) AS count FROM subjects"))[0].count) || 0; } catch {}
+    try { chapters = parseInt((await q("SELECT COUNT(*) AS count FROM chapters"))[0].count) || 0; } catch {}
     res.json({
       users:    parseInt(u[0].count) || 0,
-      subjects: parseInt(s[0].count) || 0,
-      chapters: parseInt(c[0].count) || 0,
+      subjects,
+      chapters,
       papers:   parseInt(p[0].count) || 0,
       db: "connected",
-      dbName: process.env.DB_NAME,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,10 +57,9 @@ router.delete("/users/:id", async (req, res) => {
 router.get("/subjects", async (req, res) => {
   try {
     const rows = await q(`
-      SELECT s.*, g.name AS grade_name, st.name AS stream_name
+      SELECT s.*, g.name AS grade_name
       FROM subjects s
       LEFT JOIN grades g ON s.grade_id = g.id
-      LEFT JOIN streams st ON s.stream_id = st.id
       ORDER BY g.id, s.name
     `);
     res.json(rows);
