@@ -12,7 +12,39 @@ router.get("/me", authMiddleware, me);
 
 router.post("/reset-password", require("../controllers/authController").resetPassword);
 
-// ── One-time admin setup (only works if no admin exists yet) ─
+// ── Update profile name ───────────────────────────────────
+router.put("/profile", authMiddleware, async (req, res) => {
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
+  try {
+    const r = await pool.query(
+      "UPDATE users SET name=$1 WHERE id=$2 RETURNING id, name, email, role",
+      [name.trim(), req.user.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: "User not found." });
+    res.json({ message: "Profile updated.", user: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Change password ───────────────────────────────────────
+router.post("/change-password", authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: "Both passwords required." });
+  if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters." });
+  try {
+    const r = await pool.query("SELECT password FROM users WHERE id=$1", [req.user.id]);
+    if (r.rows.length === 0) return res.status(404).json({ error: "User not found." });
+    const ok = await require("bcryptjs").compare(currentPassword, r.rows[0].password);
+    if (!ok) return res.status(401).json({ error: "Current password is incorrect." });
+    const hash = await require("bcryptjs").hash(newPassword, 10);
+    await pool.query("UPDATE users SET password=$1 WHERE id=$2", [hash, req.user.id]);
+    res.json({ message: "Password changed successfully." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router.post("/setup-admin", async (req, res) => {
   const { secret, email, password } = req.body;
   if (secret !== "ss_setup_2024_hisky") return res.status(403).json({ error: "Forbidden" });

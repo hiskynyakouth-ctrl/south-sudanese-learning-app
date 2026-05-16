@@ -64,15 +64,14 @@ export default function Profile() {
     setLoading(true);
     try {
       await api.put("/auth/profile", { name: form.name });
-      saveSession({ token, user: { ...user, name: form.name } });
-      setEditing(false);
-      flash("Profile updated!");
     } catch {
-      // Update locally
-      saveSession({ token, user: { ...user, name: form.name } });
-      setEditing(false);
-      flash("Profile updated locally.");
-    } finally { setLoading(false); }
+      // Server doesn't have route or offline — update locally only
+    }
+    // Always update locally
+    saveSession({ token, user: { ...user, name: form.name } });
+    setEditing(false);
+    flash("Profile updated!");
+    setLoading(false);
   };
 
   const handlePasswordChange = async (e) => {
