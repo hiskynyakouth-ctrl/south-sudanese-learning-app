@@ -3,6 +3,7 @@ import YouTubeIcon from "../components/YouTubeIcon";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { subjectModules } from "../data/curriculum";
 import { REAL_CONTENT } from "../data/realContent";
+import { useProgress } from "../context/ProgressContext";
 
 // ── Rich notes per module title ──────────────────────────
 const NOTES = {
@@ -106,9 +107,18 @@ export default function ModuleDetail() {
   const [tab, setTab] = useState(searchParams.get("tab") || "notes");
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const { saveQuizResult, markModuleRead, getQuizResult } = useProgress();
 
   useEffect(() => { setAnswers({}); setSubmitted(false); }, [moduleId]);
 
+  // Mark module as read when notes tab is viewed
+  useEffect(() => {
+    if (tab === "notes" && mod?.title) {
+      markModuleRead(decoded, mod.title, classId);
+    }
+  }, [tab, mod?.title, decoded, classId, markModuleRead]);
+
+  const prevResult = mod?.title ? getQuizResult(decoded, mod.title, classId) : null;
   const score = submitted ? quizList.filter((q, i) => answers[i] === q.answer).length : 0;
   const ytSearch = `https://www.youtube.com/results?search_query=${encodeURIComponent(decoded + " " + (mod?.title || "") + " lesson")}`;
   const videoId = mod?.videoId;
@@ -305,6 +315,11 @@ export default function ModuleDetail() {
           <div className="moddetail-quiz">
             <h2 style={{ marginBottom:4 }}>📝 Quiz — {mod?.title}</h2>
             <p style={{ color:"var(--muted)", marginBottom:20 }}>Answer all {quizList.length} questions then click Submit.</p>
+            {prevResult && !submitted && (
+              <div style={{ background:"#e8f5e9", border:"1px solid #a5d6a7", borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:"0.88rem", color:"#2e7d32" }}>
+                🏆 Your best score: <strong>{prevResult.bestScore}/{quizList.length} ({prevResult.percent}%)</strong> — {prevResult.attempts} attempt{prevResult.attempts !== 1 ? "s" : ""}
+              </div>
+            )}
             {!submitted ? (
               <>
                 {quizList.map((q, i) => (
@@ -322,7 +337,11 @@ export default function ModuleDetail() {
                   </div>
                 ))}
                 <button className="moddetail-submit-btn"
-                  onClick={() => setSubmitted(true)}
+                  onClick={() => {
+                    setSubmitted(true);
+                    const s = quizList.filter((q, i) => answers[i] === q.answer).length;
+                    saveQuizResult(decoded, mod.title, classId, s, quizList.length);
+                  }}
                   disabled={Object.keys(answers).length < quizList.length}>
                   Submit Quiz ({Object.keys(answers).length}/{quizList.length} answered)
                 </button>

@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./styles/index.css";
 import "./styles/subscription.css";
+import "./styles/features.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

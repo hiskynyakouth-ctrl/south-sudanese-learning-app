@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useProgress } from "../context/ProgressContext";
 import {
   IconSun, IconMoon, IconAdmin, IconMenu, IconClose,
-  IconHome, IconBook, IconFile, IconLogout, IconUser,
+  IconHome, IconBook, IconFile, IconLogout, IconUser, IconSearch,
 } from "./Icons";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const { isTrialActive, trialDaysRemaining } = useSubscription();
+  const { unreadCount } = useProgress();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const isAdmin = user?.role === "admin" || user?.email?.includes("admin");
   const close = () => setMenuOpen(false);
@@ -19,6 +22,7 @@ export default function Navbar() {
 
   const trialActive = isTrialActive();
   const trialDays = trialActive ? trialDaysRemaining() : 0;
+  const notifCount = isAuthenticated ? unreadCount() : 0;
 
   return (
     <header className="topbar">
@@ -54,6 +58,11 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
+          {/* Search */}
+          <button className="nav-icon-btn" onClick={() => navigate("/search")} title="Search">
+            <IconSearch size={16} />
+          </button>
+
           <button className="theme-toggle" onClick={toggle} title="Toggle dark mode">
             {theme === "dark"
               ? <IconSun size={16} color="#f9a825" />
@@ -62,7 +71,17 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <div className="nav-user-group">
-              <div className="user-avatar-circle" title={user?.name}>{initial}</div>
+              {/* Notifications bell */}
+              <button className="nav-icon-btn nav-notif-btn" onClick={() => navigate("/notifications")} title="Notifications">
+                🔔
+                {notifCount > 0 && <span className="nav-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
+              </button>
+
+              {/* Avatar — click to go to profile */}
+              <button className="user-avatar-circle nav-avatar-btn" title={user?.name}
+                onClick={() => navigate("/profile")}>
+                {initial}
+              </button>
               <span className="user-role-badge">{isAdmin ? "Admin" : "Student"}</span>
               <button className="ghost-button nav-logout" onClick={logout}>
                 <IconLogout size={14} style={{ marginRight:4 }} /> Logout
@@ -109,6 +128,12 @@ export default function Navbar() {
           <div className="mobile-menu-divider" />
           {isAuthenticated ? (
             <>
+              <NavLink to="/profile" className="mobile-nav-link" onClick={close}>
+                <IconUser size={16} /> Profile
+              </NavLink>
+              <NavLink to="/notifications" className="mobile-nav-link" onClick={close}>
+                🔔 Notifications {notifCount > 0 && <span className="nav-notif-badge" style={{marginLeft:6}}>{notifCount}</span>}
+              </NavLink>
               <div className="mobile-user-row">
                 <div className="user-avatar-circle">{initial}</div>
                 <span>{isAdmin ? "Admin" : "Student"}</span>
