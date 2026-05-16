@@ -287,8 +287,8 @@ export default function Admin() {
           <div className="admin-offline-banner">
             <span>⚠️</span>
             <div>
-              <strong>Backend offline — using local storage</strong>
-              <p>Start server: <code>cd server &amp;&amp; node index.js</code></p>
+              <strong>Backend connecting...</strong>
+              <p>The server may be waking up (free tier). Please wait 30 seconds and retry.</p>
             </div>
             <button className="primary-button" style={{ flexShrink: 0 }} onClick={loadAll}>
               Retry
