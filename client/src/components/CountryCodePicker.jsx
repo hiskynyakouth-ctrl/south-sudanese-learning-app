@@ -5,7 +5,10 @@ const COUNTRIES = [
   { code: "+256", name: "Uganda",       iso: "ug" },
   { code: "+251", name: "Ethiopia",     iso: "et" },
   { code: "+254", name: "Kenya",        iso: "ke" },
+  { code: "+20",  name: "Egypt",        iso: "eg" },
   { code: "+249", name: "Sudan",        iso: "sd" },
+  { code: "+243", name: "DR Congo",     iso: "cd" },
+  { code: "+255", name: "Tanzania",     iso: "tz" },
   { code: "+1",   name: "USA/Canada",   iso: "us" },
   { code: "+44",  name: "UK",           iso: "gb" },
 ];
