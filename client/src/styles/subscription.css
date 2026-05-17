@@ -220,6 +220,107 @@
   .sub-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Plan select indicator ──────────────────────────────── */
+.sub-select-indicator {
+  padding: 9px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+  transition: 0.15s ease;
+  margin-top: 4px;
+}
+
+/* ── Payment methods section ────────────────────────────── */
+.sub-payment-section {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+  box-shadow: var(--shadow);
+}
+
+.sub-method-group { display: grid; gap: 10px; }
+.sub-method-group-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 0;
+}
+
+.sub-methods-grid { display: grid; gap: 8px; }
+
+.sub-method-card {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  background: white;
+}
+.sub-method-card:hover { border-color: var(--method-color, var(--primary)); }
+.sub-method-card.selected { border-color: var(--method-color, var(--primary)); border-width: 2px; }
+
+.sub-method-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+}
+.sub-method-icon { font-size: 1.3rem; flex-shrink: 0; }
+.sub-method-name { flex: 1; font-weight: 700; font-size: 0.92rem; }
+.sub-method-chevron { color: var(--muted); font-size: 0.7rem; flex-shrink: 0; }
+
+.sub-method-detail {
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  background: rgba(0,0,0,0.02);
+}
+.sub-method-detail p { margin: 0; font-size: 0.88rem; color: var(--ink); line-height: 1.6; }
+.sub-method-note {
+  margin-top: 10px !important;
+  font-size: 0.78rem !important;
+  color: var(--muted) !important;
+  background: var(--surface-soft);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.sub-copy-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--line);
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+.sub-copy-btn:hover { background: var(--surface-soft); }
+
+.sub-confirm-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: 0.15s ease;
+}
+.sub-confirm-btn:hover { opacity: 0.88; }
+
+/* Dark mode */
+[data-theme="dark"] .sub-method-card { background: var(--surface); }
+[data-theme="dark"] .sub-method-detail { background: rgba(255,255,255,0.03); }
+[data-theme="dark"] .sub-copy-btn { background: var(--surface-soft); }
+
 /* ── Real payment button ─────────────────────────────────── */
 .sub-pay-btn {
   width: 100%;
