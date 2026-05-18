@@ -1,445 +1,517 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSubscription } from "../context/SubscriptionContext";
-import { useAuth } from "../context/AuthContext";
 
-// ─────────────────────────────────────────────
-// Payment Methods
-// ─────────────────────────────────────────────
-const PAYMENT_METHODS = {
-  Ethiopia: [
-    {
-      name: "Telebirr",
-      type: "mobile",
-      icon: "📱",
-      detail: "Send to: +251 900 000 000",
-    },
-    {
-      name: "CBE Bank",
-      type: "bank",
-      icon: "🏦",
-      detail: "Account: 1000123456789",
-    },
-  ],
-
-  Kenya: [
-    {
-      name: "M-Pesa",
-      type: "mobile",
-      icon: "📱",
-      detail: "Paybill: 123456",
-    },
-    {
-      name: "KCB Bank",
-      type: "bank",
-      icon: "🏦",
-      detail: "Account: 123456789",
-    },
-  ],
-
-  Uganda: [
-    {
-      name: "MTN Mobile Money",
-      type: "mobile",
-      icon: "📱",
-      detail: "Send to: +256700000000",
-    },
-  ],
-
-  "South Sudan": [
-    {
-      name: "MTN Mobile Money",
-      type: "mobile",
-      icon: "📱",
-      detail: "Send to: +211912345678",
-    },
-  ],
-
-  "Western World": [
-    {
-      name: "PayPal",
-      type: "online",
-      icon: "💳",
-      detail: "paypal.me/thiyangkoang77",
-    },
-  ],
-};
-
-// ─────────────────────────────────────────────
-// Plans
-// ─────────────────────────────────────────────
-const PLANS = [
+const plans = [
   {
-    region: "Ethiopia",
-    iso: "et",
+    country: "Ethiopia",
+    flag: "🇪🇹",
     price: "200 ETB",
-    amount: 200,
-    currency: "ETB",
-    period: "2 Months",
-    color: "#078930",
+    color: "#18b318",
+    popular: true,
   },
-
   {
-    region: "Kenya",
-    iso: "ke",
+    country: "Kenya",
+    flag: "🇰🇪",
     price: "100 KES",
-    amount: 100,
-    currency: "KES",
-    period: "2 Months",
-    color: "#006600",
+    color: "#17a517",
   },
-
   {
-    region: "Uganda",
-    iso: "ug",
+    country: "Uganda",
+    flag: "🇺🇬",
     price: "10,000 UGX",
-    amount: 10000,
-    currency: "UGX",
-    period: "2 Months",
-    color: "#d4a017",
+    color: "#ff9900",
   },
-
   {
-    region: "South Sudan",
-    iso: "ss",
-    price: "5,000 SSP",
-    amount: 5000,
-    currency: "SSP",
-    period: "2 Months",
-    color: "#0f6b5b",
+    country: "South Sudan",
+    flag: "🇸🇸",
+    price: "10,000 SSP",
+    color: "#0a9d8f",
   },
-
   {
-    region: "Western World",
-    iso: null,
-    emoji: "🌍",
+    country: "Egypt",
+    flag: "🇪🇬",
+    price: "100 EGP",
+    color: "#ff0000",
+  },
+  {
+    country: "Sudan",
+    flag: "🇸🇩",
+    price: "600 SDG",
+    color: "#ff0000",
+  },
+  {
+    country: "Western World",
+    flag: "🌍",
     price: "$20 USD",
-    amount: 20,
-    currency: "USD",
-    period: "2 Months",
-    color: "#1565c0",
+    color: "#0057ff",
+  },
+  {
+    country: "Schools & Institutions",
+    flag: "🏫",
+    price: "$500 USD",
+    color: "#7b1fff",
+    institution: true,
   },
 ];
 
-// ─────────────────────────────────────────────
-// Flag Component
-// ─────────────────────────────────────────────
-function PlanFlag({ plan }) {
-  if (plan.iso) {
-    return (
-      <img
-        src={`https://flagcdn.com/w80/${plan.iso}.png`}
-        alt={plan.region}
-        style={{
-          width: 55,
-          height: 38,
-          objectFit: "cover",
-          borderRadius: 6,
-        }}
-      />
-    );
-  }
+const paymentMethods = [
+  {
+    name: "M-Pesa",
+    icon: "📱",
+    color: "#7b1fff",
+  },
+  {
+    name: "KCB Bank",
+    icon: "🏦",
+    color: "#11a84f",
+  },
+  {
+    name: "Airtel Money",
+    icon: "💸",
+    color: "#ff0000",
+  },
+  {
+    name: "CBE Bank",
+    icon: "🏛️",
+    color: "#0057ff",
+  },
+  {
+    name: "PayPal",
+    icon: "🅿️",
+    color: "#7b1fff",
+  },
+];
 
-  return (
-    <span style={{ fontSize: "2rem" }}>
-      {plan.emoji}
-    </span>
-  );
-}
-
-// ─────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────
-export default function Subscription() {
+export default function SubscriptionPage() {
   const navigate = useNavigate();
 
-  const { user } = useAuth();
-
-  const {
-    isTrialActive,
-    trialDaysRemaining,
-    isSubscribed,
-    daysRemaining,
-  } = useSubscription();
-
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState(null);
-  const [copied, setCopied] = useState("");
-
-  // ─────────────────────────
-  // Copy Payment Details
-  // ─────────────────────────
-  const copyText = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-
-      setCopied(text);
-
-      setTimeout(() => {
-        setCopied("");
-      }, 2000);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // ─────────────────────────
-  // Current Methods
-  // ─────────────────────────
-  const methods =
-    selectedPlan !== null
-      ? PAYMENT_METHODS[PLANS[selectedPlan].region] || []
-      : [];
 
   return (
     <div
       style={{
-        padding: "30px",
-        maxWidth: "1200px",
-        margin: "0 auto",
+        minHeight: "100vh",
+        background: "#f5f7ff",
+        fontFamily: "sans-serif",
+        paddingBottom: "50px",
       }}
     >
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "40px" }}>
-        <h1
-          style={{
-            fontSize: "2.5rem",
-            marginBottom: "10px",
-          }}
-        >
-          Subscription Plans
-        </h1>
-
-        <p style={{ color: "#666" }}>
-          Choose your country and payment method
-        </p>
-      </div>
-
-      {/* Trial */}
+      {/* HERO */}
       <div
         style={{
-          background: "#f5f5f5",
-          padding: "20px",
-          borderRadius: "14px",
-          marginBottom: "35px",
+          background:
+            "linear-gradient(135deg,#14005c,#2600c9)",
+          color: "white",
+          padding: "40px",
+          borderBottomLeftRadius: "40px",
+          borderBottomRightRadius: "40px",
         }}
       >
-        <h3>🆓 Free Trial</h3>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "30px",
+          }}
+        >
+          <div>
+            <h2 style={{ margin: 0 }}>
+              SS E-Learning
+            </h2>
 
-        {isSubscribed() ? (
-          <p>
-            Subscription active — {daysRemaining()} days remaining
+            <p style={{ opacity: 0.8 }}>
+              Learn. Grow. Succeed
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: "white",
+              color: "#14005c",
+              padding: "10px 18px",
+              borderRadius: "30px",
+              fontWeight: "bold",
+            }}
+          >
+            👤 Hello, Student
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <h1
+            style={{
+              fontSize: "5rem",
+              marginBottom: "10px",
+            }}
+          >
+            Subscription{" "}
+            <span style={{ color: "#ffc107" }}>
+              Plans
+            </span>
+          </h1>
+
+          <p
+            style={{
+              fontSize: "1.3rem",
+              opacity: 0.9,
+            }}
+          >
+            Choose your country and payment
+            method
           </p>
-        ) : isTrialActive() ? (
-          <p>
-            Trial active — {trialDaysRemaining()} days remaining
-          </p>
-        ) : (
-          <p>Your trial has expired</p>
-        )}
+        </div>
       </div>
 
-      {/* Plans */}
-      <h2 style={{ marginBottom: "20px" }}>
-        Step 1 — Choose Country
-      </h2>
-
+      {/* FREE TRIAL */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(250px, 1fr))",
+          width: "92%",
+          margin: "-30px auto 30px",
+          background: "white",
+          borderRadius: "30px",
+          padding: "25px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
           gap: "20px",
         }}
       >
-        {PLANS.map((plan, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              setSelectedPlan(index);
-              setSelectedMethod(null);
-            }}
-            style={{
-              border:
-                selectedPlan === index
-                  ? `3px solid ${plan.color}`
-                  : "1px solid #ddd",
-
-              borderRadius: "18px",
-              padding: "22px",
-              cursor: "pointer",
-              transition: "0.3s",
-              background: "#fff",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                marginBottom: "18px",
-              }}
-            >
-              <PlanFlag plan={plan} />
-
-              <h3>{plan.region}</h3>
-            </div>
-
-            <h2 style={{ color: plan.color }}>
-              {plan.price}
-            </h2>
-
-            <p>{plan.period}</p>
-
-            <hr />
-
-            <div style={{ marginTop: "15px" }}>
-              <p>✅ All Subjects</p>
-              <p>✅ Quizzes</p>
-              <p>✅ Textbooks</p>
-              <p>✅ Past Papers</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Payment Methods */}
-      {selectedPlan !== null && (
-        <>
-          <h2
-            style={{
-              marginTop: "50px",
-              marginBottom: "20px",
-            }}
-          >
-            Step 2 — Payment Methods
+        <div>
+          <h2 style={{ color: "#17b617" }}>
+            🎁 Free Trial
           </h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "20px",
-            }}
-          >
-            {methods.map((method, index) => (
-              <div
-                key={index}
-                onClick={() => setSelectedMethod(index)}
-                style={{
-                  border:
-                    selectedMethod === index
-                      ? "2px solid #1565c0"
-                      : "1px solid #ddd",
+          <p>
+            Explore all features risk-free!
+          </p>
+        </div>
 
-                  borderRadius: "16px",
-                  padding: "20px",
-                  background: "#fff",
+        <div>
+          <h2 style={{ color: "#17b617" }}>
+            📅 7 Days Remaining
+          </h2>
+
+          <p>Enjoy your free trial</p>
+        </div>
+
+        <div>
+          <p>✅ All Subjects</p>
+          <p>✅ Quizzes</p>
+        </div>
+
+        <div>
+          <p>✅ Past Papers</p>
+          <p>✅ Video Tutorials</p>
+        </div>
+      </div>
+
+      {/* STEP 1 */}
+      <div style={{ width: "92%", margin: "auto" }}>
+        <h2
+          style={{
+            marginBottom: "25px",
+            color: "#25007a",
+          }}
+        >
+          1️⃣ Step 1 — Choose Your Country
+        </h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(260px,1fr))",
+            gap: "25px",
+          }}
+        >
+          {plans.map((plan, index) => (
+            <div
+              key={index}
+              onClick={() =>
+                setSelectedPlan(index)
+              }
+              style={{
+                background: "white",
+                borderRadius: "25px",
+                padding: "25px",
+                position: "relative",
+                border:
+                  selectedPlan === index
+                    ? `3px solid ${plan.color}`
+                    : `2px solid ${plan.color}33`,
+                boxShadow:
+                  "0 10px 25px rgba(0,0,0,0.05)",
+                cursor: "pointer",
+                transition: "0.3s",
+              }}
+            >
+              {plan.popular && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "15px",
+                    right: "15px",
+                    background: "#17b617",
+                    color: "white",
+                    padding: "5px 12px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  POPULAR
+                </div>
+              )}
+
+              {plan.institution && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "15px",
+                    right: "15px",
+                    background: "#7b1fff",
+                    color: "white",
+                    padding: "5px 12px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  INSTITUTION
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  marginBottom: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "2.5rem",
+                  }}
+                >
+                  {plan.flag}
+                </div>
+
+                <h3>{plan.country}</h3>
+              </div>
+
+              <h1
+                style={{
+                  color: plan.color,
+                  marginBottom: "5px",
+                }}
+              >
+                {plan.price}
+              </h1>
+
+              <p
+                style={{
+                  color: "#666",
+                  marginBottom: "20px",
+                }}
+              >
+                per 2 months
+              </p>
+
+              <div
+                style={{
+                  marginBottom: "25px",
+                }}
+              >
+                <p>✅ All subjects & modules</p>
+                <p>✅ Full notes & quizzes</p>
+                <p>✅ Official textbooks</p>
+                <p>✅ Past exam papers</p>
+              </div>
+
+              <button
+                style={{
+                  width: "100%",
+                  background: plan.color,
+                  color: "white",
+                  border: "none",
+                  padding: "15px",
+                  borderRadius: "14px",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
                   cursor: "pointer",
                 }}
               >
-                <h3>
-                  {method.icon} {method.name}
-                </h3>
+                Select Plan →
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
 
-                <p
-                  style={{
-                    marginTop: "12px",
-                    color: "#555",
-                  }}
-                >
-                  {method.detail}
-                </p>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    copyText(method.detail);
-                  }}
-                  style={{
-                    marginTop: "15px",
-                    padding: "10px 18px",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    background: "#1565c0",
-                    color: "#fff",
-                  }}
-                >
-                  {copied === method.detail
-                    ? "✅ Copied"
-                    : "📋 Copy Details"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Email Confirmation */}
-      {selectedPlan !== null && selectedMethod !== null && (
-        <div
+      {/* STEP 2 */}
+      <div
+        style={{
+          width: "92%",
+          margin: "50px auto",
+        }}
+      >
+        <h2
           style={{
-            marginTop: "40px",
-            background: "#f7f7f7",
-            padding: "25px",
-            borderRadius: "14px",
+            marginBottom: "25px",
+            color: "#25007a",
           }}
         >
-          <h3>📧 Payment Confirmation</h3>
+          2️⃣ Step 2 — Choose Payment Method
+        </h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(220px,1fr))",
+            gap: "20px",
+          }}
+        >
+          {paymentMethods.map(
+            (method, index) => (
+              <div
+                key={index}
+                style={{
+                  background: "white",
+                  borderRadius: "20px",
+                  padding: "20px",
+                  boxShadow:
+                    "0 10px 20px rgba(0,0,0,0.05)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "2.5rem",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {method.icon}
+                </div>
+
+                <h3>{method.name}</h3>
+
+                <button
+                  style={{
+                    width: "100%",
+                    marginTop: "20px",
+                    background: method.color,
+                    color: "white",
+                    border: "none",
+                    padding: "12px",
+                    borderRadius: "12px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                  }}
+                >
+                  📋 Copy Details
+                </button>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+
+      {/* PAYMENT CONFIRM */}
+      <div
+        style={{
+          width: "92%",
+          margin: "auto",
+          background: "white",
+          borderRadius: "30px",
+          padding: "30px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "30px",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              color: "#5f1dff",
+            }}
+          >
+            📩 Payment Confirmation
+          </h2>
 
           <p>
             After payment, send proof to:
           </p>
 
-          <p>
-            <strong>
-              thiyangkoang77@gmail.com
-            </strong>
-          </p>
-
-          <p style={{ marginTop: "12px" }}>
-            Include:
-          </p>
-
-          <ul>
-            <li>Name</li>
-            <li>Email</li>
-            <li>Payment Screenshot</li>
-            <li>Country</li>
-          </ul>
-
-          <a
-            href={`mailto:thiyangkoang77@gmail.com?subject=Subscription Payment`}
+          <div
             style={{
-              display: "inline-block",
-              marginTop: "18px",
-              padding: "12px 20px",
-              background: "#0f6b5b",
-              color: "#fff",
-              borderRadius: "10px",
-              textDecoration: "none",
+              background: "#f4f1ff",
+              padding: "15px",
+              borderRadius: "14px",
+              marginTop: "15px",
+              fontWeight: "bold",
             }}
           >
-            Send Confirmation Email
-          </a>
-        </div>
-      )}
+            thiyangkoang77@gmail.com
+          </div>
 
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)}
+          <button
+            style={{
+              marginTop: "20px",
+              background: "#5f1dff",
+              color: "white",
+              border: "none",
+              padding: "14px 24px",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            ✉ Send Confirmation Email
+          </button>
+        </div>
+
+        <div>
+          <h3
+            style={{
+              color: "#5f1dff",
+            }}
+          >
+            Include:
+          </h3>
+
+          <p>✅ Full Name</p>
+          <p>✅ Email Address</p>
+          <p>✅ Payment Screenshot</p>
+          <p>✅ Selected Country</p>
+        </div>
+      </div>
+
+      {/* BACK BUTTON */}
+      <div
         style={{
-          marginTop: "50px",
-          padding: "12px 22px",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
+          textAlign: "center",
+          marginTop: "40px",
         }}
       >
-        ← Back
-      </button>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            background: "white",
+            border: "2px solid #ddd",
+            padding: "14px 28px",
+            borderRadius: "14px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          ← Back to Home
+        </button>
+      </div>
     </div>
   );
 }
