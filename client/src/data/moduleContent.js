@@ -1,4 +1,4 @@
-﻿export const MODULE_CONTENT = {
+export const MODULE_CONTENT = {
 
   // ── ENGLISH ──────────────────────────────────────────────────────────────
   "Reading Comprehension": {
@@ -1573,4 +1573,5 @@
       { q: "A function in programming is:", options: ["A type of loop", "A reusable block of code that performs a specific task", "A data type", "An error message"], answer: 1 }
     ],
     videoId: "zOjov-2OZ0E"
-  },
+  }
+};

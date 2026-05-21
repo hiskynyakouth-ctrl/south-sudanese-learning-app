@@ -21,7 +21,7 @@ const ALLOWED_DOMAINS = [
 
 export const validateEmail = (email) => {
   const trimmed = email.trim().toLowerCase();
-  const regex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!regex.test(trimmed)) return { valid: false, allowed: false };
 
   const [local, domain] = trimmed.split("@");

@@ -1,4 +1,5 @@
 // ─── 11. THE BIBLE & ITS MESSAGE (CRE) ────────────────────────────────────────
+export const newModules = {
   "The Bible & Its Message": {
     notes: {
       body: "The Bible is the holy scripture of Christianity, consisting of the Old Testament and the New Testament. It is the primary source of Christian faith and practice, containing history, poetry, prophecy, letters, and the life and teachings of Jesus Christ. Christians believe the Bible is the inspired Word of God, guiding believers in faith, morality, and salvation.",
