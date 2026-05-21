@@ -46,37 +46,43 @@ export function SubscriptionProvider({ children }) {
   // ─────────────────────────────────────────
   // Trial
   // ─────────────────────────────────────────
-  const TRIAL_DAYS = 7;
+  const TRIAL_DAYS = 30;
 
-  const isTrialActive = () => {
-    if (!trialStart) return false;
+  const initTrial = () => {
+    if (trialStart) return;
 
-    const start = new Date(trialStart);
+    const now = new Date().toISOString();
 
-    const now = new Date();
-
-    const diff =
-      (now - start) /
-      (1000 * 60 * 60 * 24);
-
-    return diff < TRIAL_DAYS;
+    localStorage.setItem("trialStart", now);
+    setTrialStart(now);
   };
 
-  const trialDaysRemaining = () => {
+  const getTrialDiffDays = () => {
     if (!trialStart) return 0;
 
     const start = new Date(trialStart);
-
     const now = new Date();
+    return (now - start) / (1000 * 60 * 60 * 24);
+  };
 
-    const diff =
-      (now - start) /
-      (1000 * 60 * 60 * 24);
+  const isTrialActive = () => {
+    const diff = getTrialDiffDays();
+    return trialStart !== null && diff < TRIAL_DAYS;
+  };
 
-    return Math.max(
-      0,
-      Math.ceil(TRIAL_DAYS - diff)
-    );
+  const trialDaysRemaining = () => {
+    const diff = getTrialDiffDays();
+    return Math.max(0, Math.ceil(TRIAL_DAYS - diff));
+  };
+
+  const daysSinceTrialEnded = () => {
+    const diff = getTrialDiffDays();
+    if (diff <= TRIAL_DAYS) return 0;
+    return Math.max(0, Math.ceil(diff - TRIAL_DAYS));
+  };
+
+  const hasAccess = () => {
+    return isSubscribed() || isTrialActive();
   };
 
   // ─────────────────────────────────────────
@@ -85,43 +91,27 @@ export function SubscriptionProvider({ children }) {
   const isSubscribed = () => {
     if (!subscriptionEnd) return false;
 
-    return (
-      new Date(subscriptionEnd) >
-      new Date()
-    );
+    return new Date(subscriptionEnd) > new Date();
   };
 
   const daysRemaining = () => {
     if (!subscriptionEnd) return 0;
 
     const end = new Date(subscriptionEnd);
-
     const now = new Date();
-
-    const diff =
-      (end - now) /
-      (1000 * 60 * 60 * 24);
-
+    const diff = (end - now) / (1000 * 60 * 60 * 24);
     return Math.max(0, Math.ceil(diff));
   };
 
   // ─────────────────────────────────────────
   // Grant Subscription
   // ─────────────────────────────────────────
-  const grantSubscription = (
-    days = 60
-  ) => {
+  const grantSubscription = (days = 60) => {
     const end = new Date();
-
     end.setDate(end.getDate() + days);
-
     const iso = end.toISOString();
 
-    localStorage.setItem(
-      "subscriptionEnd",
-      iso
-    );
-
+    localStorage.setItem("subscriptionEnd", iso);
     setSubscriptionEnd(iso);
   };
 
@@ -129,18 +119,18 @@ export function SubscriptionProvider({ children }) {
   // Remove Subscription
   // ─────────────────────────────────────────
   const clearSubscription = () => {
-    localStorage.removeItem(
-      "subscriptionEnd"
-    );
-
+    localStorage.removeItem("subscriptionEnd");
     setSubscriptionEnd(null);
   };
 
   return (
     <SubscriptionContext.Provider
       value={{
+        initTrial,
+        hasAccess,
         isTrialActive,
         trialDaysRemaining,
+        daysSinceTrialEnded,
         isSubscribed,
         daysRemaining,
         grantSubscription,
