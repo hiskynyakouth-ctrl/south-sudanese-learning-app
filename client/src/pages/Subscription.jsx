@@ -133,9 +133,9 @@ export default function Subscription() {
 
       {/* Header */}
       <div className="sub-header">
-        <span className="eyebrow">South Sudan E-Learning Platform</span>
+        <div className="sub-header-eyebrow">💳 South Sudan E-Learning Platform</div>
         <h1>Subscription Plans</h1>
-        <p>Full access to all subjects, textbooks, quizzes, notes and past papers.</p>
+        <p>Choose your country and payment method</p>
 
         {subbed ? (
           <div className="sub-trial-banner active">
@@ -160,16 +160,19 @@ export default function Subscription() {
 
       {/* Free trial card */}
       <div className="sub-free-card">
-        <div className="sub-free-icon">🆓</div>
+        <div className="sub-free-icon">�</div>
         <div>
-          <h3>1 Month Free for New Users</h3>
-          <p>Every new student and teacher gets <strong>30 days completely free</strong> — no payment needed. After that, choose a plan.</p>
+          <h3>Free Trial — 30 Days</h3>
+          <p>Explore all features risk-free! Every new student and teacher gets a full month of unrestricted access. No payment needed.</p>
         </div>
       </div>
 
       {/* Step 1 — Choose your country */}
-      <div>
-        <h3 style={{ margin:"0 0 14px", fontSize:"1.05rem" }}>Step 1 — Choose your country</h3>
+      <div className="sub-step-section">
+        <div className="sub-step-header">
+          <div className="sub-step-badge">1</div>
+          <h3>Step 1 — Choose your country</h3>
+        </div>
         <div className="sub-grid">
           {PLANS.map((plan, i) => (
             <div key={i}
@@ -204,11 +207,12 @@ export default function Subscription() {
       {/* Step 2 — Choose payment method */}
       {selectedPlan && (
         <div className="sub-payment-section">
-          <h3 style={{ margin:"0 0 6px", fontSize:"1.05rem" }}>
-            Step 2 — Choose payment method for <strong style={{ color: selectedPlan.color }}>{selectedPlan.region}</strong>
-          </h3>
-          <p style={{ color:"var(--muted)", margin:"0 0 16px", fontSize:"0.88rem" }}>
-            Amount: <strong>{selectedPlan.price}</strong> {selectedPlan.period}
+          <div className="sub-step-header">
+            <div className="sub-step-badge">2</div>
+            <h3>Step 2 — Choose payment method</h3>
+          </div>
+          <p>
+            <strong style={{ color: selectedPlan.color }}>{selectedPlan.region}</strong> • <strong>{selectedPlan.price}</strong> {selectedPlan.period}
           </p>
 
           {Object.entries(grouped).map(([type, typeMethods]) => (
