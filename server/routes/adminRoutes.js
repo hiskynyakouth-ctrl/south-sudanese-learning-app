@@ -1,6 +1,10 @@
 const express = require("express");
 const { pool } = require("../config/db");
+const adminMiddleware = require("../middleware/adminMiddleware");
 const router = express.Router();
+
+// Apply admin authentication to all admin routes
+router.use(adminMiddleware);
 
 // Helper — run a query and return rows
 const q = (sql, params = []) => pool.query(sql, params).then(r => r.rows);
