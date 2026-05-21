@@ -3,76 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useAuth } from "../context/AuthContext";
 
-// ── Payment methods per country ───────────────────────────
-const PAYMENT_METHODS = {
-  "South Sudan": [
-    { name: "Salaam Bank",        type: "bank",   icon: "🏦", detail: "Account: 1234567890 | Branch: Juba Main" },
-    { name: "Kenya Commercial Bank (KCB)", type: "bank", icon: "🏦", detail: "Account: 0987654321 | Branch: Juba" },
-    { name: "Equity Bank",        type: "bank",   icon: "🏦", detail: "Account: 1122334455 | Branch: Juba" },
-    { name: "MTN Mobile Money",   type: "mobile", icon: "📱", detail: "Send to: +211 912 345 678 | Name: Thiyang Koang" },
-    { name: "Airtel Money",       type: "mobile", icon: "📱", detail: "Send to: +211 912 345 678 | Name: Thiyang Koang" },
-    { name: "Cash Payment",       type: "cash",   icon: "💵", detail: "Contact us to arrange in-person payment in Juba" },
-  ],
-  "Uganda": [
-    { name: "MTN Mobile Money",   type: "mobile", icon: "📱", detail: "Send to: +256 700 000 000 | Name: SS Elearning" },
-    { name: "Airtel Money",       type: "mobile", icon: "📱", detail: "Send to: +256 700 000 000 | Name: SS Elearning" },
-    { name: "Stanbic Bank",       type: "bank",   icon: "🏦", detail: "Account: 9030005678901 | Branch: Kampala" },
-    { name: "Centenary Bank",     type: "bank",   icon: "🏦", detail: "Account: 3010012345678 | Branch: Kampala" },
-    { name: "DFCU Bank",          type: "bank",   icon: "🏦", detail: "Account: 01234567890123 | Branch: Kampala" },
-    { name: "Equity Bank Uganda", type: "bank",   icon: "🏦", detail: "Account: 1234567890 | Branch: Kampala" },
-  ],
-  "Ethiopia": [
-    { name: "Telebirr",           type: "mobile", icon: "📱", detail: "Send to: +251 900 000 000 | Name: SS Elearning" },
-    { name: "CBE Birr",           type: "mobile", icon: "📱", detail: "Commercial Bank of Ethiopia wallet — +251 900 000 000" },
-    { name: "HelloCash",          type: "mobile", icon: "📱", detail: "Send to: +251 900 000 000 | Name: SS Elearning" },
-    { name: "M-Pesa Ethiopia",    type: "mobile", icon: "📱", detail: "Send to: +251 900 000 000 | Name: SS Elearning" },
-    { name: "Commercial Bank of Ethiopia (CBE)", type: "bank", icon: "🏦", detail: "Account: 1000123456789 | Branch: Addis Ababa" },
-    { name: "Awash Bank",         type: "bank",   icon: "🏦", detail: "Account: 01234567890 | Branch: Addis Ababa" },
-    { name: "Dashen Bank",        type: "bank",   icon: "🏦", detail: "Account: 0123456789012 | Branch: Addis Ababa" },
-    { name: "Abyssinia Bank",     type: "bank",   icon: "🏦", detail: "Account: 123456789 | Branch: Addis Ababa" },
-    { name: "Wegagen Bank",       type: "bank",   icon: "🏦", detail: "Account: 0123456789 | Branch: Addis Ababa" },
-  ],
-  "Kenya": [
-    { name: "M-Pesa",             type: "mobile", icon: "📱", detail: "Paybill: 123456 | Account: SS Elearning | +254 700 000 000" },
-    { name: "Airtel Money",       type: "mobile", icon: "📱", detail: "Send to: +254 700 000 000 | Name: SS Elearning" },
-    { name: "T-Kash (Telkom)",    type: "mobile", icon: "📱", detail: "Send to: +254 700 000 000 | Name: SS Elearning" },
-    { name: "Equity Bank Kenya",  type: "bank",   icon: "🏦", detail: "Account: 0123456789012 | Branch: Nairobi" },
-    { name: "KCB Bank",           type: "bank",   icon: "🏦", detail: "Account: 1234567890 | Branch: Nairobi" },
-    { name: "Co-operative Bank",  type: "bank",   icon: "🏦", detail: "Account: 01129876543200 | Branch: Nairobi" },
-    { name: "Absa Bank Kenya",    type: "bank",   icon: "🏦", detail: "Account: 2000123456 | Branch: Nairobi" },
-    { name: "NCBA Bank",          type: "bank",   icon: "🏦", detail: "Account: 1234567890 | Branch: Nairobi" },
-  ],
-  "Egypt": [
-    { name: "Vodafone Cash",      type: "mobile", icon: "📱", detail: "Send to: +20 100 000 0000 | Name: SS Elearning" },
-    { name: "Orange Money",       type: "mobile", icon: "📱", detail: "Send to: +20 100 000 0000 | Name: SS Elearning" },
-    { name: "Etisalat Cash",      type: "mobile", icon: "📱", detail: "Send to: +20 100 000 0000 | Name: SS Elearning" },
-    { name: "Fawry",              type: "mobile", icon: "📱", detail: "Fawry code: 123456789 | Available at any Fawry outlet" },
-    { name: "National Bank of Egypt", type: "bank", icon: "🏦", detail: "Account: 1234567890123456 | Branch: Cairo" },
-    { name: "Banque Misr",        type: "bank",   icon: "🏦", detail: "Account: 0123456789012345 | Branch: Cairo" },
-    { name: "CIB Bank",           type: "bank",   icon: "🏦", detail: "Account: 100012345678 | Branch: Cairo" },
-    { name: "QNB Alahli",         type: "bank",   icon: "🏦", detail: "Account: 0123456789 | Branch: Cairo" },
-  ],
-  "Sudan": [
-    { name: "MTN Sudan",          type: "mobile", icon: "📱", detail: "Send to: +249 900 000 000 | Name: SS Elearning" },
-    { name: "Zain Cash",          type: "mobile", icon: "📱", detail: "Send to: +249 900 000 000 | Name: SS Elearning" },
-    { name: "Bank of Khartoum",   type: "bank",   icon: "🏦", detail: "Account: 1234567890 | Branch: Khartoum" },
-    { name: "Omdurman National Bank", type: "bank", icon: "🏦", detail: "Account: 0987654321 | Branch: Khartoum" },
-    { name: "Faisal Islamic Bank", type: "bank",  icon: "🏦", detail: "Account: 1122334455 | Branch: Khartoum" },
-  ],
-  "Western World": [
-    { name: "PayPal",             type: "online", icon: "💳", detail: "Send to: thiyangkoang77@gmail.com | Note: SS Elearning Subscription" },
-    { name: "Wise (TransferWise)", type: "online", icon: "💳", detail: "Email: thiyangkoang77@gmail.com | Fast international transfer" },
-    { name: "Bank Transfer (SWIFT)", type: "bank", icon: "🏦", detail: "Contact us at thiyangkoang77@gmail.com for SWIFT details" },
-    { name: "Credit/Debit Card",  type: "online", icon: "💳", detail: "Via PayPal — no PayPal account needed, pay as guest" },
-  ],
-  "Schools & Institutions": [
-    { name: "PayPal",             type: "online", icon: "💳", detail: "Send to: thiyangkoang77@gmail.com | Note: School License" },
-    { name: "Bank Transfer (SWIFT)", type: "bank", icon: "🏦", detail: "Contact us at thiyangkoang77@gmail.com for bank details" },
-    { name: "Invoice Payment",    type: "online", icon: "📄", detail: "We can issue a formal invoice — email: thiyangkoang77@gmail.com" },
-    { name: "Mobile Money",       type: "mobile", icon: "📱", detail: "Available for African institutions — contact us for details" },
-  ],
-};
-
 const TYPE_COLORS = { bank: "#1565c0", mobile: "#2e7d32", online: "#6a1b9a", cash: "#e65100" };
 const TYPE_LABELS = { bank: "Bank Transfer", mobile: "Mobile Money", online: "Online Payment", cash: "Cash" };
 
@@ -102,7 +32,7 @@ function PlanFlag({ plan, size = 36 }) {
 export default function Subscription() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isTrialActive, trialDaysRemaining, isSubscribed, daysRemaining } = useSubscription();
+  const { isTrialActive, trialDaysRemaining, isSubscribed, daysRemaining, paymentMethods } = useSubscription();
   const [selected, setSelected] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [copied, setCopied] = useState(null);
@@ -119,7 +49,7 @@ export default function Subscription() {
   };
 
   const selectedPlan = selected !== null ? PLANS[selected] : null;
-  const methods = selectedPlan ? (PAYMENT_METHODS[selectedPlan.region] || []) : [];
+  const methods = selectedPlan ? (paymentMethods[selectedPlan.region] || []) : [];
 
   // Group methods by type
   const grouped = methods.reduce((acc, m) => {
