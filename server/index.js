@@ -8,9 +8,18 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
+  'http://localhost:3000',
+  'https://south-sudanese-learning-app-two.vercel.app',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS blocked by server: ${origin}`));
+    },
   })
 );
 app.use(express.json());

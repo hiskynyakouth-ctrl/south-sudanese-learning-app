@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const LOCAL_USERS_KEY = "ss_users";
-const API = process.env.REACT_APP_API_URL || "http://localhost:5001/api";
+const API = process.env.REACT_APP_API_URL || "https://south-sudanese-learning-app-1.onrender.com/api";
 
 const authApi = axios.create({ baseURL: API, timeout: 10000 }); // 10 seconds
 

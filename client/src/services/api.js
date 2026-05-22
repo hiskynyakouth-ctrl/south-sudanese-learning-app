@@ -21,7 +21,7 @@ export const setStoredSession = (session) => {
 };
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "https://south-sudanese-learning-app-two.vercel.app/api",
+  baseURL: process.env.REACT_APP_API_URL || "https://south-sudanese-learning-app-1.onrender.com/api",
   timeout: 5000,
 });
 
