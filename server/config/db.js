@@ -1,4 +1,9 @@
 const mongoose = require('mongoose');
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/elearning',
+});
 
 const connectDB = async () => {
   try {
@@ -11,4 +16,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+module.exports = { connectDB, pool };
