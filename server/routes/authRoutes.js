@@ -1,7 +1,8 @@
 const express = require("express");
-const { register, login, me, googleAuth } = require("../controllers/authController");
+const bcrypt = require("bcryptjs");
+const { register, login, me, googleAuth, resetPassword } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
-const { pool } = require("../config/db");
+const User = require("../models/userModel");
 
 const router = express.Router();
 
@@ -10,19 +11,18 @@ router.post("/login", login);
 router.post("/google", googleAuth);
 router.get("/me", authMiddleware, me);
 
-router.post("/reset-password", require("../controllers/authController").resetPassword);
+router.post("/reset-password", resetPassword);
 
 // ── Update profile name ───────────────────────────────────
 router.put("/profile", authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
   try {
-    const r = await pool.query(
-      "UPDATE users SET name=$1 WHERE id=$2 RETURNING id, name, email, role",
-      [name.trim(), req.user.id]
-    );
-    if (r.rows.length === 0) return res.status(404).json({ error: "User not found." });
-    res.json({ message: "Profile updated.", user: r.rows[0] });
+    const user = await User.findById(req.user.id).select("name email role");
+    if (!user) return res.status(404).json({ error: "User not found." });
+    user.name = name.trim();
+    await user.save();
+    res.json({ message: "Profile updated.", user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -34,46 +34,56 @@ router.post("/change-password", authMiddleware, async (req, res) => {
   if (!currentPassword || !newPassword) return res.status(400).json({ error: "Both passwords required." });
   if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters." });
   try {
-    const r = await pool.query("SELECT password FROM users WHERE id=$1", [req.user.id]);
-    if (r.rows.length === 0) return res.status(404).json({ error: "User not found." });
-    const ok = await require("bcryptjs").compare(currentPassword, r.rows[0].password);
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found." });
+    const ok = await bcrypt.compare(currentPassword, user.password);
     if (!ok) return res.status(401).json({ error: "Current password is incorrect." });
-    const hash = await require("bcryptjs").hash(newPassword, 10);
-    await pool.query("UPDATE users SET password=$1 WHERE id=$2", [hash, req.user.id]);
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
     res.json({ message: "Password changed successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 router.post("/setup-admin", async (req, res) => {
   const { secret, email, password } = req.body;
   if (secret !== "ss_setup_2024_hisky") return res.status(403).json({ error: "Forbidden" });
   try {
-    const bcrypt = require("bcryptjs");
     const hash = await bcrypt.hash(password || "Admin@2024", 10);
-    // Update existing user or create new
-    const upd = await pool.query(
-      "UPDATE users SET role='admin', password=$1 WHERE LOWER(email)=LOWER($2) RETURNING id, email, role",
-      [hash, email || "admin@school.com"]
-    );
-    if (upd.rows.length > 0) return res.json({ message: "Admin updated", user: upd.rows[0] });
-    const ins = await pool.query(
-      "INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,'admin') RETURNING id,email,role",
-      ["Admin", email || "admin@school.com", hash]
-    );
-    res.json({ message: "Admin created", user: ins.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const normalizedEmail = (email || "admin@school.com").toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      user.role = "admin";
+      user.password = hash;
+      await user.save();
+      return res.json({ message: "Admin updated", user: { id: user._id, email: user.email, role: user.role } });
+    }
+
+    user = await User.create({
+      name: "Admin",
+      email: normalizedEmail,
+      password: hash,
+      role: "admin",
+    });
+
+    res.json({ message: "Admin created", user: { id: user._id, email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 router.post("/subscribe", async (req, res) => {
   const { email, plan, txRef, amount, currency } = req.body;
   if (!email) return res.status(400).json({ error: "Email required." });
   try {
-    // Update user subscription expiry (60 days from now)
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: "No account found with this email." });
     const expiry = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
-    await pool.query(
-      "UPDATE users SET subscription_expiry=$1, subscription_plan=$2 WHERE LOWER(email)=LOWER($3)",
-      [expiry.toISOString(), plan, email]
-    ).catch(() => {}); // ignore if columns don't exist yet
+    user.subscription_expiry = expiry;
+    user.subscription_plan = plan;
+    await user.save();
     console.log(`✅ Subscription recorded: ${email} | ${plan} | ${txRef}`);
     res.json({ message: "Subscription activated.", expiry });
   } catch (err) {

@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const { pool } = require('../config/db');
 
 const signUser = (user) =>
   jwt.sign(
@@ -129,15 +128,13 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ error: 'Email and new password are required.' });
 
   try {
-    const hash = await bcrypt.hash(newPassword, 10);
-    const r = await pool.query(
-      'UPDATE users SET password = $1 WHERE LOWER(email) = LOWER($2) RETURNING id',
-      [hash, email]
-    );
-
-    if (r.rows.length === 0)
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
       return res.status(404).json({ error: 'No account found with this email.' });
+    }
 
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
     return res.json({ message: 'Password reset successfully.' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
