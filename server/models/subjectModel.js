@@ -1,13 +1,10 @@
-const db = require('../config/db');
+const mongoose = require('mongoose');
 
-class Subject {
-  static findAll(callback) {
-    db.query('SELECT * FROM subjects', callback);
-  }
+const SubjectSchema = new mongoose.Schema({
+  name:        { type: String, required: true, trim: true },
+  description: { type: String, default: '' },
+  classId:     { type: Number, required: true },
+  icon:        { type: String, default: '📘' },
+}, { timestamps: true });
 
-  static findById(id, callback) {
-    db.query('SELECT * FROM subjects WHERE id = ?', [id], callback);
-  }
-}
-
-module.exports = Subject;
+module.exports = mongoose.model('Subject', SubjectSchema);

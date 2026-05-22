@@ -1,8 +1,8 @@
 const express = require('express');
-const { getChapters, getChapter } = require('../controllers/chapterController');
+const { getChaptersBySubject, getChapter } = require('../controllers/chapterController');
 const router = express.Router();
 
 router.get('/chapter/:id', getChapter);
-router.get('/:subjectId', getChapters);
+router.get('/:subjectId', getChaptersBySubject);
 
 module.exports = router;
