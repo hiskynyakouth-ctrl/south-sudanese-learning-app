@@ -3,7 +3,7 @@ const https = require("https");
 const body = JSON.stringify({ email: "admin@school.com", password: "Admin@2024" });
 
 const req = https.request({
-  hostname: "south-sudanese-learning-app-1.onrender.com",
+  hostname: "ss-elearning-api.onrender.com",
   path: "/api/auth/login",
   method: "POST",
   headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) },

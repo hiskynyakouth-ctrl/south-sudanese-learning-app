@@ -50,7 +50,12 @@ A full-stack eLearning application designed for South Sudanese education, featur
    cd client
    npm start
    ```
+## Deployment
 
+- Backend: the root `render.yaml` deploys the API from `server/`.
+- The backend requires both a MongoDB URI (`MONGO_URI`) and a PostgreSQL `DATABASE_URL`.
+- Set `GMAIL_APP_PASSWORD` in Render environment variables for email-based password reset.
+- Frontend: `vercel.json` rewrites `/api/(.*)` to `https://ss-elearning-api.onrender.com/api/$1`.
 ## Project Structure
 
 - `client/` - React frontend application

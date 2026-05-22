@@ -3,7 +3,7 @@
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/build",
   "rewrites": [
-     { "source": "/api/(.*)", "destination": "https://south-sudanese-learning-app-1.onrender.com/api/$1" },
+     { "source": "/api/(.*)", "destination": "https://ss-elearning-api.onrender.com/api/$1" },
      { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
