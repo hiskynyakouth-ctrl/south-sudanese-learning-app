@@ -1,7 +1,7 @@
 // All code sending goes through the backend server
 // This avoids CORS issues and keeps credentials secure
 
-const API = process.env.REACT_APP_API_URL || "https://south-sudanese-learning-app-1.onrender.com/api";
+const API = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000/api" : "/api");
 
 export const genCode = () => String(Math.floor(100000 + Math.random() * 900000));
 

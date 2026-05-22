@@ -21,7 +21,7 @@ export const setStoredSession = (session) => {
 };
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "https://south-sudanese-learning-app-1.onrender.com/api",
+  baseURL: process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000/api" : "/api"),
   timeout: 5000,
 });
 

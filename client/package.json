@@ -22,7 +22,7 @@
   "scripts": {
     "start": "node ./node_modules/react-scripts/scripts/start.js",
     "dev": "node ./node_modules/react-scripts/scripts/start.js",
-    "build": "CI=false node ./node_modules/react-scripts/scripts/build.js",
+    "build": "node -e \"process.env.CI='false'; require('./node_modules/react-scripts/scripts/build');\"",
     "test": "node ./node_modules/react-scripts/scripts/test.js",
     "eject": "node ./node_modules/react-scripts/scripts/eject.js"
   },
