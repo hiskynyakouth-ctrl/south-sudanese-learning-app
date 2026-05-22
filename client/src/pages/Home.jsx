@@ -53,7 +53,7 @@ export default function Home() {
   return (
     <div className="home-shell">
 
-      <HiskyWidget />
+      {!isAuthenticated && <HiskyWidget />}
 
       {/* ── HERO ── */}
       <section className="home-hero">
