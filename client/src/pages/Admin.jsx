@@ -79,36 +79,65 @@ export default function Admin() {
 
   // ── Data loading ───────────────────────────────────────────────────────
   const loadAll = async () => {
+    let onlineStats = null;
+    let onlineUsers = null;
+    let onlineSubjects = null;
+    let onlinePapers = null;
+
     try {
-      const [sRes, uRes, subRes, papRes] = await Promise.all([
-        api.get("/admin/stats"),
-        api.get("/admin/users"),
-        api.get("/admin/subjects"),
-        api.get("/admin/past-papers"),
-      ]);
+      const sRes = await api.get("/admin/stats");
+      onlineStats = sRes.data;
       setDbOnline(true);
-      setStats({
-        users:    parseInt(sRes.data.users)    || 0,
-        subjects: parseInt(sRes.data.subjects) || 0,
-        chapters: parseInt(sRes.data.chapters) || 0,
-        papers:   parseInt(sRes.data.papers)   || 0,
-      });
-      setUsers(uRes.data);
-      setSubjects(subRes.data);
-      setPapers(papRes.data || []);
     } catch {
       setDbOnline(false);
-      const lu = lsGet(LS_USERS).map(u => ({ ...u, role: u.role || "student" }));
-      const ls = lsGet(LS_SUBJECTS);
-      const lp = lsGet(LS_PAPERS);
-      setUsers(lu);
-      setSubjects(ls);
-      setPapers(lp);
-      setStats({ users: lu.length, subjects: ls.length, chapters: 0, papers: lp.length });
     }
+
+    try {
+      const uRes = await api.get("/admin/users");
+      onlineUsers = uRes.data;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const subRes = await api.get("/admin/subjects");
+      onlineSubjects = subRes.data;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const papRes = await api.get("/admin/past-papers");
+      onlinePapers = papRes.data || [];
+    } catch {
+      // ignore
+    }
+
+    const localUsers = lsGet(LS_USERS).map(u => ({ ...u, role: u.role || "student" }));
+    const localSubjects = lsGet(LS_SUBJECTS);
+    const localPapers = lsGet(LS_PAPERS);
+
+    setStats({
+      users:    onlineStats ? parseInt(onlineStats.users)    || localUsers.length : localUsers.length,
+      subjects: onlineStats ? parseInt(onlineStats.subjects) || localSubjects.length : localSubjects.length,
+      chapters: onlineStats ? parseInt(onlineStats.chapters) || 0 : 0,
+      papers:   onlineStats ? parseInt(onlineStats.papers)   || localPapers.length : localPapers.length,
+    });
+    setUsers(onlineUsers || localUsers);
+    setSubjects(onlineSubjects || localSubjects);
+    setPapers(onlinePapers || localPapers);
   };
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3500); };
+
+  const getDisplayName = (user) => {
+    const name = user?.name?.trim();
+    if (name) return name;
+    if (user?.full_name?.trim()) return user.full_name.trim();
+    if (user?.username?.trim()) return user.username.trim();
+    if (user?.email) return user.email.split("@")[0];
+    return "—";
+  };
 
   // ── Users ──────────────────────────────────────────────────────────────
   const deleteUser = async (id) => {
@@ -368,7 +397,7 @@ export default function Admin() {
                   {users.map((u, i) => (
                     <tr key={u.id}>
                       <td>{i + 1}</td>
-                      <td><strong>{u.name || "—"}</strong></td>
+                      <td><strong>{getDisplayName(u)}</strong></td>
                       <td>{u.email}</td>
                       <td>
                         <select

@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 
 const signUser = (user) =>
   jwt.sign(
-    { id: user._id, name: user.name, email: user.email },
+    { id: user._id, name: user.name, email: user.email, role: user.role || 'student' },
     process.env.JWT_SECRET || 'dev_secret',
     { expiresIn: '7d' }
   );
@@ -23,9 +23,9 @@ exports.register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
+    const user = await User.create({ name, email, password: hashedPassword, role: 'student' });
 
-    const safeUser = { id: user._id, name: user.name, email: user.email };
+    const safeUser = { id: user._id, name: user.name, email: user.email, role: user.role || 'student' };
     return res.status(201).json({
       message: 'Account created successfully.',
       token: signUser(user),
@@ -54,7 +54,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
 
-    const safeUser = { id: user._id, name: user.name, email: user.email };
+    const safeUser = { id: user._id, name: user.name, email: user.email, role: user.role || 'student' };
     return res.json({
       message: 'Login successful.',
       token: signUser(user),
