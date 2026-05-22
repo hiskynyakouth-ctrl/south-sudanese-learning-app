@@ -15,20 +15,13 @@ const PLANS = [
 
 const WESTERN_PLAN = { region: "Western World", price: "$20", currency: "USD", duration: "2 Months", color: "#0033A0" };
 
-const PAYMENT_METHODS = [
-  { id: "mpesa", name: "M-Pesa", detailLabel: "Paybill:", detail: "123456", icon: "m-pesa", color: "#5e35b1" },
-  { id: "kcb", name: "KCB Bank", detailLabel: "Account:", detail: "123456789", icon: "bank", color: "#00897b" },
-  { id: "airtel", name: "Airtel Money", detailLabel: "Send to:", detail: "+254700000000", icon: "mobile", color: "#e53935" },
-  { id: "cbe", name: "CBE Bank", detailLabel: "Account:", detail: "1000123456789", icon: "bank2", color: "#1565c0" },
-  { id: "paypal", name: "PayPal", detailLabel: "", detail: "paypal.me/thiyangkoang77", icon: "paypal", color: "#4527a0" }
-];
 
 const FEATURES = ["All Subjects", "Quizzes", "Textbooks", "Past Papers"];
 
 export default function Subscription() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { trialDaysRemaining } = useSubscription();
+  const { trialDaysRemaining, paymentMethods } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [copied, setCopied] = useState(null);
@@ -49,6 +42,9 @@ export default function Subscription() {
   };
 
   const activePlan = getActivePlan();
+  const selectedPlanName = selectedPlan === 'western' ? 'Western World' : activePlan?.region;
+  const activeMethods = selectedPlanName ? paymentMethods[selectedPlanName] || [] : [];
+  const selectedMethodItem = activeMethods.find((method) => method.name === selectedMethod);
 
   return (
     <div className="sub-shell-new">
@@ -94,7 +90,10 @@ export default function Subscription() {
                 key={i} 
                 className={`sub-plan-card ${selectedPlan === i ? 'selected' : ''}`}
                 style={{ '--theme-color': plan.color }}
-                onClick={() => setSelectedPlan(i)}
+                onClick={() => {
+                  setSelectedPlan(i);
+                  setSelectedMethod(null);
+                }}
               >
                 <div className="sub-plan-flag">
                   <img src={`https://flagcdn.com/w80/${plan.iso}.png`} alt={plan.region} />
@@ -124,7 +123,10 @@ export default function Subscription() {
           <div 
             className={`sub-plan-card horizontal ${selectedPlan === 'western' ? 'selected' : ''}`}
             style={{ '--theme-color': WESTERN_PLAN.color }}
-            onClick={() => setSelectedPlan('western')}
+            onClick={() => {
+              setSelectedPlan('western');
+              setSelectedMethod(null);
+            }}
           >
             <div className="sub-plan-horiz-left">
               <div className="sub-plan-globe">🌍</div>
@@ -159,34 +161,41 @@ export default function Subscription() {
           <h2 className="sub-step-title"><span className="sub-step-number">2</span> Step 2 — Choose Payment Method</h2>
           
           <div className="sub-methods-grid">
-            {PAYMENT_METHODS.map((method) => (
-              <div 
-                key={method.id} 
-                className={`sub-method-box ${selectedMethod === method.id ? 'selected' : ''}`}
-                style={{ '--method-color': method.color }}
-                onClick={() => setSelectedMethod(method.id)}
-              >
-                {selectedMethod === method.id && <div className="sub-method-check">✓</div>}
-                <div className="sub-method-icon-circle" style={{ color: method.color, backgroundColor: method.color + "22" }}>
-                  {method.icon === "m-pesa" ? "Ⓜ️" : 
-                   method.icon === "bank" ? "🏦" : 
-                   method.icon === "mobile" ? "💲" : 
-                   method.icon === "bank2" ? "🏛️" : "🅿️"}
-                </div>
-                <h4 className="sub-method-name" style={{ color: method.color }}>{method.name}</h4>
-                <div className="sub-method-details">
-                  {method.detailLabel && <span className="detail-label">{method.detailLabel}</span>}
-                  <span className="detail-value">{method.detail}</span>
-                </div>
-                <button 
-                  className="sub-method-copy" 
-                  style={{ backgroundColor: method.color }}
-                  onClick={(e) => { e.stopPropagation(); handleCopy(method.detail, method.id); }}
-                >
-                  📄 {copied === method.id ? "Copied" : "Copy Details"}
-                </button>
+            {activeMethods.length > 0 ? (
+              activeMethods.map((method, index) => {
+                const methodId = method.name;
+                const color = method.color || (method.type === 'bank' ? '#1565c0' : method.type === 'mobile' ? '#e53935' : '#4527a0');
+                const icon = method.icon || (method.type === 'bank' ? '🏦' : method.type === 'mobile' ? '📱' : '💳');
+                return (
+                  <div 
+                    key={`${methodId}-${index}`} 
+                    className={`sub-method-box ${selectedMethod === methodId ? 'selected' : ''}`}
+                    style={{ '--method-color': color }}
+                    onClick={() => setSelectedMethod(methodId)}
+                  >
+                    {selectedMethod === methodId && <div className="sub-method-check">✓</div>}
+                    <div className="sub-method-icon-circle" style={{ color, backgroundColor: color + "22" }}>
+                      {icon}
+                    </div>
+                    <h4 className="sub-method-name" style={{ color }}>{method.name}</h4>
+                    <div className="sub-method-details">
+                      <span className="detail-value">{method.detail}</span>
+                    </div>
+                    <button 
+                      className="sub-method-copy" 
+                      style={{ backgroundColor: color }}
+                      onClick={(e) => { e.stopPropagation(); handleCopy(method.detail, methodId); }}
+                    >
+                      📄 {copied === methodId ? "Copied" : "Copy Details"}
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="sub-method-empty">
+                {selectedPlan === null ? 'Select a country to see payment methods.' : 'No payment methods found for this country yet.'}
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -208,7 +217,7 @@ export default function Subscription() {
               </button>
             </div>
             <a 
-              href={`mailto:thiyangkoang77@gmail.com?subject=Payment Confirmation - ${activePlan?.region || "App"}&body=Name: ${user?.name || ""}%0AEmail: ${user?.email || ""}%0APlan: ${activePlan?.region || ""} - ${activePlan?.price || ""}%0APayment Method: ${selectedMethod || ""}`}
+              href={`mailto:thiyangkoang77@gmail.com?subject=Payment Confirmation - ${selectedPlanName || "App"}&body=Name: ${user?.name || ""}%0AEmail: ${user?.email || ""}%0APlan: ${selectedPlanName || ""} - ${activePlan?.price || ""}%0APayment Method: ${selectedMethodItem?.name || selectedMethod || ""}`}
               className="sub-conf-send-btn"
             >
               ✉️ Send Confirmation Email
