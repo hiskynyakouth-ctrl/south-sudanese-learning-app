@@ -60,6 +60,7 @@ export default function Admin() {
   const [subjects, setSubjects] = useState([]);
   const [papers,   setPapers]   = useState([]);
   const [dbOnline, setDbOnline] = useState(null);
+  const [dbError,   setDbError]  = useState("");
   const [msg,      setMsg]      = useState("");
 
   // Subject form / edit state
@@ -84,12 +85,24 @@ export default function Admin() {
     let onlineSubjects = null;
     let onlinePapers = null;
 
+    setDbOnline(null);
+    setDbError("");
+
     try {
       const sRes = await api.get("/admin/stats");
       onlineStats = sRes.data;
       setDbOnline(true);
-    } catch {
+    } catch (error) {
       setDbOnline(false);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setDbError("Your admin session is not authorized. Please sign in again with an admin account.");
+      } else if (error.code === "ECONNABORTED") {
+        setDbError("The backend did not respond within 30 seconds. It may still be starting up.");
+      } else if (!error.response) {
+        setDbError("The backend is unreachable right now. Check your connection or try again in a moment.");
+      } else {
+        setDbError(error.response?.data?.error || "The backend returned an error while loading admin data.");
+      }
     }
 
     try {
@@ -322,8 +335,8 @@ export default function Admin() {
           <div className="admin-offline-banner">
             <span>⚠️</span>
             <div>
-              <strong>Backend connecting...</strong>
-              <p>The server may be waking up (free tier). Please wait 30 seconds and retry.</p>
+              <strong>Backend not ready</strong>
+              <p>{dbError || "The server may still be waking up. Please wait a moment, then retry."}</p>
             </div>
             <button className="primary-button" style={{ flexShrink: 0 }} onClick={loadAll}>
               Retry

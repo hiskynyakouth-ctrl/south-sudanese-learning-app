@@ -11,6 +11,7 @@ connectDB();
 const allowedOrigins = [
   ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
   'http://localhost:3000',
+  'http://localhost:3002',
   'https://south-sudanese-learning-app-two.vercel.app',
 ].filter(Boolean);
 
@@ -27,6 +28,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'ss-elearning-api is running' });
@@ -46,6 +48,7 @@ app.use('/api/chapters', require('./routes/chapterRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

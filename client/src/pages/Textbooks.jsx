@@ -85,7 +85,7 @@ export default function Textbooks() {
     return gradeMatch && subjectMatch;
   });
 
-  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5001";
+  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5000";
   const icon = urlSubject === "Citizenship"
     ? <img src="https://flagcdn.com/w40/ss.png" alt="South Sudan" style={{ width:40, height:27, borderRadius:4, objectFit:"cover" }} />
     : (subjectIcons[urlSubject] ?? "📚");

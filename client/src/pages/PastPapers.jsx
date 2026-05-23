@@ -125,7 +125,7 @@ export default function PastPapers() {
     return acc;
   }, {});
 
-  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5001";
+  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5000";
 
   return (
     <div className="tb-upload-shell">
