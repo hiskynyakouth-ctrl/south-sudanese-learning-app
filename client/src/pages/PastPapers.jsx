@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { getAssetBaseURL } from "../services/apiBase";
 
 const GRADES = ["Senior 1","Senior 2","Senior 3","Senior 4"];
 const YEARS  = [2026,2025,2024,2023,2022,2021,2020];
@@ -125,7 +126,7 @@ export default function PastPapers() {
     return acc;
   }, {});
 
-  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5000";
+  const API_BASE = getAssetBaseURL();
 
   return (
     <div className="tb-upload-shell">

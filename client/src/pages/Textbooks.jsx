@@ -5,6 +5,7 @@ import { IconBookOpen, IconTrash } from "../components/Icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { getAssetBaseURL } from "../services/apiBase";
 import { subjectIcons } from "../data/curriculum";
 
 const GRADES = ["Senior 1","Senior 2","Senior 3","Senior 4"];
@@ -85,7 +86,7 @@ export default function Textbooks() {
     return gradeMatch && subjectMatch;
   });
 
-  const API_BASE = process.env.REACT_APP_API_URL?.replace("/api","") || "http://localhost:5000";
+  const API_BASE = getAssetBaseURL();
   const icon = urlSubject === "Citizenship"
     ? <img src="https://flagcdn.com/w40/ss.png" alt="South Sudan" style={{ width:40, height:27, borderRadius:4, objectFit:"cover" }} />
     : (subjectIcons[urlSubject] ?? "📚");

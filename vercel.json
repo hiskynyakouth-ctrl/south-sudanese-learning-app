@@ -4,6 +4,7 @@
   "outputDirectory": "client/build",
   "rewrites": [
      { "source": "/api/(.*)", "destination": "https://ss-elearning-api.onrender.com/api/$1" },
+     { "source": "/uploads/(.*)", "destination": "https://ss-elearning-api.onrender.com/uploads/$1" },
      { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getApiBaseURL } from "./apiBase";
 
 const STORAGE_KEY = "sslauth";
 
@@ -21,7 +22,7 @@ export const setStoredSession = (session) => {
 };
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000/api" : "/api"),
+  baseURL: getApiBaseURL(),
   timeout: 30000,
 });
 
