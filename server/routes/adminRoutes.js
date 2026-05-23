@@ -1,31 +1,50 @@
-const express = require("express");
-const { pool } = require("../config/db");
-const adminMiddleware = require("../middleware/adminMiddleware");
-const router = express.Router();
+const express = require('express');
+const mongoose = require('mongoose');
+const adminMiddleware = require('../middleware/adminMiddleware');
+const User = require('../models/userModel');
+const Subject = require('../models/subjectModel');
+const Chapter = require('../models/chapterModel');
+const PastPaper = require('../models/pastPaperModel');
 
-// Apply admin authentication to all admin routes
+const router = express.Router();
 router.use(adminMiddleware);
 
-// Helper — run a query and return rows
-const q = (sql, params = []) => pool.query(sql, params).then(r => r.rows);
+const GRADE_MAP = { 1: 'Senior 1', 2: 'Senior 2', 3: 'Senior 3', 4: 'Senior 4' };
+const STREAM_MAP = { 1: 'Natural Sciences', 2: 'Social Sciences' };
+
+const subjectPayload = (subject) => {
+  const gradeId = Number(subject.gradeId ?? subject.classId ?? 0);
+  const streamId = subject.streamId != null ? Number(subject.streamId) : null;
+  return {
+    id: subject._id.toString(),
+    name: subject.name,
+    description: subject.description || '',
+    grade_id: gradeId,
+    stream_id: streamId,
+    grade_name: GRADE_MAP[gradeId] || (gradeId ? `Grade ${gradeId}` : 'Unknown'),
+    stream_name: streamId ? STREAM_MAP[streamId] || 'Core' : 'Core',
+    icon: subject.icon || '📘',
+    created_at: subject.createdAt,
+    updated_at: subject.updatedAt,
+  };
+};
 
 // ── Stats ─────────────────────────────────────────────────
-router.get("/stats", async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
-    const [u, p] = await Promise.all([
-      q("SELECT COUNT(*) AS count FROM users"),
-      q("SELECT COUNT(*) AS count FROM past_papers"),
+    const [users, subjects, chapters, papers] = await Promise.all([
+      User.countDocuments(),
+      Subject.countDocuments(),
+      Chapter.countDocuments(),
+      PastPaper.countDocuments(),
     ]);
-    // subjects and chapters may not exist yet — handle gracefully
-    let subjects = 0, chapters = 0;
-    try { subjects = parseInt((await q("SELECT COUNT(*) AS count FROM subjects"))[0].count) || 0; } catch {}
-    try { chapters = parseInt((await q("SELECT COUNT(*) AS count FROM chapters"))[0].count) || 0; } catch {}
+
     res.json({
-      users:    parseInt(u[0].count) || 0,
+      users,
       subjects,
       chapters,
-      papers:   parseInt(p[0].count) || 0,
-      db: "connected",
+      papers,
+      db: 'connected',
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -33,87 +52,161 @@ router.get("/stats", async (req, res) => {
 });
 
 // ── Users ─────────────────────────────────────────────────
-router.get("/users", async (req, res) => {
+router.get('/users', async (req, res) => {
   try {
-    const rows = await q("SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC");
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const users = await User.find().sort({ createdAt: -1 });
+    res.json(users.map((user) => ({
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role || 'student',
+      created_at: user.createdAt,
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.put("/users/:id/role", async (req, res) => {
+router.put('/users/:id/role', async (req, res) => {
   const { role } = req.body;
-  if (!["student","teacher","admin"].includes(role))
-    return res.status(400).json({ error: "Invalid role." });
+  if (!['student', 'teacher', 'admin'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role.' });
+  }
+
   try {
-    await q("UPDATE users SET role=$1 WHERE id=$2", [role, req.params.id]);
-    res.json({ message: "Role updated." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+    res.json({ message: 'Role updated.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
   try {
-    await q("DELETE FROM users WHERE id=$1", [req.params.id]);
-    res.json({ message: "User deleted." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Subjects ──────────────────────────────────────────────
-router.get("/subjects", async (req, res) => {
+router.get('/subjects', async (req, res) => {
   try {
-    const rows = await q(`
-      SELECT s.*, g.name AS grade_name
-      FROM subjects s
-      LEFT JOIN grades g ON s.grade_id = g.id
-      ORDER BY g.id, s.name
-    `);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const subjects = await Subject.find().sort({ gradeId: 1, classId: 1, name: 1 });
+    res.json(subjects.map(subjectPayload));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.post("/subjects", async (req, res) => {
-  const { name, grade_id, stream_id } = req.body;
+router.post('/subjects', async (req, res) => {
+  const { name, grade_id, stream_id, description } = req.body;
+  const gradeId = Number(grade_id) || 0;
+  const streamId = stream_id != null ? Number(stream_id) : null;
+
   try {
-    await q("INSERT INTO subjects (name, grade_id, stream_id) VALUES ($1, $2, $3)", [name, grade_id, stream_id || null]);
-    res.status(201).json({ message: "Subject added." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const subject = await Subject.create({
+      name,
+      description: description || '',
+      gradeId,
+      streamId,
+      classId: gradeId || 0,
+    });
+    res.status(201).json(subjectPayload(subject));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.put("/subjects/:id", async (req, res) => {
-  const { name, grade_id, stream_id } = req.body;
+router.put('/subjects/:id', async (req, res) => {
+  const { name, grade_id, stream_id, description } = req.body;
+  const gradeId = Number(grade_id) || 0;
+  const streamId = stream_id != null ? Number(stream_id) : null;
+
   try {
-    await q("UPDATE subjects SET name=$1, grade_id=$2, stream_id=$3 WHERE id=$4", [name, grade_id, stream_id || null, req.params.id]);
-    res.json({ message: "Subject updated." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const subject = await Subject.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        description: description || '',
+        gradeId,
+        streamId,
+        classId: gradeId || 0,
+      },
+      { new: true }
+    );
+    if (!subject) return res.status(404).json({ error: 'Subject not found.' });
+    res.json(subjectPayload(subject));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.delete("/subjects/:id", async (req, res) => {
+router.delete('/subjects/:id', async (req, res) => {
   try {
-    await q("DELETE FROM subjects WHERE id=$1", [req.params.id]);
-    res.json({ message: "Subject deleted." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await Subject.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Subject deleted.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Past Papers ───────────────────────────────────────────
-router.get("/past-papers", async (req, res) => {
+router.get('/past-papers', async (req, res) => {
   try {
-    const rows = await q("SELECT * FROM past_papers ORDER BY year DESC");
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const papers = await PastPaper.find().sort({ year: -1, createdAt: -1 });
+    res.json(papers.map((paper) => ({
+      id: paper._id.toString(),
+      subject: paper.subject || '',
+      grade: paper.grade || '',
+      year: paper.year,
+      paper: paper.paper || '',
+      title: paper.title || '',
+      url: paper.file_url || '',
+      subject_id: paper.subjectId ? paper.subjectId.toString() : null,
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.post("/past-papers", async (req, res) => {
-  const { subject_id, year, title, file_url } = req.body;
+router.post('/past-papers', async (req, res) => {
+  const { subject_id, subject, grade, year, paper, title, file_url } = req.body;
+  const subjectId = subject_id && mongoose.isValidObjectId(subject_id) ? subject_id : null;
+
   try {
-    await q("INSERT INTO past_papers (subject_id, year, title, file_url) VALUES ($1, $2, $3, $4)", [subject_id || null, year, title, file_url]);
-    res.status(201).json({ message: "Past paper added." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const newPaper = await PastPaper.create({
+      subjectId,
+      subject: subject || '',
+      grade: grade || '',
+      year: Number(year) || new Date().getFullYear(),
+      paper: paper || '',
+      title: title || '',
+      file_url: file_url || '',
+    });
+    res.status(201).json({
+      id: newPaper._id.toString(),
+      subject: newPaper.subject,
+      grade: newPaper.grade,
+      year: newPaper.year,
+      paper: newPaper.paper,
+      title: newPaper.title,
+      url: newPaper.file_url,
+      subject_id: newPaper.subjectId ? newPaper.subjectId.toString() : null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.delete("/past-papers/:id", async (req, res) => {
+router.delete('/past-papers/:id', async (req, res) => {
   try {
-    await q("DELETE FROM past_papers WHERE id=$1", [req.params.id]);
-    res.json({ message: "Past paper deleted." });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await PastPaper.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Past paper deleted.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

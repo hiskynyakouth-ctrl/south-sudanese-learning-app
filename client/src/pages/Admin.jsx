@@ -220,7 +220,13 @@ export default function Admin() {
     };
     try {
       await api.post("/admin/past-papers", {
-        subject_id: null, year: parseInt(np.year), title, file_url: np.url,
+        subject_id: null,
+        subject: np.subject,
+        grade: np.grade,
+        year: parseInt(np.year),
+        paper: np.paper,
+        title,
+        file_url: np.url,
       });
       flash(`"${title}" added to ${np.grade}`);
       loadAll();
@@ -328,7 +334,7 @@ export default function Admin() {
         {dbOnline === true && (
           <div className="admin-online-banner">
             <span>🟢</span>
-            <strong>PostgreSQL Connected — south sudan e-learning</strong>
+            <strong>MongoDB Connected — South Sudan E-Learning</strong>
           </div>
         )}
 
@@ -746,8 +752,8 @@ export default function Admin() {
               {/* DB test */}
               <div className="admin-setting-card">
                 <h3>Database</h3>
-                <p>PostgreSQL · <strong>south sudan e-learning</strong></p>
-                <p>Host: localhost:5432</p>
+                <p>MongoDB · <strong>South Sudan E-Learning</strong></p>
+                <p>Host: MongoDB Atlas or local MongoDB</p>
                 <button
                   className="primary-button"
                   onClick={() =>

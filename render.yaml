@@ -22,12 +22,3 @@ services:
         value: REPLACE_WITH_MONGO_URI
       - key: CLIENT_URL
         value: https://south-sudanese-learning-app-two.vercel.app
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ss-elearning-db
-          property: connectionString
-
-databases:
-  - name: ss-elearning-db
-    plan: free
-    region: oregon
