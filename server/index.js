@@ -24,6 +24,18 @@ app.use(
 );
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'ss-elearning-api is running' });
+});
+
+app.get('/api', (req, res) => {
+  res.json({ status: 'ok', message: 'API root' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/subjects', require('./routes/subjectRoutes'));
 app.use('/api/chapters', require('./routes/chapterRoutes'));

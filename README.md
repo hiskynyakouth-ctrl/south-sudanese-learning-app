@@ -14,7 +14,7 @@ A full-stack eLearning application designed for South Sudanese education, featur
 
 - **Frontend**: React, Tailwind CSS
 - **Backend**: Node.js, Express
-- **Database**: SQL (schema provided)
+- **Database**: MongoDB
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ A full-stack eLearning application designed for South Sudanese education, featur
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Database (MySQL/PostgreSQL)
+- MongoDB connection string for the backend
 
 ### Installation
 
@@ -37,9 +37,13 @@ A full-stack eLearning application designed for South Sudanese education, featur
    npm install
    ```
 
-3. Set up the database using `database/schema.sql`
-4. Configure environment variables in `client/.env` and `server/.env`
-5. Start the development servers:
+3. Configure environment variables in `server/.env` or in your deployment platform.
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `CLIENT_URL`
+   - `GMAIL_USER`
+   - `GMAIL_APP_PASSWORD`
+4. Start the development servers:
 
    ```bash
    # Terminal 1: Start backend
@@ -53,9 +57,11 @@ A full-stack eLearning application designed for South Sudanese education, featur
 ## Deployment
 
 - Backend: the root `render.yaml` deploys the API from `server/`.
-- The backend uses MongoDB only. Set `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`, and `GMAIL_APP_PASSWORD` in Render environment variables.
-- Set `CLIENT_URL` to your Vercel app URL so CORS and redirects work correctly.
+- The backend uses MongoDB only.
+- Set `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`, and `GMAIL_APP_PASSWORD` in Render environment variables.
+- Use the Render service domain `https://ss-elearning-api.onrender.com` for the frontend rewrite.
 - Frontend: `vercel.json` rewrites `/api/(.*)` to `https://ss-elearning-api.onrender.com/api/$1`.
+- Confirm the deployed backend by visiting `https://ss-elearning-api.onrender.com/` and `https://ss-elearning-api.onrender.com/api/health`.
 ## Project Structure
 
 - `client/` - React frontend application
