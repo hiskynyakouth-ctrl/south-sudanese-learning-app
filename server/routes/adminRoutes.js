@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { getDbStatus } = require('../config/db');
 const adminMiddleware = require('../middleware/adminMiddleware');
 const User = require('../models/userModel');
 const Subject = require('../models/subjectModel');
@@ -8,6 +9,10 @@ const PastPaper = require('../models/pastPaperModel');
 
 const router = express.Router();
 router.use(adminMiddleware);
+router.use((req, res, next) => {
+  if (getDbStatus().state === 1) return next();
+  return res.status(503).json({ error: 'Database is not connected. Check MONGO_URI on the backend server.' });
+});
 
 const GRADE_MAP = { 1: 'Senior 1', 2: 'Senior 2', 3: 'Senior 3', 4: 'Senior 4' };
 const STREAM_MAP = { 1: 'Natural Sciences', 2: 'Social Sciences' };

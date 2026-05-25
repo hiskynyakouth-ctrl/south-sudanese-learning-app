@@ -22,18 +22,22 @@ const makeError = (msg) => {
 
 // ── Login ────────────────────────────────────────────────
 export const login = async (email, password) => {
+  const normalizedEmail = email.trim().toLowerCase();
   try {
-    const res = await authApi.post('/auth/login', { email: email.trim(), password });
+    const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
     return res.data;
   } catch (err) {
     // Only 401 (wrong password) should block — everything else falls through to localStorage
     if (err.response?.status === 401) throw err;
+    if (normalizedEmail.includes("admin") && err.response) {
+      throw makeError(err.response?.data?.error || "Online admin login is unavailable. Check the backend database connection.");
+    }
     // 404, 500, 503, no response — fall through to localStorage
   }
 
   // localStorage fallback
   const users = getLocalUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+  const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
   if (!user) throw makeError("No account found with this email. Please register first.");
   if (user.loginMethod === "google" || user.password?.startsWith("google_")) {
     throw makeError("This account uses Google login. Please click 'Continue with Google'.");

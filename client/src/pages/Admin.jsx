@@ -51,7 +51,7 @@ const streamClass = (label) => {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function Admin() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [tab,      setTab]      = useState("dashboard");
@@ -79,6 +79,22 @@ export default function Admin() {
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Data loading ───────────────────────────────────────────────────────
+  const loadLocalData = (onlineStats = null, onlineUsers = null, onlineSubjects = null, onlinePapers = null) => {
+    const localUsers = lsGet(LS_USERS).map(u => ({ ...u, role: u.role || "student" }));
+    const localSubjects = lsGet(LS_SUBJECTS);
+    const localPapers = lsGet(LS_PAPERS);
+
+    setStats({
+      users:    onlineStats ? parseInt(onlineStats.users)    || localUsers.length : localUsers.length,
+      subjects: onlineStats ? parseInt(onlineStats.subjects) || localSubjects.length : localSubjects.length,
+      chapters: onlineStats ? parseInt(onlineStats.chapters) || 0 : 0,
+      papers:   onlineStats ? parseInt(onlineStats.papers)   || localPapers.length : localPapers.length,
+    });
+    setUsers(onlineUsers || localUsers);
+    setSubjects(onlineSubjects || localSubjects);
+    setPapers(onlinePapers || localPapers);
+  };
+
   const loadAll = async () => {
     let onlineStats = null;
     let onlineUsers = null;
@@ -88,6 +104,13 @@ export default function Admin() {
     setDbOnline(null);
     setDbError("");
 
+    if (!token?.startsWith("eyJ")) {
+      setDbOnline(false);
+      setDbError("You are signed in with a local/offline account. Sign in with an online admin account to load admin data from the server.");
+      loadLocalData();
+      return;
+    }
+
     try {
       const sRes = await api.get("/admin/stats");
       onlineStats = sRes.data;
@@ -96,6 +119,12 @@ export default function Admin() {
       setDbOnline(false);
       if (error.response?.status === 401 || error.response?.status === 403) {
         setDbError("Your admin session is not authorized. Please sign in again with an admin account.");
+        loadLocalData();
+        return;
+      } else if (error.response?.status === 503) {
+        setDbError(error.response?.data?.error || "The backend is online, but the database is not connected.");
+        loadLocalData();
+        return;
       } else if (error.code === "ECONNABORTED") {
         setDbError("The backend did not respond within 30 seconds. It may still be starting up.");
       } else if (!error.response) {
@@ -126,19 +155,7 @@ export default function Admin() {
       // ignore
     }
 
-    const localUsers = lsGet(LS_USERS).map(u => ({ ...u, role: u.role || "student" }));
-    const localSubjects = lsGet(LS_SUBJECTS);
-    const localPapers = lsGet(LS_PAPERS);
-
-    setStats({
-      users:    onlineStats ? parseInt(onlineStats.users)    || localUsers.length : localUsers.length,
-      subjects: onlineStats ? parseInt(onlineStats.subjects) || localSubjects.length : localSubjects.length,
-      chapters: onlineStats ? parseInt(onlineStats.chapters) || 0 : 0,
-      papers:   onlineStats ? parseInt(onlineStats.papers)   || localPapers.length : localPapers.length,
-    });
-    setUsers(onlineUsers || localUsers);
-    setSubjects(onlineSubjects || localSubjects);
-    setPapers(onlinePapers || localPapers);
+    loadLocalData(onlineStats, onlineUsers, onlineSubjects, onlinePapers);
   };
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3500); };

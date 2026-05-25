@@ -2,9 +2,16 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { register, login, me, googleAuth, resetPassword } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
+const { getDbStatus } = require("../config/db");
 const User = require("../models/userModel");
 
 const router = express.Router();
+
+const requireDb = (res) => {
+  if (getDbStatus().state === 1) return true;
+  res.status(503).json({ error: "Database is not connected. Check MONGO_URI on the backend server." });
+  return false;
+};
 
 router.post("/register", register);
 router.post("/login", login);
@@ -17,6 +24,7 @@ router.post("/reset-password", resetPassword);
 router.put("/profile", authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
+  if (!requireDb(res)) return;
   try {
     const user = await User.findById(req.user.id).select("name email role");
     if (!user) return res.status(404).json({ error: "User not found." });
@@ -33,6 +41,7 @@ router.post("/change-password", authMiddleware, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) return res.status(400).json({ error: "Both passwords required." });
   if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters." });
+  if (!requireDb(res)) return;
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: "User not found." });
@@ -49,6 +58,7 @@ router.post("/change-password", authMiddleware, async (req, res) => {
 router.post("/setup-admin", async (req, res) => {
   const { secret, email, password } = req.body;
   if (secret !== "ss_setup_2024_hisky") return res.status(403).json({ error: "Forbidden" });
+  if (!requireDb(res)) return;
   try {
     const hash = await bcrypt.hash(password || "Admin@2024", 10);
     const normalizedEmail = (email || "admin@school.com").toLowerCase();
@@ -77,6 +87,7 @@ router.post("/setup-admin", async (req, res) => {
 router.post("/subscribe", async (req, res) => {
   const { email, plan, txRef, amount, currency } = req.body;
   if (!email) return res.status(400).json({ error: "Email required." });
+  if (!requireDb(res)) return;
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(404).json({ error: "No account found with this email." });

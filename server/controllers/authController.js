@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { getDbStatus } = require('../config/db');
 const User = require('../models/userModel');
 
 const signUser = (user) =>
@@ -9,12 +10,19 @@ const signUser = (user) =>
     { expiresIn: '7d' }
   );
 
+const requireDb = (res) => {
+  if (getDbStatus().state === 1) return true;
+  res.status(503).json({ error: 'Database is not connected. Check MONGO_URI on the backend server.' });
+  return false;
+};
+
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required.' });
   }
+  if (!requireDb(res)) return;
 
   try {
     const existing = await User.findOne({ email });
@@ -42,6 +50,7 @@ exports.login = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
+  if (!requireDb(res)) return;
 
   try {
     const user = await User.findOne({ email });
@@ -80,6 +89,7 @@ exports.googleAuth = async (req, res) => {
   if (!name || !email || !googleId) {
     return res.status(400).json({ error: 'Name, email, and googleId are required.' });
   }
+  if (!requireDb(res)) return;
 
   try {
     let user = await User.findOne({ email: email.toLowerCase() });
@@ -126,6 +136,7 @@ exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
   if (!email || !newPassword)
     return res.status(400).json({ error: 'Email and new password are required.' });
+  if (!requireDb(res)) return;
 
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
