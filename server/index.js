@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { connectDB } = require('./config/db');
+const { connectDB, getDbStatus } = require('./config/db');
 
 const app = express();
 
@@ -39,7 +39,7 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
+  res.json({ status: 'ok', uptime: process.uptime(), db: getDbStatus() });
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
