@@ -11,4 +11,3 @@ export const getApiBaseURL = () => {
 };
 
 export const getAssetBaseURL = () => getApiBaseURL().replace(/\/api\/?$/, "");
-
