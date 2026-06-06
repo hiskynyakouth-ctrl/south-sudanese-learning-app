@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { getApiBaseURL } from './apiBase';
+import { getApiBaseURL, wakeBackend } from './apiBase';
 
 const LOCAL_USERS_KEY = "ss_users";
 const API = getApiBaseURL();
 
-const authApi = axios.create({ baseURL: API, timeout: 10000 }); // 10 seconds
+// 60 seconds — enough for Render free tier to cold-start
+const authApi = axios.create({ baseURL: API, timeout: 60000 });
 
 const getLocalUsers = () => {
   try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "[]"); }
@@ -21,17 +22,50 @@ const makeError = (msg) => {
 };
 
 // ── Login ────────────────────────────────────────────────
-export const login = async (email, password) => {
+export const login = async (email, password, onWaking) => {
   const normalizedEmail = email.trim().toLowerCase();
+  const isAdminEmail = normalizedEmail.includes("admin");
+
+  // For admin accounts: always wait for the backend to wake up (Render free tier)
+  if (isAdminEmail) {
+    // Fire a wake-up ping. onWaking callback lets the UI show a spinner.
+    if (typeof onWaking === "function") onWaking(true);
+    try {
+      const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
+      if (typeof onWaking === "function") onWaking(false);
+      return res.data;
+    } catch (err) {
+      if (typeof onWaking === "function") onWaking(false);
+      // Wrong password — don't fall back
+      if (err.response?.status === 401) throw err;
+      // Backend waking up or DB not connected
+      if (err.code === "ECONNABORTED" || !err.response) {
+        // Try waking the server explicitly, then retry once
+        if (typeof onWaking === "function") onWaking(true);
+        const awake = await wakeBackend(90000);
+        if (typeof onWaking === "function") onWaking(false);
+        if (awake) {
+          try {
+            const retryRes = await authApi.post('/auth/login', { email: normalizedEmail, password });
+            return retryRes.data;
+          } catch (retryErr) {
+            if (retryErr.response?.status === 401) throw retryErr;
+            throw makeError("Backend woke up but login failed. Check admin credentials.");
+          }
+        }
+        throw makeError("The server is taking too long to start. Please wait 30 seconds and try again.");
+      }
+      throw makeError(err.response?.data?.error || "Online admin login is unavailable. Check the backend database connection.");
+    }
+  }
+
+  // Non-admin users: try backend, fall back to localStorage on failure
   try {
     const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
     return res.data;
   } catch (err) {
     // Only 401 (wrong password) should block — everything else falls through to localStorage
     if (err.response?.status === 401) throw err;
-    if (normalizedEmail.includes("admin") && err.response) {
-      throw makeError(err.response?.data?.error || "Online admin login is unavailable. Check the backend database connection.");
-    }
     // 404, 500, 503, no response — fall through to localStorage
   }
 

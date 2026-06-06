@@ -106,7 +106,7 @@ export default function Admin() {
 
     if (!token?.startsWith("eyJ")) {
       setDbOnline(false);
-      setDbError("You are signed in with a local/offline account. Sign in with an online admin account to load admin data from the server.");
+      setDbError("You are signed in with a local/offline account. Sign in with your online admin account to load data from the server.");
       loadLocalData();
       return;
     }
@@ -348,15 +348,47 @@ export default function Admin() {
         {/* Status banners */}
         {msg && <div className="admin-msg">{msg}</div>}
 
+        {dbOnline === null && (
+          <div className="admin-offline-banner" style={{ background: "#e8f0fe", borderColor: "#1a73e8" }}>
+            <span>⏳</span>
+            <div>
+              <strong>Connecting to backend…</strong>
+              <p>Waking up the server (free tier). This may take up to 30 seconds.</p>
+            </div>
+          </div>
+        )}
+
         {dbOnline === false && (
           <div className="admin-offline-banner">
             <span>⚠️</span>
             <div>
               <strong>Backend not ready</strong>
               <p>{dbError || "The server may still be waking up. Please wait a moment, then retry."}</p>
+              {token && !token.startsWith("eyJ") && (
+                <p style={{ marginTop: 6 }}>
+                  <a
+                    href="/login"
+                    style={{ color: "#1a73e8", fontWeight: 600, textDecoration: "underline" }}
+                    onClick={(e) => { e.preventDefault(); navigate("/login"); }}
+                  >
+                    → Sign in again with your online admin account
+                  </a>
+                </p>
+              )}
             </div>
-            <button className="primary-button" style={{ flexShrink: 0 }} onClick={loadAll}>
-              Retry
+            <button
+              className="primary-button"
+              style={{ flexShrink: 0 }}
+              onClick={() => {
+                // If local token, redirect to login for a real JWT
+                if (token && !token.startsWith("eyJ")) {
+                  navigate("/login");
+                } else {
+                  loadAll();
+                }
+              }}
+            >
+              {token && !token.startsWith("eyJ") ? "Sign In" : "Retry"}
             </button>
           </div>
         )}

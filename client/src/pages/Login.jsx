@@ -15,6 +15,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [waking, setWaking] = useState(false);
 
   // Pre-seed known accounts in localStorage for offline fallback
   useState(() => {
@@ -46,13 +47,14 @@ export default function Login() {
     if (!emailFormatOk) { setError("Please enter a valid email address."); return; }
     try {
       setLoading(true);
-      const data = await loginService(trimmed, form.password);
+      const data = await loginService(trimmed, form.password, (isWaking) => setWaking(isWaking));
       saveSession({ token: data.token, user: data.user });
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
+      setWaking(false);
     }
   };
 
@@ -134,6 +136,13 @@ export default function Login() {
 
         {error && <div className="message-card error">{error}</div>}
 
+        {waking && (
+          <div className="message-card info" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "1.2rem" }}>⏳</span>
+            <span>Server is waking up (free tier) — please wait up to 60 seconds…</span>
+          </div>
+        )}
+
         {/* Google button */}
         <button type="button" className="auth-google-btn" onClick={handleGoogle}>
           <svg width="20" height="20" viewBox="0 0 48 48">
@@ -152,7 +161,7 @@ export default function Login() {
         </label>
 
         <button type="submit" className="primary-button auth-submit-btn" disabled={loading}>
-          {loading ? "Signing in..." : "Sign In"}
+          {waking ? "Waking server…" : loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 
