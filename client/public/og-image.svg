@@ -1,62 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#0a4d41"/>
+      <stop offset="0%" stop-color="#0a4d41"/>
+      <stop offset="60%" stop-color="#0f3d2e"/>
       <stop offset="100%" stop-color="#1b3558"/>
-    </linearGradient>
-    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.12)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
     </linearGradient>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <!-- Decorative circles -->
-  <circle cx="1100" cy="80"  r="220" fill="rgba(216,134,47,0.15)"/>
-  <circle cx="100"  cy="560" r="180" fill="rgba(15,107,91,0.25)"/>
-  <circle cx="1050" cy="550" r="120" fill="rgba(255,255,255,0.05)"/>
+  <!-- ══ SOUTH SUDAN FLAG (right side, large) ══════════════ -->
+  <!-- Flag dimensions 3:2 ratio → 420 x 280, positioned right -->
+  <g transform="translate(680, 175)">
+    <!-- Shadow -->
+    <rect x="6" y="6" width="420" height="280" rx="12" fill="rgba(0,0,0,0.4)"/>
+    <!-- Flag body -->
+    <rect x="0" y="0" width="420" height="280" rx="12" fill="white"/>
+    <!-- Stripes: Black, Red, Green (top to bottom), White dividers -->
+    <!-- Green stripe -->
+    <rect x="0" y="0"   width="420" height="93"  fill="#078930"/>
+    <!-- White divider -->
+    <rect x="0" y="87"  width="420" height="7"   fill="white"/>
+    <!-- Red stripe -->
+    <rect x="0" y="93"  width="420" height="94"  fill="#DA121A"/>
+    <!-- White divider -->
+    <rect x="0" y="186" width="420" height="7"   fill="white"/>
+    <!-- Black stripe -->
+    <rect x="0" y="193" width="420" height="87"  fill="#000000"/>
+    <!-- Blue triangle -->
+    <polygon points="0,0 175,140 0,280" fill="#0F47AF"/>
+    <!-- Clip the triangle to flag bounds (radius already set on rect) -->
+    <!-- Yellow star in triangle center -->
+    <polygon points="87,105 97,133 128,133 103,150 113,178 87,161 61,178 71,150 46,133 77,133"
+             fill="#FCDD09" stroke="#FCDD09" stroke-width="1"/>
+    <!-- Round corners clip -->
+    <rect x="0" y="0" width="420" height="280" rx="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+  </g>
 
-  <!-- Flag stripe accents (South Sudan flag colors) -->
-  <rect x="0" y="0"   width="1200" height="8"  fill="#078930"/>
-  <rect x="0" y="8"   width="1200" height="8"  fill="#FCDD09"/>
-  <rect x="0" y="16"  width="1200" height="8"  fill="#DA121A"/>
-  <rect x="0" y="614" width="1200" height="8"  fill="#078930"/>
-  <rect x="0" y="606" width="1200" height="8"  fill="#FCDD09"/>
-  <rect x="0" y="598" width="1200" height="8"  fill="#DA121A"/>
-
-  <!-- Card -->
-  <rect x="80" y="90" width="1040" height="450" rx="32" fill="url(#card)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
-
-  <!-- South Sudan Flag emoji area -->
-  <circle cx="200" cy="230" r="72" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-  <text x="200" y="250" font-size="72" text-anchor="middle" dominant-baseline="middle">🇸🇸</text>
+  <!-- ══ LEFT CONTENT ══════════════════════════════════════ -->
 
   <!-- Title -->
-  <text x="320" y="195" font-family="'Segoe UI', Arial, sans-serif" font-size="62" font-weight="800" fill="white" letter-spacing="-1">South Sudan</text>
-  <text x="320" y="265" font-family="'Segoe UI', Arial, sans-serif" font-size="62" font-weight="800" fill="#FCDD09" letter-spacing="-1">E-Learning</text>
+  <text x="80" y="185" font-family="'Segoe UI',Arial,sans-serif" font-weight="800" font-size="68" fill="white" letter-spacing="-2">South Sudan</text>
+  <text x="80" y="265" font-family="'Segoe UI',Arial,sans-serif" font-weight="800" font-size="68" fill="#FCDD09" letter-spacing="-2">E-Learning</text>
 
-  <!-- Divider -->
-  <rect x="320" y="290" width="680" height="3" rx="2" fill="rgba(255,255,255,0.2)"/>
+  <!-- Subtitle line -->
+  <rect x="80" y="285" width="520" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
 
   <!-- Description -->
-  <text x="320" y="335" font-family="'Segoe UI', Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.85)">📚 Senior 1 – 4 · Notes · Quizzes · Past Papers</text>
-  <text x="320" y="378" font-family="'Segoe UI', Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.75)">Official South Sudan Secondary Curriculum</text>
+  <text x="80" y="330" font-family="'Segoe UI',Arial,sans-serif" font-size="27" fill="rgba(255,255,255,0.88)">📚 Senior 1 – 4 · Free Study Platform</text>
+  <text x="80" y="370" font-family="'Segoe UI',Arial,sans-serif" font-size="24" fill="rgba(255,255,255,0.65)">Notes · Quizzes · Past Papers · Videos</text>
 
   <!-- Feature pills -->
-  <rect x="320" y="410" width="148" height="44" rx="22" fill="rgba(15,107,91,0.7)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-  <text x="394" y="438" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="white" text-anchor="middle">📖 Notes</text>
+  <rect x="80"  y="400" width="130" height="42" rx="21" fill="#078930"/>
+  <text x="145" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">📖 Notes</text>
 
-  <rect x="480" y="410" width="148" height="44" rx="22" fill="rgba(15,107,91,0.7)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-  <text x="554" y="438" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="white" text-anchor="middle">✏️ Quizzes</text>
+  <rect x="222" y="400" width="140" height="42" rx="21" fill="#DA121A"/>
+  <text x="292" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">✏️ Quizzes</text>
 
-  <rect x="640" y="410" width="188" height="44" rx="22" fill="rgba(15,107,91,0.7)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-  <text x="734" y="438" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="white" text-anchor="middle">📄 Past Papers</text>
+  <rect x="374" y="400" width="170" height="42" rx="21" fill="#0F47AF"/>
+  <text x="459" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">📄 Past Papers</text>
 
-  <rect x="840" y="410" width="188" height="44" rx="22" fill="rgba(216,134,47,0.8)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-  <text x="934" y="438" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="white" text-anchor="middle">🎓 Free Access</text>
+  <!-- "Free" badge -->
+  <rect x="80"  y="460" width="100" height="38" rx="19" fill="#FCDD09"/>
+  <text x="130" y="484" font-family="'Segoe UI',Arial,sans-serif" font-size="18" font-weight="700" fill="#0a4d41" text-anchor="middle">FREE ✓</text>
 
   <!-- URL -->
-  <text x="600" y="510" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)" text-anchor="middle">south-sudanese-learning-app-two.vercel.app</text>
+  <text x="80" y="570" font-family="'Segoe UI',Arial,sans-serif" font-size="20" fill="rgba(255,255,255,0.45)">south-sudanese-learning-app-two.vercel.app</text>
+
+  <!-- ══ FLAG STRIPES at top and bottom (accent) ══════════ -->
+  <rect x="0" y="0"   width="1200" height="10" fill="#078930"/>
+  <rect x="0" y="10"  width="1200" height="10" fill="#FCDD09"/>
+  <rect x="0" y="20"  width="1200" height="10" fill="#DA121A"/>
+  <rect x="0" y="610" width="1200" height="10" fill="#078930"/>
+  <rect x="0" y="620" width="1200" height="10" fill="#FCDD09"/>
+  <rect x="0" y="630" width="1200" height="0"  fill="#DA121A"/>
 </svg>
