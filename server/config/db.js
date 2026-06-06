@@ -1,54 +1,118 @@
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 
 let pool = null;
-if (process.env.DATABASE_URL) {
-  const { Pool } = require('pg');
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-}
+let connected = false;
 
-let reconnectTimer = null;
+const getPool = () => {
+  if (!pool) {
+    const connectionString = process.env.DATABASE_URL;
+    if (connectionString) {
+      pool = new Pool({
+        connectionString,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      });
+    } else {
+      pool = new Pool({
+        host:     process.env.DB_HOST     || 'localhost',
+        user:     process.env.DB_USER     || 'postgres',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME     || 'elearning',
+        port:     parseInt(process.env.DB_PORT || '5432'),
+      });
+    }
+  }
+  return pool;
+};
 
-const DB_STATES = {
-  0: 'disconnected',
-  1: 'connected',
-  2: 'connecting',
-  3: 'disconnecting',
+// Simple query helper
+const query = (text, params) => getPool().query(text, params);
+
+const connectDB = async () => {
+  try {
+    await query('SELECT 1');
+    connected = true;
+    console.log('✅ Connected to PostgreSQL');
+    await initTables();
+    return true;
+  } catch (err) {
+    connected = false;
+    console.error('❌ PostgreSQL connection failed:', err.message);
+    // Retry after 15s
+    setTimeout(connectDB, 15000);
+    return false;
+  }
 };
 
 const getDbStatus = () => ({
-  state: mongoose.connection.readyState,
-  status: DB_STATES[mongoose.connection.readyState] || 'unknown',
+  state: connected ? 1 : 0,
+  status: connected ? 'connected' : 'disconnected',
 });
 
-const scheduleReconnect = () => {
-  if (reconnectTimer || mongoose.connection.readyState === 1) return;
+// Auto-create tables on startup
+const initTables = async () => {
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id               SERIAL PRIMARY KEY,
+      name             VARCHAR(255)        NOT NULL,
+      email            VARCHAR(255) UNIQUE NOT NULL,
+      password         VARCHAR(255)        NOT NULL,
+      google_id        VARCHAR(255),
+      picture          VARCHAR(500),
+      role             VARCHAR(20)         DEFAULT 'student',
+      subscription_plan    VARCHAR(50)     DEFAULT '',
+      subscription_expiry  TIMESTAMPTZ,
+      created_at       TIMESTAMPTZ         DEFAULT NOW()
+    );
 
-  reconnectTimer = setTimeout(async () => {
-    reconnectTimer = null;
-    const connection = await connectDB();
-    if (!connection) scheduleReconnect();
-  }, 30000);
+    CREATE TABLE IF NOT EXISTS subjects (
+      id          SERIAL PRIMARY KEY,
+      name        VARCHAR(100) NOT NULL,
+      description TEXT         DEFAULT '',
+      grade_id    INT          NOT NULL DEFAULT 0,
+      stream_id   INT,
+      icon        VARCHAR(10)  DEFAULT '📘',
+      created_at  TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
 
-  if (typeof reconnectTimer.unref === 'function') reconnectTimer.unref();
+    CREATE TABLE IF NOT EXISTS chapters (
+      id          SERIAL PRIMARY KEY,
+      subject_id  INT          REFERENCES subjects(id) ON DELETE CASCADE,
+      title       VARCHAR(255) NOT NULL,
+      content     TEXT         DEFAULT '',
+      video_url   VARCHAR(500) DEFAULT '',
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS chapter_questions (
+      id          SERIAL PRIMARY KEY,
+      chapter_id  INT  REFERENCES chapters(id) ON DELETE CASCADE,
+      question    TEXT NOT NULL,
+      answer      TEXT DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id          SERIAL PRIMARY KEY,
+      chapter_id  INT     REFERENCES chapters(id) ON DELETE CASCADE,
+      question    TEXT    NOT NULL,
+      options     JSONB   DEFAULT '[]',
+      answer      VARCHAR(255) NOT NULL,
+      correct_answer VARCHAR(255)
+    );
+
+    CREATE TABLE IF NOT EXISTS past_papers (
+      id          SERIAL PRIMARY KEY,
+      subject_id  INT,
+      subject     VARCHAR(150) DEFAULT '',
+      grade       VARCHAR(50)  DEFAULT '',
+      year        INT          NOT NULL,
+      paper       VARCHAR(50)  DEFAULT '',
+      title       VARCHAR(255) NOT NULL DEFAULT '',
+      file_url    TEXT         DEFAULT '',
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
+  `);
+  console.log('✅ Tables ready');
 };
 
-const connectDB = async () => {
-  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
-    return mongoose.connection;
-  }
-
-  try {
-    const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/elearning';
-    await mongoose.connect(uri, { dbName: 'elearning', serverSelectionTimeoutMS: 10000 });
-    console.log('Connected to MongoDB');
-    return mongoose.connection;
-  } catch (err) {
-    console.error('MongoDB connection failed:', err.message);
-    scheduleReconnect();
-    return null;
-  }
-};
-
-mongoose.connection.on('disconnected', scheduleReconnect);
-
-module.exports = { connectDB, getDbStatus, pool };
+module.exports = { query, connectDB, getDbStatus, getPool };

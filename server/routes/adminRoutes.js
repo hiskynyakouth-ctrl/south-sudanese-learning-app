@@ -1,54 +1,46 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const { getDbStatus } = require('../config/db');
+const { query, getDbStatus } = require('../config/db');
 const adminMiddleware = require('../middleware/adminMiddleware');
-const User = require('../models/userModel');
-const Subject = require('../models/subjectModel');
-const Chapter = require('../models/chapterModel');
-const PastPaper = require('../models/pastPaperModel');
 
 const router = express.Router();
 router.use(adminMiddleware);
+
+// DB check middleware
 router.use((req, res, next) => {
   if (getDbStatus().state === 1) return next();
-  return res.status(503).json({ error: 'Database is not connected. Check MONGO_URI on the backend server.' });
+  return res.status(503).json({ error: 'Database is not connected. Check DATABASE_URL on the backend server.' });
 });
 
-const GRADE_MAP = { 1: 'Senior 1', 2: 'Senior 2', 3: 'Senior 3', 4: 'Senior 4' };
+const GRADE_MAP  = { 1: 'Senior 1', 2: 'Senior 2', 3: 'Senior 3', 4: 'Senior 4' };
 const STREAM_MAP = { 1: 'Natural Sciences', 2: 'Social Sciences' };
 
-const subjectPayload = (subject) => {
-  const gradeId = Number(subject.gradeId ?? subject.classId ?? 0);
-  const streamId = subject.streamId != null ? Number(subject.streamId) : null;
-  return {
-    id: subject._id.toString(),
-    name: subject.name,
-    description: subject.description || '',
-    grade_id: gradeId,
-    stream_id: streamId,
-    grade_name: GRADE_MAP[gradeId] || (gradeId ? `Grade ${gradeId}` : 'Unknown'),
-    stream_name: streamId ? STREAM_MAP[streamId] || 'Core' : 'Core',
-    icon: subject.icon || '📘',
-    created_at: subject.createdAt,
-    updated_at: subject.updatedAt,
-  };
-};
+const subjectPayload = (s) => ({
+  id:          s.id,
+  name:        s.name,
+  description: s.description || '',
+  grade_id:    s.grade_id,
+  stream_id:   s.stream_id,
+  grade_name:  GRADE_MAP[s.grade_id] || (s.grade_id ? `Grade ${s.grade_id}` : 'Unknown'),
+  stream_name: s.stream_id ? STREAM_MAP[s.stream_id] || 'Core' : 'Core',
+  icon:        s.icon || '📘',
+  created_at:  s.created_at,
+  updated_at:  s.updated_at,
+});
 
-// ── Stats ─────────────────────────────────────────────────
+// ── Stats ────────────────────────────────────────────────
 router.get('/stats', async (req, res) => {
   try {
     const [users, subjects, chapters, papers] = await Promise.all([
-      User.countDocuments(),
-      Subject.countDocuments(),
-      Chapter.countDocuments(),
-      PastPaper.countDocuments(),
+      query('SELECT COUNT(*) FROM users'),
+      query('SELECT COUNT(*) FROM subjects'),
+      query('SELECT COUNT(*) FROM chapters'),
+      query('SELECT COUNT(*) FROM past_papers'),
     ]);
-
     res.json({
-      users,
-      subjects,
-      chapters,
-      papers,
+      users:    parseInt(users.rows[0].count),
+      subjects: parseInt(subjects.rows[0].count),
+      chapters: parseInt(chapters.rows[0].count),
+      papers:   parseInt(papers.rows[0].count),
       db: 'connected',
     });
   } catch (err) {
@@ -56,17 +48,11 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// ── Users ─────────────────────────────────────────────────
+// ── Users ────────────────────────────────────────────────
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
-    res.json(users.map((user) => ({
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role || 'student',
-      created_at: user.createdAt,
-    })));
+    const result = await query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -74,12 +60,10 @@ router.get('/users', async (req, res) => {
 
 router.put('/users/:id/role', async (req, res) => {
   const { role } = req.body;
-  if (!['student', 'teacher', 'admin'].includes(role)) {
+  if (!['student', 'teacher', 'admin'].includes(role))
     return res.status(400).json({ error: 'Invalid role.' });
-  }
-
   try {
-    await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+    await query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
     res.json({ message: 'Role updated.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -88,18 +72,18 @@ router.put('/users/:id/role', async (req, res) => {
 
 router.delete('/users/:id', async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    await query('DELETE FROM users WHERE id = $1', [req.params.id]);
     res.json({ message: 'User deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── Subjects ──────────────────────────────────────────────
+// ── Subjects ─────────────────────────────────────────────
 router.get('/subjects', async (req, res) => {
   try {
-    const subjects = await Subject.find().sort({ gradeId: 1, classId: 1, name: 1 });
-    res.json(subjects.map(subjectPayload));
+    const result = await query('SELECT * FROM subjects ORDER BY grade_id, name');
+    res.json(result.rows.map(subjectPayload));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -107,18 +91,13 @@ router.get('/subjects', async (req, res) => {
 
 router.post('/subjects', async (req, res) => {
   const { name, grade_id, stream_id, description } = req.body;
-  const gradeId = Number(grade_id) || 0;
-  const streamId = stream_id != null ? Number(stream_id) : null;
-
   try {
-    const subject = await Subject.create({
-      name,
-      description: description || '',
-      gradeId,
-      streamId,
-      classId: gradeId || 0,
-    });
-    res.status(201).json(subjectPayload(subject));
+    const result = await query(
+      `INSERT INTO subjects (name, description, grade_id, stream_id, updated_at)
+       VALUES ($1, $2, $3, $4, NOW()) RETURNING *`,
+      [name, description || '', Number(grade_id) || 0, stream_id != null ? Number(stream_id) : null]
+    );
+    res.status(201).json(subjectPayload(result.rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -126,23 +105,14 @@ router.post('/subjects', async (req, res) => {
 
 router.put('/subjects/:id', async (req, res) => {
   const { name, grade_id, stream_id, description } = req.body;
-  const gradeId = Number(grade_id) || 0;
-  const streamId = stream_id != null ? Number(stream_id) : null;
-
   try {
-    const subject = await Subject.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        description: description || '',
-        gradeId,
-        streamId,
-        classId: gradeId || 0,
-      },
-      { new: true }
+    const result = await query(
+      `UPDATE subjects SET name=$1, description=$2, grade_id=$3, stream_id=$4, updated_at=NOW()
+       WHERE id=$5 RETURNING *`,
+      [name, description || '', Number(grade_id) || 0, stream_id != null ? Number(stream_id) : null, req.params.id]
     );
-    if (!subject) return res.status(404).json({ error: 'Subject not found.' });
-    res.json(subjectPayload(subject));
+    if (!result.rows.length) return res.status(404).json({ error: 'Subject not found.' });
+    res.json(subjectPayload(result.rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -150,7 +120,7 @@ router.put('/subjects/:id', async (req, res) => {
 
 router.delete('/subjects/:id', async (req, res) => {
   try {
-    await Subject.findByIdAndDelete(req.params.id);
+    await query('DELETE FROM subjects WHERE id = $1', [req.params.id]);
     res.json({ message: 'Subject deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -160,16 +130,16 @@ router.delete('/subjects/:id', async (req, res) => {
 // ── Past Papers ───────────────────────────────────────────
 router.get('/past-papers', async (req, res) => {
   try {
-    const papers = await PastPaper.find().sort({ year: -1, createdAt: -1 });
-    res.json(papers.map((paper) => ({
-      id: paper._id.toString(),
-      subject: paper.subject || '',
-      grade: paper.grade || '',
-      year: paper.year,
-      paper: paper.paper || '',
-      title: paper.title || '',
-      url: paper.file_url || '',
-      subject_id: paper.subjectId ? paper.subjectId.toString() : null,
+    const result = await query('SELECT * FROM past_papers ORDER BY year DESC, created_at DESC');
+    res.json(result.rows.map(p => ({
+      id:         p.id,
+      subject:    p.subject || '',
+      grade:      p.grade || '',
+      year:       p.year,
+      paper:      p.paper || '',
+      title:      p.title || '',
+      url:        p.file_url || '',
+      subject_id: p.subject_id || null,
     })));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,28 +148,16 @@ router.get('/past-papers', async (req, res) => {
 
 router.post('/past-papers', async (req, res) => {
   const { subject_id, subject, grade, year, paper, title, file_url } = req.body;
-  const subjectId = subject_id && mongoose.isValidObjectId(subject_id) ? subject_id : null;
-
   try {
-    const newPaper = await PastPaper.create({
-      subjectId,
-      subject: subject || '',
-      grade: grade || '',
-      year: Number(year) || new Date().getFullYear(),
-      paper: paper || '',
-      title: title || '',
-      file_url: file_url || '',
-    });
-    res.status(201).json({
-      id: newPaper._id.toString(),
-      subject: newPaper.subject,
-      grade: newPaper.grade,
-      year: newPaper.year,
-      paper: newPaper.paper,
-      title: newPaper.title,
-      url: newPaper.file_url,
-      subject_id: newPaper.subjectId ? newPaper.subjectId.toString() : null,
-    });
+    const result = await query(
+      `INSERT INTO past_papers (subject_id, subject, grade, year, paper, title, file_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [subject_id || null, subject || '', grade || '', Number(year) || new Date().getFullYear(),
+       paper || '', title || '', file_url || '']
+    );
+    const p = result.rows[0];
+    res.status(201).json({ id: p.id, subject: p.subject, grade: p.grade, year: p.year,
+      paper: p.paper, title: p.title, url: p.file_url, subject_id: p.subject_id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -207,7 +165,7 @@ router.post('/past-papers', async (req, res) => {
 
 router.delete('/past-papers/:id', async (req, res) => {
   try {
-    await PastPaper.findByIdAndDelete(req.params.id);
+    await query('DELETE FROM past_papers WHERE id = $1', [req.params.id]);
     res.json({ message: 'Past paper deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
