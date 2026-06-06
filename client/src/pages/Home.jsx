@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 import scienceImg from "../assets/science.jpg";
 import classroomImg from "../assets/classroom.jpg";
 import YouTubeIcon from "../components/YouTubeIcon";
-import HiskyWidget from "../components/HiskyWidget";
 
 const classes = [
   { id: 1, color: "#0f6b5b", gradient: "linear-gradient(135deg,#0f6b5b,#1a9478)", desc: "15 core subjects — foundations in all areas", icon: "🌱" },
@@ -52,8 +51,6 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
   return (
     <div className="home-shell">
-
-      {!isAuthenticated && <HiskyWidget />}
 
       {/* ── HERO ── */}
       <section className="home-hero">

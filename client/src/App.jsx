@@ -23,6 +23,7 @@ import Subjects from "./pages/Subjects";
 import Subscription from "./pages/Subscription";
 import Textbooks from "./pages/Textbooks";
 import SubscriptionGate from "./components/SubscriptionGate";
+import AssistantWidget from "./components/AssistantWidget";
 
 const Protected = ({ children }) => (
   <MainLayout>
@@ -39,6 +40,7 @@ export default function App() {
     <SubscriptionProvider>
       <ProgressProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AssistantWidget />
           <Routes>
             {/* ── Public pages ── */}
             <Route path="/" element={<MainLayout><Home /></MainLayout>} />
