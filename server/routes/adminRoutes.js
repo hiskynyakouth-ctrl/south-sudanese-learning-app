@@ -172,4 +172,55 @@ router.delete('/past-papers/:id', async (req, res) => {
   }
 });
 
+// ── Subscriptions ─────────────────────────────────────────
+router.get('/subscriptions', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, email, role, subscription_plan, subscription_expiry, created_at
+       FROM users ORDER BY created_at DESC`
+    );
+    res.json(result.rows.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      subscription_plan: u.subscription_plan || '',
+      subscription_expiry: u.subscription_expiry,
+      is_subscribed: u.subscription_expiry ? new Date(u.subscription_expiry) > new Date() : false,
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/subscriptions/activate', async (req, res) => {
+  const { email, plan, days } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required.' });
+  const numDays = parseInt(days) || 60;
+  const expiry = new Date(Date.now() + numDays * 24 * 60 * 60 * 1000);
+  try {
+    const result = await query(
+      `UPDATE users SET subscription_plan=$1, subscription_expiry=$2
+       WHERE email=$3 RETURNING id, name, email, subscription_expiry`,
+      [plan || '2-month', expiry, email.toLowerCase()]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'No user found with this email.' });
+    res.json({ message: `Subscription activated for ${email} until ${expiry.toDateString()}.`, user: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/subscriptions/:id', async (req, res) => {
+  try {
+    await query(
+      `UPDATE users SET subscription_plan='', subscription_expiry=NULL WHERE id=$1`,
+      [req.params.id]
+    );
+    res.json({ message: 'Subscription revoked.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

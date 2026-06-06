@@ -61,6 +61,7 @@ export default function Register() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [copied, setCopied] = useState(false);
 
   // Google set-password step
@@ -73,14 +74,14 @@ export default function Register() {
   const googleStrength = checkStrength(googlePw);
   const handleChange = (e) => setForm((c) => ({ ...c, [e.target.name]: e.target.value }));
 
-  const useSuggested = () => {
+  const useSuggested = () => { // eslint-disable-line no-unused-vars
     const pw = generatePassword();
     setForm(f => ({ ...f, password: pw, confirm: pw }));
     setShowPw(true);
     navigator.clipboard?.writeText(pw).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
 
-  const useSuggestedGoogle = () => {
+  const useSuggestedGoogle = () => { // eslint-disable-line no-unused-vars
     const pw = generatePassword();
     setGooglePw(pw); setGooglePwConfirm(pw); setShowGooglePw(true);
     navigator.clipboard?.writeText(pw).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });

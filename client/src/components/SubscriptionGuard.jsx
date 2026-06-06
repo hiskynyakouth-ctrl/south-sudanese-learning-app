@@ -28,7 +28,7 @@ export default function SubscriptionGuard({ children }) {
           <h2>Your free trial has ended</h2>
           <p className="sub-paywall-sub">
             {daysSince > 0
-              ? `Your 14-day free trial ended ${daysSince} day${daysSince !== 1 ? "s" : ""} ago.`
+              ? `Your 30-day free trial ended ${daysSince} day${daysSince !== 1 ? "s" : ""} ago.`
               : "Your free trial has expired."}
           </p>
           <p className="sub-paywall-desc">

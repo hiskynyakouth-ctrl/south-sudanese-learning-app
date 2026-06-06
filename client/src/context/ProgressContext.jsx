@@ -33,9 +33,17 @@ export const ProgressProvider = ({ children }) => {
       attempts: (prev?.attempts || 0) + 1,
     };
     saveAll(all);
-    // Also add notification
-    addNotification(`Quiz completed: ${moduleTitle} — ${score}/${total} (${Math.round((score/total)*100)}%)`);
-  }, [uid]);
+    // Add notification inline to avoid circular dependency
+    const NOTIF_KEY = `ss_notifs_${uid}`;
+    try {
+      const notifs = JSON.parse(localStorage.getItem(NOTIF_KEY) || "[]");
+      const msg = `Quiz completed: ${moduleTitle} — ${score}/${total} (${Math.round((score/total)*100)}%)`;
+      localStorage.setItem(NOTIF_KEY, JSON.stringify([
+        { id: Date.now(), message: msg, type: "quiz", read: false, createdAt: new Date().toISOString() },
+        ...notifs,
+      ].slice(0, 50)));
+    } catch {}
+  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark module as read
   const markModuleRead = useCallback((subject, moduleTitle, classId) => {

@@ -24,11 +24,12 @@ const lsSet = (key, val) => localStorage.setItem(key, JSON.stringify(val));
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────
 const TABS = [
-  { key: "dashboard", label: "Dashboard",   icon: "📊" },
-  { key: "users",     label: "Users",        icon: "👥" },
-  { key: "subjects",  label: "Subjects",     icon: "📚" },
-  { key: "papers",    label: "Past Papers",  icon: "📄" },
-  { key: "settings",  label: "Settings",     icon: "⚙" },
+  { key: "dashboard",     label: "Dashboard",     icon: "📊" },
+  { key: "users",         label: "Users",          icon: "👥" },
+  { key: "subscriptions", label: "Subscriptions",  icon: "💳" },
+  { key: "subjects",      label: "Subjects",       icon: "📚" },
+  { key: "papers",        label: "Past Papers",    icon: "📄" },
+  { key: "settings",      label: "Settings",       icon: "⚙" },
 ];
 
 // ── Default form states ────────────────────────────────────────────────────
@@ -59,6 +60,11 @@ export default function Admin() {
   const [users,    setUsers]    = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [papers,   setPapers]   = useState([]);
+  const [subs,     setSubs]     = useState([]);
+  const [subEmail, setSubEmail] = useState("");
+  const [subDays,  setSubDays]  = useState("60");
+  const [subPlan,  setSubPlan]  = useState("2-month");
+  const [subMsg,   setSubMsg]   = useState("");
   const [dbOnline, setDbOnline] = useState(null);
   const [dbError,   setDbError]  = useState("");
   const [msg,      setMsg]      = useState("");
@@ -155,10 +161,45 @@ export default function Admin() {
       // ignore
     }
 
+    try {
+      const subRes = await api.get("/admin/subscriptions");
+      setSubs(subRes.data || []);
+    } catch {
+      // ignore
+    }
+
     loadLocalData(onlineStats, onlineUsers, onlineSubjects, onlinePapers);
   };
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3500); };
+
+  const activateSub = async (e) => {
+    e.preventDefault();
+    if (!subEmail.trim()) { setSubMsg("Enter an email address."); return; }
+    try {
+      const res = await api.post("/admin/subscriptions/activate", {
+        email: subEmail.trim(), plan: subPlan, days: parseInt(subDays) || 60,
+      });
+      setSubMsg(`✅ ${res.data.message}`);
+      setSubEmail("");
+      // Refresh subs list
+      api.get("/admin/subscriptions").then(r => setSubs(r.data || [])).catch(() => {});
+    } catch (err) {
+      setSubMsg(`❌ ${err.response?.data?.error || "Activation failed."}`);
+    }
+    setTimeout(() => setSubMsg(""), 5000);
+  };
+
+  const revokeSub = async (id, email) => {
+    if (!window.confirm(`Revoke subscription for ${email}?`)) return;
+    try {
+      await api.delete(`/admin/subscriptions/${id}`);
+      setSubs(s => s.map(u => u.id === id ? { ...u, is_subscribed: false, subscription_expiry: null } : u));
+      flash("Subscription revoked.");
+    } catch (err) {
+      flash(err.response?.data?.error || "Revoke failed.");
+    }
+  };
 
   const getDisplayName = (user) => {
     const name = user?.name?.trim();
@@ -427,9 +468,10 @@ export default function Admin() {
               <h2>Quick Actions</h2>
               <div className="admin-action-grid">
                 {[
-                  { label: "Manage Users",   icon: "👥", tab: "users"     },
-                  { label: "Add Subject",    icon: "+", tab: "subjects"  },
-                  { label: "Add Past Paper", icon: "📄", tab: "papers"    },
+                  { label: "Manage Users",   icon: "👥", tab: "users"          },
+                  { label: "Subscriptions",  icon: "💳", tab: "subscriptions"   },
+                  { label: "Add Subject",    icon: "+", tab: "subjects"        },
+                  { label: "Add Past Paper", icon: "📄", tab: "papers"          },
                   { label: "Settings",       icon: "⚙", tab: "settings"  },
                 ].map(a => (
                   <button key={a.label} className="admin-action-btn" onClick={() => setTab(a.tab)}>
@@ -490,6 +532,111 @@ export default function Admin() {
               </table>
               {users.length === 0 && (
                 <p className="admin-empty">No users yet. Register at /register to see them here.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
+            SUBSCRIPTIONS
+        ════════════════════════════════════════════════════════════ */}
+        {tab === "subscriptions" && (
+          <div className="admin-section">
+            <h1>💳 Subscription Management</h1>
+            <p style={{ color:"var(--muted)", marginBottom:20 }}>
+              After a student pays, enter their email here to activate their subscription.
+            </p>
+
+            {/* Activate form */}
+            <div className="admin-form-card" style={{ marginBottom:28 }}>
+              <h2>✅ Activate Subscription</h2>
+              <form className="admin-form-grid" onSubmit={activateSub}>
+                <div className="admin-field">
+                  <label>Student Email</label>
+                  <input className="admin-input" type="email" placeholder="student@gmail.com"
+                    value={subEmail} onChange={e => setSubEmail(e.target.value)} required />
+                </div>
+                <div className="admin-field">
+                  <label>Plan</label>
+                  <select className="admin-select admin-select-lg" value={subPlan}
+                    onChange={e => setSubPlan(e.target.value)}>
+                    <option value="2-month">2 Months</option>
+                    <option value="1-month">1 Month</option>
+                    <option value="3-month">3 Months</option>
+                    <option value="6-month">6 Months</option>
+                    <option value="1-year">1 Year</option>
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label>Duration (days)</label>
+                  <input className="admin-input" type="number" min="1" max="365"
+                    value={subDays} onChange={e => setSubDays(e.target.value)} />
+                </div>
+                <div className="admin-form-actions">
+                  <button type="submit" className="primary-button">Activate Subscription</button>
+                </div>
+              </form>
+              {subMsg && (
+                <div style={{ marginTop:12, padding:"10px 14px", borderRadius:10,
+                  background: subMsg.startsWith("✅") ? "#e8f5e9" : "#fff2f2",
+                  color: subMsg.startsWith("✅") ? "#2e7d32" : "#8d1b1b",
+                  border: `1px solid ${subMsg.startsWith("✅") ? "#a5d6a7" : "rgba(141,27,27,0.2)"}` }}>
+                  {subMsg}
+                </div>
+              )}
+            </div>
+
+            {/* Subscribed users table */}
+            <h2 style={{ marginBottom:12 }}>All Users &amp; Subscription Status</h2>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subs.map((u, i) => (
+                    <tr key={u.id}>
+                      <td>{i + 1}</td>
+                      <td><strong>{u.name || "—"}</strong></td>
+                      <td>{u.email}</td>
+                      <td>{u.subscription_plan || "—"}</td>
+                      <td>{u.subscription_expiry ? new Date(u.subscription_expiry).toLocaleDateString() : "—"}</td>
+                      <td>
+                        <span style={{
+                          padding:"3px 10px", borderRadius:20, fontSize:"0.78rem", fontWeight:700,
+                          background: u.is_subscribed ? "#e8f5e9" : "#f5f5f5",
+                          color: u.is_subscribed ? "#2e7d32" : "#777",
+                          border: `1px solid ${u.is_subscribed ? "#a5d6a7" : "#ddd"}`,
+                        }}>
+                          {u.is_subscribed ? "✅ Active" : "⬜ Inactive"}
+                        </span>
+                      </td>
+                      <td>
+                        {u.is_subscribed ? (
+                          <button className="admin-del-btn" onClick={() => revokeSub(u.id, u.email)} title="Revoke">
+                            ✕
+                          </button>
+                        ) : (
+                          <button className="ghost-button" style={{ padding:"4px 10px", fontSize:"0.78rem" }}
+                            onClick={() => { setSubEmail(u.email); setTab("subscriptions"); }}>
+                            Activate
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {subs.length === 0 && (
+                <p className="admin-empty">No users yet — they'll appear here after registering.</p>
               )}
             </div>
           </div>

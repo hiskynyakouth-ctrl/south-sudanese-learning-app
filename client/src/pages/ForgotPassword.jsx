@@ -15,6 +15,7 @@ export default function ForgotPassword() {
   const [contact, setContact] = useState("");
   const [countryCode, setCountryCode] = useState("+211");
   const [sentCode, setSentCode] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [delivered, setDelivered] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState("");
   const [enteredCode, setEnteredCode] = useState("");

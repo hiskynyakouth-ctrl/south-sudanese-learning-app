@@ -67,8 +67,24 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.me = (req, res) => {
-  return res.json({ user: { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role } });
+exports.me = async (req, res) => {
+  try {
+    const { query } = require('../config/db');
+    const result = await query(
+      'SELECT id, name, email, role, subscription_plan, subscription_expiry FROM users WHERE id=$1',
+      [req.user.id]
+    );
+    const user = result.rows[0];
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    return res.json({ user: {
+      id: user.id, name: user.name, email: user.email, role: user.role,
+      subscription_plan: user.subscription_plan,
+      subscription_expiry: user.subscription_expiry,
+    }});
+  } catch {
+    // fallback — just return JWT data
+    return res.json({ user: { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role } });
+  }
 };
 
 exports.googleAuth = async (req, res) => {

@@ -9,10 +9,13 @@ import { getAssetBaseURL } from "../services/apiBase";
 import { subjectIcons } from "../data/curriculum";
 
 const GRADES = ["Senior 1","Senior 2","Senior 3","Senior 4"];
+// eslint-disable-next-line no-unused-vars
 const GRADE_MAP = { "Senior 1":1,"Senior 2":2,"Senior 3":3,"Senior 4":4 };
 
 const LS_KEY = "ss_textbooks";
+// eslint-disable-next-line no-unused-vars
 const getLocal = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)||"[]"); } catch { return []; } };
+// eslint-disable-next-line no-unused-vars
 const setLocal = (d) => localStorage.setItem(LS_KEY, JSON.stringify(d));
 
 const ytUrl = (subject) =>
@@ -62,7 +65,7 @@ export default function Textbooks() {
       fd.append("subject", form.subject);
       fd.append("grade", form.grade);
       fd.append("description", form.description);
-      const res = await api.post("/upload/textbook", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      await api.post("/upload/textbook", fd, { headers: { "Content-Type": "multipart/form-data" } });
       setForm({ subject:"", grade:"Senior 1", description:"" });
       setSelectedFile(null); setShowForm(false);
       flash(`"${form.subject}" uploaded!`);
