@@ -2,9 +2,25 @@
   "version": 2,
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/build",
+  "headers": [
+    {
+      "source": "/og-image.svg",
+      "headers": [
+        { "key": "Content-Type", "value": "image/svg+xml" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/og-image.png",
+      "headers": [
+        { "key": "Content-Type", "value": "image/png" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ],
   "rewrites": [
-     { "source": "/api/(.*)", "destination": "https://south-sudanese-learning-app-sqdw.onrender.com/api/$1" },
-     { "source": "/uploads/(.*)", "destination": "https://south-sudanese-learning-app-sqdw.onrender.com/uploads/$1" },
-     { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "https://south-sudanese-learning-app-sqdw.onrender.com/api/$1" },
+    { "source": "/uploads/(.*)", "destination": "https://south-sudanese-learning-app-sqdw.onrender.com/uploads/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
