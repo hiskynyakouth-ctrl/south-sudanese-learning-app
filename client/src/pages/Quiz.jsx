@@ -7,6 +7,7 @@ import api from "../services/api";
 export default function Quiz() {
   const { chapterId } = useParams();
   const [quiz, setQuiz] = useState([]);
+  const [chapterTitle, setChapterTitle] = useState("");
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,10 @@ export default function Quiz() {
       try {
         setLoading(true);
         const { data } = await api.get(`/quizzes/${chapterId}`);
-        setQuiz(data);
+        // Server returns { chapterTitle, questions } — extract the array
+        const questions = Array.isArray(data) ? data : (data?.questions ?? []);
+        setQuiz(questions);
+        if (data?.chapterTitle) setChapterTitle(data.chapterTitle);
       } catch (err) {
         setError(err.response?.data?.error || "Unable to load quiz questions.");
       } finally {
@@ -32,18 +36,18 @@ export default function Quiz() {
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
 
   const handleSubmit = async () => {
-    try {
-      setSubmitting(true);
-      const payload = {
-        answers: Object.entries(answers).map(([id, answer]) => ({ id, answer })),
-      };
-      const { data } = await api.post(`/quizzes/${chapterId}/submit`, payload);
-      setResult(data);
-    } catch (err) {
-      setError(err.response?.data?.error || "Unable to submit quiz.");
-    } finally {
-      setSubmitting(false);
-    }
+    setSubmitting(true);
+    // Grade locally — the server has no submit endpoint
+    const review = quiz.map((item) => ({
+      id: item._id || item.id,
+      question: item.question,
+      selected: answers[item._id || item.id] || null,
+      correctAnswer: item.correct_answer ?? item.correctAnswer ?? item.answer,
+      correct: (answers[item._id || item.id]) === (item.correct_answer ?? item.correctAnswer ?? item.answer),
+    }));
+    const score = review.filter(r => r.correct).length;
+    setResult({ score, total: quiz.length, review });
+    setSubmitting(false);
   };
 
   if (loading) {
@@ -54,28 +58,31 @@ export default function Quiz() {
     <div className="stack-lg">
       <section className="detail-hero compact">
         <div>
-          <span className="eyebrow">Quiz system</span>
-          <h1>Chapter assessment</h1>
+          <span className="eyebrow">Quiz</span>
+          <h1>{chapterTitle || "Chapter Assessment"}</h1>
           <p>{answeredCount} of {quiz.length} questions answered.</p>
         </div>
-        <button type="button" className="primary-button" onClick={handleSubmit} disabled={submitting || !quiz.length}>
-          {submitting ? "Submitting..." : "Submit answers"}
+        <button type="button" className="primary-button" onClick={handleSubmit} disabled={submitting || !quiz.length || answeredCount < quiz.length}>
+          {submitting ? "Grading..." : `Submit Answers (${answeredCount}/${quiz.length})`}
         </button>
       </section>
 
       {error ? <div className="message-card error">{error}</div> : null}
 
       <div className="stack-md">
-        {quiz.map((item) => (
-          <QuizCard
-            key={item.id}
-            question={item.question}
-            options={item.options}
-            selected={answers[item.id]}
-            disabled={submitting}
-            onAnswer={(option) => setAnswers((current) => ({ ...current, [item.id]: option }))}
-          />
-        ))}
+        {quiz.map((item) => {
+          const qId = item._id || item.id;
+          return (
+            <QuizCard
+              key={qId}
+              question={item.question}
+              options={item.options}
+              selected={answers[qId]}
+              disabled={submitting || result !== null}
+              onAnswer={(option) => setAnswers((current) => ({ ...current, [qId]: option }))}
+            />
+          );
+        })}
       </div>
 
       {result ? (

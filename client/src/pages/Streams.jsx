@@ -19,14 +19,14 @@ function SubjectCard({ subject, idx, classId, color }) {
   const navigate = useNavigate();
   return (
     <div className="subject-module-card"
-      onClick={() => navigate(`/textbooks?subject=${encodeURIComponent(subject)}&grade=${classId}`)}
+      onClick={() => navigate(`/subject/${encodeURIComponent(subject)}/${classId}`)}
       role="button" tabIndex={0}
-      onKeyDown={(e) => e.key === "Enter" && navigate(`/textbooks?subject=${encodeURIComponent(subject)}&grade=${classId}`)}>
+      onKeyDown={(e) => e.key === "Enter" && navigate(`/subject/${encodeURIComponent(subject)}/${classId}`)}>
       <div className="smc-num" style={{ background: color || "#1a73e8" }}>{idx + 1}</div>
       <div className="smc-icon">{renderIcon(subject)}</div>
       <div className="smc-label">{subject}</div>
       <div className="smc-btn" style={{ background: color || "#1a73e8" }}>
-        <span>📚</span> Open Textbook
+        <span>📖</span> Open Subject
       </div>
     </div>
   );

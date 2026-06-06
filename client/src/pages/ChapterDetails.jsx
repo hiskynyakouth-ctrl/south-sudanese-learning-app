@@ -21,7 +21,7 @@ export default function ChapterDetails() {
       } finally {
         setLoading(false);
       }
-    };1``
+    };
 
     loadChapter();
   }, [id]);

@@ -513,6 +513,12 @@ iframe {
   border-color: rgba(141, 27, 27, 0.18);
 }
 
+.message-card.info {
+  color: #1a3a6b;
+  background: #e8f0fe;
+  border-color: rgba(26, 58, 107, 0.18);
+}
+
 .loader-wrap {
   display: inline-flex;
   align-items: center;
