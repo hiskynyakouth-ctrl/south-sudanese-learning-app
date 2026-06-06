@@ -48,7 +48,7 @@ const getQuiz = (subject, title) => {
   return QUIZZES[title] || [
     { q: `Which best describes ${title}?`, options: ["A minor topic", "A core curriculum concept", "Only for university", "Not in exams"], answer: 1 },
     { q: `What is the best way to study ${subject}?`, options: ["Read once", "Notes, videos, and quizzes", "Only memorise", "Skip hard topics"], answer: 1 },
-    { q: "Which tool helps most when you do not understand a topic?", options: ["Ignoring it", "The AI Tutor", "Guessing", "Copying"], answer: 1 },
+    { q: "Which tool helps most when you do not understand a topic?", options: ["Ignoring it", "Re-reading your notes", "Guessing", "Copying"], answer: 1 },
     { q: "How many times should you review notes before an exam?", options: ["Never", "Once", "Multiple times", "Only on exam day"], answer: 2 },
     { q: "What should you do after completing a module?", options: ["Move on immediately", "Take the quiz", "Skip the quiz", "Start a new subject"], answer: 1 },
   ];
@@ -374,27 +374,7 @@ export default function ModuleDetail() {
           </div>
         )}
 
-        {/* ── AI HELP ── */}
-        {tab === "ai" && (
-          <div style={{ display:"grid", gap:16 }}>
-            <h2>🤖 Ask the AI Tutor about {mod?.title}</h2>
-            <p style={{ color:"var(--muted)" }}>The AI tutor can explain this topic, give examples, or help you prepare for the exam.</p>
-            <button className="primary-button" style={{ justifySelf:"start", padding:"14px 28px" }}
-              onClick={() => navigate("/chat")}>
-              Open AI Tutor Chat →
-            </button>
-            <div style={{ background:"var(--surface-soft)", borderRadius:"var(--radius-md)", padding:20 }}>
-              <p style={{ fontWeight:700, marginBottom:8 }}>Suggested questions to ask:</p>
-              <ul style={{ color:"var(--muted)", lineHeight:2.2, paddingLeft:20 }}>
-                <li>Explain {mod?.title} in simple words</li>
-                <li>Give me examples of {mod?.title}</li>
-                <li>What are the key formulas for {mod?.title}?</li>
-                <li>How does {mod?.title} appear in exams?</li>
-                <li>Summarise {mod?.title} for revision</li>
-              </ul>
-            </div>
-          </div>
-        )}
+        {/* ── AI HELP — removed ── */}
 
       </div>
     </div>

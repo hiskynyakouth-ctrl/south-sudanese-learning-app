@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 import { ProgressProvider } from "./context/ProgressContext";
 import Admin from "./pages/Admin";
-import Chat from "./pages/Chat";
 import ChapterDetails from "./pages/ChapterDetails";
 import Chapters from "./pages/Chapters";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -62,7 +61,6 @@ export default function App() {
             <Route path="/profile"                   element={<Protected><Profile /></Protected>} />
             <Route path="/notifications"             element={<Protected><Notifications /></Protected>} />
             <Route path="/admin"                     element={<Protected><Admin /></Protected>} />
-            <Route path="/chat"                      element={<Protected><Chat /></Protected>} />
           </Routes>
         </BrowserRouter>
       </ProgressProvider>

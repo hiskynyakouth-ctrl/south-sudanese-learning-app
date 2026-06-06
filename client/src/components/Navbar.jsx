@@ -44,9 +44,6 @@ export default function Navbar() {
           <NavLink to="/" className="nav-link">Home</NavLink>
           <NavLink to="/textbooks" className="nav-link">Textbooks</NavLink>
           <NavLink to="/past-papers" className="nav-link">Past Papers</NavLink>
-          {isAuthenticated && (
-            <NavLink to="/chat" className="nav-link">🤖 AI Tutor</NavLink>
-          )}
           {/* Subscribe — hidden for admin */}
           {!isAdmin && (
             <NavLink to="/subscription" className="nav-link nav-sub-link">
@@ -120,11 +117,7 @@ export default function Navbar() {
           <NavLink to="/past-papers" className="mobile-nav-link" onClick={close}>
             <IconFile size={16} /> Past Papers
           </NavLink>
-          {isAuthenticated && (
-            <NavLink to="/chat" className="mobile-nav-link" onClick={close}>
-              🤖 AI Tutor
-            </NavLink>
-          )}
+
           {/* Subscribe — hidden for admin */}
           {!isAdmin && (
             <NavLink to="/subscription" className="mobile-nav-link" onClick={close}>

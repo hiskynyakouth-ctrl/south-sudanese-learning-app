@@ -876,7 +876,7 @@ export default function Admin() {
                 <h3>Platform</h3>
                 <p>South Sudan E-Learning · v1.0.0</p>
                 <p style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                  Senior 1–4 · 15+ subjects · AI Tutor
+                  Senior 1–4 · 15+ subjects
                 </p>
               </div>
 
