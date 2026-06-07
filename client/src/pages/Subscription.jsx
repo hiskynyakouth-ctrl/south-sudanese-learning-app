@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
@@ -15,56 +15,127 @@ const PLANS = [
   { region: "Western World", iso: null, price: "$20",  currency: "USD", color: "#1565c0", gradient: "linear-gradient(135deg,#1565c0,#1e88e5)" },
 ];
 
-// Bank / method logos by name
+// Real logos — logo.clearbit.com (32px) with emoji fallback
+// logo: clearbit/direct URL | fallback emoji shown if img fails
 const METHOD_LOGOS = {
-  "Telebirr":                      { emoji: "📱", color: "#0066cc", bg: "#e3f0ff" },
-  "M-Pesa Ethiopia":               { emoji: "📱", color: "#00a651", bg: "#e6f9ee" },
-  "M-Pesa":                        { emoji: "📱", color: "#00a651", bg: "#e6f9ee" },
-  "MTN Mobile Money":              { emoji: "📱", color: "#ffcc00", bg: "#fff9e0" },
-  "Airtel Money":                  { emoji: "📱", color: "#e53935", bg: "#fdecea" },
-  "T-Kash (Telkom)":               { emoji: "📱", color: "#6a1b9a", bg: "#f3e5f5" },
-  "Zain Cash":                     { emoji: "📱", color: "#cc0000", bg: "#fdecea" },
-  "MTN Sudan Mobile":              { emoji: "📱", color: "#ffcc00", bg: "#fff9e0" },
-  "Commercial Bank of Ethiopia (CBE)": { emoji: "🏦", color: "#003087", bg: "#e8eeff" },
-  "CBE Mobile / Wallet":           { emoji: "🏦", color: "#003087", bg: "#e8eeff" },
-  "Awash Bank":                    { emoji: "🏦", color: "#c8102e", bg: "#fdecea" },
-  "Dashen Bank":                   { emoji: "🏦", color: "#006633", bg: "#e6f4ec" },
-  "Abyssinia Bank":                { emoji: "🏦", color: "#7b1fa2", bg: "#f3e5f5" },
-  "Wegagen Bank":                  { emoji: "🏦", color: "#1565c0", bg: "#e3f2fd" },
-  "Equity Bank":                   { emoji: "🏦", color: "#c8102e", bg: "#fdecea" },
-  "Equity Bank Kenya":             { emoji: "🏦", color: "#c8102e", bg: "#fdecea" },
-  "Equity Bank Uganda":            { emoji: "🏦", color: "#c8102e", bg: "#fdecea" },
-  "KCB Bank":                      { emoji: "🏦", color: "#006633", bg: "#e6f4ec" },
-  "Kenya Commercial Bank (KCB)":   { emoji: "🏦", color: "#006633", bg: "#e6f4ec" },
-  "Co-operative Bank":             { emoji: "🏦", color: "#0057a8", bg: "#e3f0ff" },
-  "Absa Bank Kenya":               { emoji: "🏦", color: "#cc0000", bg: "#fdecea" },
-  "NCBA Bank":                     { emoji: "🏦", color: "#003087", bg: "#e8eeff" },
-  "Stanbic Bank":                  { emoji: "🏦", color: "#0057a8", bg: "#e3f0ff" },
-  "Centenary Bank":                { emoji: "🏦", color: "#006633", bg: "#e6f4ec" },
-  "DFCU Bank":                     { emoji: "🏦", color: "#003087", bg: "#e8eeff" },
-  "Salaam Bank":                   { emoji: "🏦", color: "#006600", bg: "#e6f4ec" },
-  "Vodafone Cash":                 { emoji: "📱", color: "#cc0000", bg: "#fdecea" },
-  "Orange Money":                  { emoji: "📱", color: "#ff6900", bg: "#fff0e0" },
-  "Etisalat Cash":                 { emoji: "📱", color: "#006633", bg: "#e6f4ec" },
-  "Fawry":                         { emoji: "💳", color: "#1e88e5", bg: "#e3f2fd" },
-  "National Bank of Egypt":        { emoji: "🏦", color: "#003087", bg: "#e8eeff" },
-  "Banque Misr":                   { emoji: "🏦", color: "#6a1b9a", bg: "#f3e5f5" },
-  "CIB Bank":                      { emoji: "🏦", color: "#0057a8", bg: "#e3f0ff" },
-  "QNB Alahli":                    { emoji: "🏦", color: "#8b0000", bg: "#fdecea" },
-  "Bank of Khartoum":              { emoji: "🏦", color: "#1565c0", bg: "#e3f2fd" },
-  "Omdurman National Bank":        { emoji: "🏦", color: "#006600", bg: "#e6f4ec" },
-  "Faisal Islamic Bank":           { emoji: "🏦", color: "#006600", bg: "#e6f4ec" },
-  "PayPal":                        { emoji: "💳", color: "#003087", bg: "#e8eeff" },
-  "Wise (TransferWise)":           { emoji: "💳", color: "#37517e", bg: "#eaf0ff" },
-  "Bank Transfer (SWIFT)":         { emoji: "🏦", color: "#37474f", bg: "#eceff1" },
-  "Credit/Debit Card":             { emoji: "💳", color: "#5e35b1", bg: "#ede7f6" },
-  "Cash Payment":                  { emoji: "💵", color: "#2e7d32", bg: "#e8f5e9" },
-  "MTN Sudan":                     { emoji: "📱", color: "#ffcc00", bg: "#fff9e0" },
-  "Invoice Payment":               { emoji: "📄", color: "#455a64", bg: "#eceff1" },
-  "Mobile Money":                  { emoji: "📱", color: "#e53935", bg: "#fdecea" },
+  // ── Ethiopia ──────────────────────────────────────────────────────
+  "Telebirr":
+    { logo:"https://logo.clearbit.com/telebirr.com",           fb:"📱", color:"#0066cc", bg:"#e3f0ff" },
+  "M-Pesa Ethiopia":
+    { logo:"https://logo.clearbit.com/safaricom.com",          fb:"📱", color:"#00a651", bg:"#e6f9ee" },
+  "Commercial Bank of Ethiopia (CBE)":
+    { logo:"https://logo.clearbit.com/combanketh.et",          fb:"🏦", color:"#003087", bg:"#e8eeff" },
+  "CBE Mobile / Wallet":
+    { logo:"https://logo.clearbit.com/combanketh.et",          fb:"📱", color:"#003087", bg:"#e8eeff" },
+  "Awash Bank":
+    { logo:"https://logo.clearbit.com/awashbank.com",          fb:"🏦", color:"#c8102e", bg:"#fdecea" },
+  "Dashen Bank":
+    { logo:"https://logo.clearbit.com/dashenbanksc.com",       fb:"🏦", color:"#006633", bg:"#e6f4ec" },
+  "Abyssinia Bank":
+    { logo:"https://logo.clearbit.com/bankofabyssinia.com",    fb:"🏦", color:"#7b1fa2", bg:"#f3e5f5" },
+  "Wegagen Bank":
+    { logo:"https://logo.clearbit.com/wegagenbank.com",        fb:"🏦", color:"#1565c0", bg:"#e3f2fd" },
+  // ── Kenya ─────────────────────────────────────────────────────────
+  "M-Pesa":
+    { logo:"https://logo.clearbit.com/safaricom.com",          fb:"📱", color:"#00a651", bg:"#e6f9ee" },
+  "Airtel Money":
+    { logo:"https://logo.clearbit.com/airtel.com",             fb:"📱", color:"#e53935", bg:"#fdecea" },
+  "T-Kash (Telkom)":
+    { logo:"https://logo.clearbit.com/telkom.co.ke",           fb:"📱", color:"#6a1b9a", bg:"#f3e5f5" },
+  "Equity Bank Kenya":
+    { logo:"https://logo.clearbit.com/equitybankgroup.com",    fb:"🏦", color:"#c8102e", bg:"#fdecea" },
+  "KCB Bank":
+    { logo:"https://logo.clearbit.com/kcbgroup.com",           fb:"🏦", color:"#006633", bg:"#e6f4ec" },
+  "Kenya Commercial Bank (KCB)":
+    { logo:"https://logo.clearbit.com/kcbgroup.com",           fb:"🏦", color:"#006633", bg:"#e6f4ec" },
+  "Co-operative Bank":
+    { logo:"https://logo.clearbit.com/co-opbank.co.ke",        fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
+  "Absa Bank Kenya":
+    { logo:"https://logo.clearbit.com/absa.co.ke",             fb:"🏦", color:"#cc0000", bg:"#fdecea" },
+  "NCBA Bank":
+    { logo:"https://logo.clearbit.com/ncbagroup.com",          fb:"🏦", color:"#003087", bg:"#e8eeff" },
+  // ── Uganda ────────────────────────────────────────────────────────
+  "MTN Mobile Money":
+    { logo:"https://logo.clearbit.com/mtn.com",                fb:"📱", color:"#ffcc00", bg:"#fffde0" },
+  "Stanbic Bank":
+    { logo:"https://logo.clearbit.com/stanbicbank.co.ug",      fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
+  "Centenary Bank":
+    { logo:"https://logo.clearbit.com/centenarybank.co.ug",    fb:"🏦", color:"#006633", bg:"#e6f4ec" },
+  "DFCU Bank":
+    { logo:"https://logo.clearbit.com/dfcugroup.com",          fb:"🏦", color:"#003087", bg:"#e8eeff" },
+  "Equity Bank Uganda":
+    { logo:"https://logo.clearbit.com/equitybankgroup.com",    fb:"🏦", color:"#c8102e", bg:"#fdecea" },
+  // ── South Sudan ───────────────────────────────────────────────────
+  "Salaam Bank":
+    { logo:"https://logo.clearbit.com/salaambank.com",         fb:"🏦", color:"#006600", bg:"#e6f4ec" },
+  "Equity Bank":
+    { logo:"https://logo.clearbit.com/equitybankgroup.com",    fb:"🏦", color:"#c8102e", bg:"#fdecea" },
+  "Cash Payment":
+    { logo:null,                                               fb:"💵", color:"#2e7d32", bg:"#e8f5e9" },
+  // ── Egypt ─────────────────────────────────────────────────────────
+  "Vodafone Cash":
+    { logo:"https://logo.clearbit.com/vodafone.com",           fb:"📱", color:"#cc0000", bg:"#fdecea" },
+  "Orange Money":
+    { logo:"https://logo.clearbit.com/orange.com",             fb:"📱", color:"#ff6900", bg:"#fff0e0" },
+  "Etisalat Cash":
+    { logo:"https://logo.clearbit.com/etisalat.com",           fb:"📱", color:"#006633", bg:"#e6f4ec" },
+  "Fawry":
+    { logo:"https://logo.clearbit.com/fawry.com",              fb:"💳", color:"#1e88e5", bg:"#e3f2fd" },
+  "National Bank of Egypt":
+    { logo:"https://logo.clearbit.com/nbe.com.eg",             fb:"🏦", color:"#003087", bg:"#e8eeff" },
+  "Banque Misr":
+    { logo:"https://logo.clearbit.com/banquemisr.com",         fb:"🏦", color:"#6a1b9a", bg:"#f3e5f5" },
+  "CIB Bank":
+    { logo:"https://logo.clearbit.com/cibeg.com",              fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
+  "QNB Alahli":
+    { logo:"https://logo.clearbit.com/qnbalahli.com",          fb:"🏦", color:"#8b0000", bg:"#fdecea" },
+  // ── Sudan ─────────────────────────────────────────────────────────
+  "MTN Sudan":
+    { logo:"https://logo.clearbit.com/mtn.com",                fb:"📱", color:"#ffcc00", bg:"#fffde0" },
+  "MTN Sudan Mobile":
+    { logo:"https://logo.clearbit.com/mtn.com",                fb:"📱", color:"#ffcc00", bg:"#fffde0" },
+  "Zain Cash":
+    { logo:"https://logo.clearbit.com/sd.zain.com",            fb:"📱", color:"#cc0000", bg:"#fdecea" },
+  "Bank of Khartoum":
+    { logo:"https://logo.clearbit.com/bok.sd",                 fb:"🏦", color:"#1565c0", bg:"#e3f2fd" },
+  "Omdurman National Bank":
+    { logo:null,                                               fb:"🏦", color:"#006600", bg:"#e6f4ec" },
+  "Faisal Islamic Bank":
+    { logo:null,                                               fb:"🏦", color:"#006600", bg:"#e6f4ec" },
+  // ── Western ───────────────────────────────────────────────────────
+  "PayPal":
+    { logo:"https://logo.clearbit.com/paypal.com",             fb:"💳", color:"#003087", bg:"#e8eeff" },
+  "Wise (TransferWise)":
+    { logo:"https://logo.clearbit.com/wise.com",               fb:"💳", color:"#37517e", bg:"#eaf0ff" },
+  "Bank Transfer (SWIFT)":
+    { logo:null,                                               fb:"🏦", color:"#37474f", bg:"#eceff1" },
+  "Credit/Debit Card":
+    { logo:null,                                               fb:"💳", color:"#5e35b1", bg:"#ede7f6" },
+  "Invoice Payment":
+    { logo:null,                                               fb:"📄", color:"#455a64", bg:"#eceff1" },
+  "Mobile Money":
+    { logo:null,                                               fb:"📱", color:"#e53935", bg:"#fdecea" },
 };
 
-const getMethodStyle = (name) => METHOD_LOGOS[name] || { emoji: "💳", color: "#607d8b", bg: "#eceff1" };
+const getMethodStyle = (name) => METHOD_LOGOS[name] || { logo:null, fb:"💳", color:"#607d8b", bg:"#eceff1" };
+
+// Render real logo image with emoji fallback
+function MethodLogo({ name, size = 48 }) {
+  const s = getMethodStyle(name);
+  const [failed, setFailed] = React.useState(false);
+  if (s.logo && !failed) {
+    return (
+      <img
+        src={s.logo}
+        alt={name}
+        width={size} height={size}
+        style={{ objectFit:"contain", borderRadius:8 }}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return <span style={{ fontSize: size * 0.6 }}>{s.fb}</span>;
+}
 
 // ── Steps data ────────────────────────────────────────────
 const STEPS = [
@@ -257,7 +328,9 @@ export default function Subscription() {
                       onClick={() => { setSelectedMethod(m.name); setStep(3); }}
                     >
                       {isSelected && <div className="sub-method-tick">✓</div>}
-                      <div className="sub-method-logo">{style.emoji}</div>
+                      <div className="sub-method-logo">
+                        <MethodLogo name={m.name} size={48} />
+                      </div>
                       <div className="sub-method-name-v2">{m.name}</div>
                     </button>
                   );
@@ -268,7 +341,7 @@ export default function Subscription() {
               {activeMethod && (
                 <div className="sub-method-detail-box">
                   <div className="sub-detail-left">
-                    <span style={{ fontSize: 28 }}>{getMethodStyle(activeMethod.name).emoji}</span>
+                    <span style={{ fontSize: 28 }}><MethodLogo name={activeMethod.name} size={40} /></span>
                     <div>
                       <div className="sub-detail-name">{activeMethod.name}</div>
                       <div className="sub-detail-info">{activeMethod.detail}</div>
