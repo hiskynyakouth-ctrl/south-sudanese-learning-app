@@ -296,7 +296,7 @@ export default function Register() {
         <label>
           Email address
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">✉️</span>
+            <span className="auth-input-icon"></span>
             <input name="email" type="email" value={form.email} onChange={handleChange}
               placeholder="your@gmail.com" required />
           </div>
