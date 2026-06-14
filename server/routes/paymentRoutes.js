@@ -45,22 +45,22 @@ router.post('/submit', authMiddleware, upload.single('receipt'), async (req, res
 
     if (process.env.GMAIL_APP_PASSWORD) {
       await transporter.sendMail({
-        from: \`"\${name || req.user.name}" <\${email || req.user.email}>\`,
+        from: `"${name || req.user.name}" <${email || req.user.email}>`,
         to: adminEmail,
-        subject: \`New Payment Received: \${plan} (\${currency} \${amount})\`,
-        text: \`
+        subject: `New Payment Received: ${plan} (${currency} ${amount})`,
+        text: `
 Hello Admin,
 
 A new payment request has been submitted.
 
-User: \${name || req.user.name} (\${email || req.user.email})
-Plan: \${plan}
-Amount: \${amount} \${currency}
-Payment Method: \${method}
+User: ${name || req.user.name} (${email || req.user.email})
+Plan: ${plan}
+Amount: ${amount} ${currency}
+Payment Method: ${method}
 Status: Pending Verification
 
 The payment receipt screenshot is attached to this email. Please verify the payment and activate their subscription from the Admin Dashboard.
-\`,
+`,
         attachments: [
           {
             filename: file.originalname || 'receipt.png',
