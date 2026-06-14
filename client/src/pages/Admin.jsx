@@ -26,6 +26,7 @@ const lsSet = (key, val) => localStorage.setItem(key, JSON.stringify(val));
 const TABS = [
   { key: "dashboard",     label: "Dashboard",     icon: "📊" },
   { key: "users",         label: "Users",          icon: "👥" },
+  { key: "payments",      label: "Payments",       icon: "🧾" },
   { key: "subscriptions", label: "Subscriptions",  icon: "💳" },
   { key: "subjects",      label: "Subjects",       icon: "📚" },
   { key: "papers",        label: "Past Papers",    icon: "📄" },
@@ -58,6 +59,7 @@ export default function Admin() {
   const [tab,      setTab]      = useState("dashboard");
   const [stats,    setStats]    = useState({ users: 0, subjects: 0, chapters: 0, papers: 0 });
   const [users,    setUsers]    = useState([]);
+  const [paymentsList, setPaymentsList] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [papers,   setPapers]   = useState([]);
   const [subs,     setSubs]     = useState([]);
@@ -164,6 +166,13 @@ export default function Admin() {
     try {
       const subRes = await api.get("/admin/subscriptions");
       setSubs(subRes.data || []);
+    } catch {
+      // ignore
+    }
+
+    try {
+      const payRes = await api.get("/admin/payments");
+      setPaymentsList(payRes.data || []);
     } catch {
       // ignore
     }
@@ -532,6 +541,57 @@ export default function Admin() {
               </table>
               {users.length === 0 && (
                 <p className="admin-empty">No users yet. Register at /register to see them here.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
+            PAYMENTS
+        ════════════════════════════════════════════════════════════ */}
+        {tab === "payments" && (
+          <div className="admin-section">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h1>🧾 Payments & Requests</h1>
+              <button className="primary-button" onClick={() => loadAll()}>Refresh</button>
+            </div>
+            <p style={{ color:"var(--muted)", marginBottom:20 }}>
+              View pending and completed payment requests. Screenshots are sent to your admin email ({process.env.GMAIL_USER || "thiyangkoang77@gmail.com"}).
+            </p>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>User / Email</th>
+                    <th>Amount</th>
+                    <th>Provider</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paymentsList.map((p) => (
+                    <tr key={p.id}>
+                      <td><span style={{ fontFamily: "monospace", color: "var(--muted)" }}>{p.tx_ref || "-"}</span></td>
+                      <td>
+                        <strong>{p.user_name || p.email}</strong><br />
+                        <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{p.email}</span>
+                      </td>
+                      <td><strong>{p.currency} {p.amount}</strong></td>
+                      <td>{p.provider}</td>
+                      <td>
+                        <span className={`admin-tag ${p.status === "pending" ? "pending" : "active"}`}>
+                          {p.status || "pending"}
+                        </span>
+                      </td>
+                      <td>{p.created_at ? new Date(p.created_at).toLocaleString() : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {paymentsList.length === 0 && (
+                <p className="admin-empty">No payment requests yet.</p>
               )}
             </div>
           </div>
