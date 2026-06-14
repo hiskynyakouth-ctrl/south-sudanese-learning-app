@@ -1,11 +1,11 @@
 import {
-  FaFlask, FaCalculator, FaBolt, FaAtom, FaLeaf, FaLandmark,
-  FaGlobe, FaBook, FaBookOpen, FaChartBar, FaLaptop, FaPalette,
-  FaChurch, FaCoins, FaBalanceScale, FaSquareRootAlt, FaMicroscope,
-  FaPen, FaGraduationCap,
+  FaBolt, FaLandmark,
+  FaBook, FaBookOpen, FaChartBar, FaLaptop, FaPalette,
+  FaChurch, FaCoins, FaBalanceScale, FaSquareRootAlt,
+  FaPen
 } from "react-icons/fa";
 import { GiChemicalDrop, GiDna1, GiEarthAmerica, GiWheat } from "react-icons/gi";
-import { MdComputer, MdAccountBalance, MdMenuBook } from "react-icons/md";
+import { MdComputer, MdAccountBalance } from "react-icons/md";
 import { BsCalculatorFill } from "react-icons/bs";
 
 // Map subject name → real icon component + color

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import YouTubeIcon from "../components/YouTubeIcon";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { subjectModules } from "../data/curriculum";
