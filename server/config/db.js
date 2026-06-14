@@ -129,6 +129,24 @@ const initTables = async () => {
       created_at  TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+
+  // Ensure missing columns are added if tables were created with an older schema
+  try {
+    await query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS picture VARCHAR(500);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_plan VARCHAR(50) DEFAULT '';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expiry TIMESTAMPTZ;
+
+      ALTER TABLE past_papers ADD COLUMN IF NOT EXISTS subject VARCHAR(150) DEFAULT '';
+      ALTER TABLE past_papers ADD COLUMN IF NOT EXISTS grade VARCHAR(50) DEFAULT '';
+      ALTER TABLE past_papers ADD COLUMN IF NOT EXISTS paper VARCHAR(50) DEFAULT '';
+      ALTER TABLE past_papers ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+    `);
+  } catch (err) {
+    console.error('Migration notice:', err.message);
+  }
+
   console.log('✅ Tables ready');
 };
 
