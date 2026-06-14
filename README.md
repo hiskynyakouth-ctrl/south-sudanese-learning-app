@@ -1,7 +1,5 @@
 # South Sudanese eLearning App
 
-A full-stack eLearning application designed for South Sudanese education, featuring interactive lessons, quizzes, and AI-powered chat support.
-
 ## Features
 
 - User authentication and registration
@@ -14,7 +12,7 @@ A full-stack eLearning application designed for South Sudanese education, featur
 
 - **Frontend**: React, Tailwind CSS
 - **Backend**: Node.js, Express
-- **Database**: MongoDB
+- **Database**: PostgreSQL
 
 ## Getting Started
 
@@ -22,7 +20,7 @@ A full-stack eLearning application designed for South Sudanese education, featur
 
 - Node.js (v16 or higher)
 - npm or yarn
-- MongoDB connection string for the backend
+- PostgreSQL running locally or a remote connection URL
 
 ### Installation
 
@@ -37,12 +35,15 @@ A full-stack eLearning application designed for South Sudanese education, featur
    npm install
    ```
 
-3. Configure environment variables in `server/.env` or in your deployment platform.
-   - `MONGO_URI`
+3. Configure environment variables in `server/.env` or in your deployment platform:
+   - `PORT` (optional, defaults to `5051`)
+   - `DATABASE_URL` or local Postgres settings: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
    - `JWT_SECRET`
    - `CLIENT_URL`
-   - `GMAIL_USER`
-   - `GMAIL_APP_PASSWORD`
+   - `GMAIL_USER` and `GMAIL_APP_PASSWORD`, or `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE` (optional)
+   - `TEXTBELT_KEY` (optional paid fallback for SMS)
+
 4. Start the development servers:
 
    ```bash
@@ -54,14 +55,15 @@ A full-stack eLearning application designed for South Sudanese education, featur
    cd client
    npm start
    ```
+
 ## Deployment
 
 - Backend: the root `render.yaml` deploys the API from `server/`.
-- The backend uses MongoDB only.
-- Set `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`, and `GMAIL_APP_PASSWORD` in Render environment variables.
-- Use the Render service domain `https://ss-elearning-api.onrender.com` for the frontend rewrite.
+- The backend uses PostgreSQL in this repository.
+- For email delivery, configure `GMAIL_USER` and `GMAIL_APP_PASSWORD` in Render or `SMTP_*` variables.
+- For SMS delivery, configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_PHONE`, or set a paid `TEXTBELT_KEY`.
 - Frontend: `vercel.json` rewrites `/api/(.*)` to `https://ss-elearning-api.onrender.com/api/$1`.
-- Confirm the deployed backend by visiting `https://ss-elearning-api.onrender.com/` and `https://ss-elearning-api.onrender.com/api/health`.
+
 ## Project Structure
 
 - `client/` - React frontend application

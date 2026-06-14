@@ -1,4 +1,4 @@
-const LOCAL_API = "http://localhost:5000/api";
+const LOCAL_API = "http://localhost:5051/api";
 const RENDER_API = "https://south-sudanese-learning-app-sqdw.onrender.com/api";
 
 const isVercelApp = () => {

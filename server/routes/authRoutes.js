@@ -106,21 +106,37 @@ router.post("/send-email", async (req, res) => {
 
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASSWORD;
 
-  if (!gmailUser || gmailUser === "your@gmail.com")
-    return res.status(503).json({ error: "Email not configured. Add GMAIL_USER and GMAIL_APP_PASSWORD to server/.env" });
-  if (!gmailPass || gmailPass === "xxxx xxxx xxxx xxxx")
-    return res.status(503).json({ error: "Gmail App Password not set." });
+  const usingGmail = gmailUser && gmailPass && gmailUser !== "your@gmail.com";
+  const usingSmtp = smtpHost && smtpPort && smtpUser && smtpPass;
+
+  if (!usingGmail && !usingSmtp) {
+    return res.status(503).json({
+      error: "Email not configured. Add GMAIL_USER/GMAIL_APP_PASSWORD or SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD to server/.env",
+    });
+  }
 
   try {
     const nodemailer = require("nodemailer");
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: gmailUser, pass: gmailPass },
-      tls: { rejectUnauthorized: false },
-    });
+    const transportOptions = usingGmail
+      ? {
+          service: "gmail",
+          auth: { user: gmailUser, pass: gmailPass },
+          tls: { rejectUnauthorized: false },
+        }
+      : {
+          host: smtpHost,
+          port: parseInt(smtpPort, 10),
+          secure: smtpPort === "465",
+          auth: { user: smtpUser, pass: smtpPass },
+        };
+    const transporter = nodemailer.createTransport(transportOptions);
     await transporter.sendMail({
-      from: `"South Sudan E-Learning" <${gmailUser}>`,
+      from: `"South Sudan E-Learning" <${usingGmail ? gmailUser : smtpUser}>`,
       to: email,
       subject: "Your Password Reset Code - South Sudan E-Learning",
       html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;background:#f9f9f9;border-radius:12px">
@@ -133,7 +149,7 @@ router.post("/send-email", async (req, res) => {
         <p style="color:#666;font-size:14px">This code expires in <strong>10 minutes</strong>.</p>
       </div>`,
     });
-    res.json({ message: "Email sent.", method: "gmail" });
+    res.json({ message: "Email sent.", method: usingGmail ? "gmail" : "smtp" });
   } catch (err) {
     res.status(500).json({ error: "Failed to send email: " + err.message });
   }
@@ -144,16 +160,18 @@ router.post("/send-sms", async (req, res) => {
   const { phone, code } = req.body;
   if (!phone || !code) return res.status(400).json({ error: "Phone and code required." });
 
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone  = process.env.TWILIO_PHONE;
+  const accountSid    = process.env.TWILIO_ACCOUNT_SID;
+  const authToken     = process.env.TWILIO_AUTH_TOKEN;
+  const fromPhone     = process.env.TWILIO_PHONE;
+  const textbeltKey   = process.env.TEXTBELT_KEY || process.env.TEXTBELT_API_KEY || "textbelt";
 
-  if (accountSid && accountSid !== "ACxxxxxxxxxxxxxxx") {
+  if (accountSid && authToken && fromPhone && accountSid !== "ACxxxxxxxxxxxxxxx") {
     try {
       const twilio = require("twilio")(accountSid, authToken);
       await twilio.messages.create({
-        body: "South Sudan E-Learning reset code: " + code + " (valid 10 min).",
-        from: fromPhone, to: phone,
+        body: "South Sudan E-Learning reset code: " + code + " (valid 10 min). Do not share this code.",
+        from: fromPhone,
+        to: phone,
       });
       return res.json({ message: "SMS sent via Twilio.", method: "twilio" });
     } catch (err) {
@@ -161,29 +179,51 @@ router.post("/send-sms", async (req, res) => {
     }
   }
 
-  // TextBelt free fallback
+  // TextBelt fallback (paid API key recommended for reliable delivery)
   try {
     const https = require("https");
-    const message = "South Sudan E-Learning reset code: " + code + " (valid 10 min).";
-    const postData = new URLSearchParams({ phone, message, key: "textbelt" }).toString();
-    const tbReq = https.request(
-      { hostname:"textbelt.com", path:"/text", method:"POST",
-        headers:{"Content-Type":"application/x-www-form-urlencoded","Content-Length":Buffer.byteLength(postData)} },
-      (tbRes) => {
-        let data = "";
-        tbRes.on("data", c => data += c);
-        tbRes.on("end", () => {
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.success) return res.json({ message: "SMS sent.", method: "textbelt" });
-            if (parsed.quotaRemaining === 0)
-              return res.status(503).json({ error: "Daily SMS limit reached. Use Email verification instead." });
-            res.status(503).json({ error: "SMS failed: " + (parsed.error || "Unknown") });
-          } catch { res.status(500).json({ error: "SMS parse error." }); }
-        });
-      }
-    );
-    tbReq.on("error", () => res.status(500).json({ error: "SMS service unreachable. Use Email instead." }));
+    const message = "South Sudan E-Learning reset code: " + code + " (valid 10 min). Do not share this code.";
+    const postData = new URLSearchParams({ phone, message, key: textbeltKey }).toString();
+
+    const options = {
+      hostname: "textbelt.com",
+      path: "/text",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": Buffer.byteLength(postData),
+      },
+    };
+
+    const tbReq = https.request(options, (tbRes) => {
+      let data = "";
+      tbRes.on("data", (chunk) => data += chunk);
+      tbRes.on("end", () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.success) {
+            return res.json({ message: "SMS sent.", method: textbeltKey === "textbelt" ? "textbelt-free" : "textbelt" });
+          }
+
+          if (parsed.quotaRemaining === 0) {
+            return res.status(503).json({ error: "Daily SMS limit reached. Use Email verification instead." });
+          }
+
+          const errMsg = parsed.error || "SMS delivery failed.";
+          const extra = textbeltKey === "textbelt" ? " Free TextBelt support is limited; sign up for a paid TextBelt key or configure Twilio." : "";
+          return res.status(503).json({ error: "TextBelt error: " + errMsg + extra });
+        } catch (parseErr) {
+          console.error("TextBelt parse error:", parseErr.message, data);
+          res.status(500).json({ error: "SMS failed: invalid TextBelt response." });
+        }
+      });
+    });
+
+    tbReq.on("error", (error) => {
+      console.error("TextBelt request error:", error.message);
+      res.status(500).json({ error: "SMS service unreachable. Use Email instead." });
+    });
+
     tbReq.write(postData);
     tbReq.end();
   } catch (err) {

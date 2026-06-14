@@ -12,13 +12,17 @@ const getPool = () => {
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       });
     } else {
-      pool = new Pool({
+      const config = {
         host:     process.env.DB_HOST     || 'localhost',
         user:     process.env.DB_USER     || 'postgres',
-        password: process.env.DB_PASSWORD || '',
         database: process.env.DB_NAME     || 'elearning',
         port:     parseInt(process.env.DB_PORT || '5432'),
-      });
+      };
+      const password = process.env.DB_PASSWORD;
+      if (password !== undefined && password !== '') {
+        config.password = password;
+      }
+      pool = new Pool(config);
     }
   }
   return pool;
