@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
+import api from "../services/api";
 import { FaMobileAlt, FaUniversity, FaCreditCard, FaMoneyBillWave, FaReceipt } from "react-icons/fa";
 import { SiAirtel, SiOrange, SiVodafone, SiWise, SiPaypal as SiPaypalIcon, SiVisa } from "react-icons/si";
 import "../styles/subscription.css";
@@ -200,7 +201,6 @@ export default function Subscription() {
         formData.append('receipt', receipt.file);
       }
 
-      const api = (await import('../services/api')).default;
       await api.post('/payments/submit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
