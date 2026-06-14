@@ -180,9 +180,38 @@ export default function Subscription() {
     setReceipt({ file, preview: url, name: file.name });
   };
 
-  const handleSubmit = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
     if (!activePlan || !selectedMethod) return;
-    setSubmitted(true);
+    
+    setIsSubmitting(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('plan', activePlan.region);
+      formData.append('amount', activePlan.price.replace(/,/g, ''));
+      formData.append('currency', activePlan.currency);
+      formData.append('method', selectedMethod);
+      if (user?.email) formData.append('email', user.email);
+      if (user?.name) formData.append('name', user.name);
+      
+      if (receipt?.file) {
+        formData.append('receipt', receipt.file);
+      }
+
+      const api = (await import('../services/api')).default;
+      await api.post('/payments/submit', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Payment submission failed:", error);
+      alert("Failed to submit payment request. Please try again or contact support.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -427,13 +456,14 @@ export default function Subscription() {
 
         {/* ═══ Submit button ═══ */}
         <button
-          className={`sub-submit-btn ${(!activePlan || !selectedMethod) ? "disabled" : ""}`}
-          disabled={!activePlan || !selectedMethod}
+          className={`sub-submit-btn ${(!activePlan || !selectedMethod || isSubmitting) ? "disabled" : ""}`}
+          disabled={!activePlan || !selectedMethod || isSubmitting}
           onClick={handleSubmit}
         >
-          <span>⬆️</span>
+          <span>{isSubmitting ? "⏳" : "⬆️"}</span>
           <span>
-            {activePlan && selectedMethod
+            {isSubmitting ? "Submitting Request..." : 
+              activePlan && selectedMethod
               ? `Submit Request — ${activePlan.price} ${activePlan.currency} via ${selectedMethod}`
               : "Upload Receipt & Request Access"}
           </span>
