@@ -115,6 +115,19 @@ const initTables = async () => {
       file_url    TEXT         DEFAULT '',
       created_at  TIMESTAMPTZ  DEFAULT NOW()
     );
+
+    -- Payments table for subscription transactions
+    CREATE TABLE IF NOT EXISTS payments (
+      id          SERIAL PRIMARY KEY,
+      user_id     INT REFERENCES users(id) ON DELETE SET NULL,
+      email       VARCHAR(255) NOT NULL,
+      tx_ref      VARCHAR(255),
+      amount      NUMERIC(10,2) DEFAULT 0,
+      currency    VARCHAR(10) DEFAULT 'USD',
+      provider    VARCHAR(50) DEFAULT '',
+      status      VARCHAR(50) DEFAULT 'completed',
+      created_at  TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
   console.log('✅ Tables ready');
 };

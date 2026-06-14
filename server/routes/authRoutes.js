@@ -92,6 +92,22 @@ router.post("/subscribe", async (req, res) => {
       [plan, expiry, email.toLowerCase()]
     );
     if (!result.rows.length) return res.status(404).json({ error: "No account found with this email." });
+    const userId = result.rows[0].id;
+    // Record payment/transaction if txRef provided
+    try {
+      const amt = parseFloat(req.body.amount) || 0;
+      const currency = req.body.currency || 'USD';
+      const provider = req.body.provider || '';
+      const status = req.body.status || 'completed';
+      await query(
+        `INSERT INTO payments (user_id, email, tx_ref, amount, currency, provider, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [userId, email.toLowerCase(), txRef || null, amt, currency, provider, status]
+      );
+    } catch (payErr) {
+      console.error('Failed to record payment:', payErr.message);
+    }
+
     console.log(`✅ Subscription: ${email} | ${plan} | ${txRef}`);
     res.json({ message: "Subscription activated.", expiry });
   } catch (err) {

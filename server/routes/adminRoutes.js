@@ -193,6 +193,33 @@ router.get('/subscriptions', async (req, res) => {
   }
 });
 
+// ── Payments ───────────────────────────────────────────
+router.get('/payments', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT p.id, p.user_id, p.email, p.tx_ref, p.amount, p.currency, p.provider, p.status, p.created_at,
+              u.name as user_name
+       FROM payments p
+       LEFT JOIN users u ON u.id = p.user_id
+       ORDER BY p.created_at DESC LIMIT 200`
+    );
+    res.json(result.rows.map(p => ({
+      id: p.id,
+      user_id: p.user_id,
+      user_name: p.user_name,
+      email: p.email,
+      tx_ref: p.tx_ref,
+      amount: parseFloat(p.amount || 0),
+      currency: p.currency,
+      provider: p.provider,
+      status: p.status,
+      created_at: p.created_at,
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/subscriptions/activate', async (req, res) => {
   const { email, plan, days } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required.' });
