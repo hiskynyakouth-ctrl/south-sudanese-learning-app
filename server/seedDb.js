@@ -5,8 +5,11 @@ const Subject = require('./models/subjectModel');
 
 async function seed() {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/elearning';
-    await mongoose.connect(mongoUri);
+    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/elearning';
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log('✅ Connected to MongoDB');
 
     // Clear existing subjects to avoid duplicates if re-seeding

@@ -5,11 +5,15 @@ let lastError = null;
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/elearning';
-    const conn = await mongoose.connect(mongoUri);
+    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/elearning';
+    const source = process.env.MONGO_URI ? 'MONGO_URI' : process.env.DATABASE_URL ? 'DATABASE_URL' : 'default local URI';
+    const conn = await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     connected = true;
     lastError = null;
-    console.log(`✅ Connected to MongoDB: ${conn.connection.host}`);
+    console.log(`✅ Connected to MongoDB (${source}): ${conn.connection.host}`);
     return true;
   } catch (err) {
     connected = false;

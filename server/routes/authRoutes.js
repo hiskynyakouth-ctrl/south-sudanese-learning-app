@@ -11,7 +11,7 @@ const router = express.Router();
 const requireDb = (res) => {
   const db = getDbStatus();
   if (db.state === 1) return true;
-  res.status(503).json({ error: "Database is not connected. " + (db.lastError ? "Error: " + db.lastError : "Check MONGO_URI on the backend server.") });
+  res.status(503).json({ error: "Database is not connected. " + (db.lastError ? "Error: " + db.lastError : "Check DATABASE_URL/MONGO_URI on the backend server.") });
   return false;
 };
 

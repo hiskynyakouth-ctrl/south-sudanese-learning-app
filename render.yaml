@@ -21,5 +21,7 @@ services:
         sync: false
       - key: MONGO_URI
         sync: false
+      - key: DATABASE_URL
+        sync: false
       - key: CLIENT_URL
         value: https://south-sudanese-learning-app-two.vercel.app
