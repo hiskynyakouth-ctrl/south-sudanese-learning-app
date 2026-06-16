@@ -109,7 +109,7 @@ export default function Login() {
         <label>
           Email address
           <div className="auth-input-wrap">
-            <span className="auth-input-icon">✉️</span>
+            <span className="auth-input-icon"></span>
             <input name="email" type="email" value={form.email} onChange={handleChange}
               placeholder="you@gmail.com" required autoFocus />
           </div>

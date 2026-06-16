@@ -5,7 +5,7 @@ const { connectDB, getDbStatus } = require('./config/db');
 
 const app = express();
 
-// Connect to PostgreSQL (auto-creates tables)
+// Connect to MongoDB
 connectDB();
 
 const allowedOrigins = [

@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
-const { query } = require('../config/db');
+const Payment = require('../models/paymentModel');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -33,11 +33,15 @@ router.post('/submit', authMiddleware, upload.single('receipt'), async (req, res
     }
 
     // 1. Insert payment record into database
-    await query(
-      `INSERT INTO payments (user_id, email, tx_ref, amount, currency, provider, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'pending')`,
-      [req.user.id, email || req.user.email, `REQ-${Date.now()}`, amount || 0, currency || 'USD', method || 'Manual']
-    );
+    await Payment.create({
+      userId: req.user.id,
+      email: email || req.user.email,
+      tx_ref: `REQ-${Date.now()}`,
+      amount: amount || 0,
+      currency: currency || 'USD',
+      provider: method || 'Manual',
+      status: 'pending'
+    });
 
     // 2. Send Email to Admin with the screenshot attached
     const adminEmail = process.env.GMAIL_USER || 'thiyangkoang77@gmail.com';

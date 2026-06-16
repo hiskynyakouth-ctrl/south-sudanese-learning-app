@@ -1,17 +1,18 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { query, getDbStatus } = require('../config/db');
+const User = require('../models/userModel');
+const { getDbStatus } = require('../config/db');
 
 const signUser = (user) =>
   jwt.sign(
-    { id: user.id, name: user.name, email: user.email, role: user.role || 'student' },
+    { id: user._id, name: user.name, email: user.email, role: user.role || 'student' },
     process.env.JWT_SECRET || 'dev_secret',
     { expiresIn: '7d' }
   );
 
 const requireDb = (res) => {
   if (getDbStatus().state === 1) return true;
-  res.status(503).json({ error: 'Database is not connected. Check DATABASE_URL on the backend server.' });
+  res.status(503).json({ error: 'Database is not connected. Check DATABASE_URL/MONGO_URI on the backend server.' });
   return false;
 };
 
@@ -22,21 +23,22 @@ exports.register = async (req, res) => {
   if (!requireDb(res)) return;
 
   try {
-    const existing = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (existing.rows.length)
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing)
       return res.status(409).json({ error: 'An account with this email already exists.' });
 
     const hash = await bcrypt.hash(password, 10);
-    const result = await query(
-      `INSERT INTO users (name, email, password, role)
-       VALUES ($1, $2, $3, 'student') RETURNING id, name, email, role`,
-      [name.trim(), email.toLowerCase(), hash]
-    );
-    const user = result.rows[0];
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase(),
+      password: hash,
+      role: 'student'
+    });
+
     return res.status(201).json({
       message: 'Account created successfully.',
       token: signUser(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -50,8 +52,7 @@ exports.login = async (req, res) => {
   if (!requireDb(res)) return;
 
   try {
-    const result = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-    const user = result.rows[0];
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
 
     const valid = await bcrypt.compare(password, user.password);
@@ -60,7 +61,7 @@ exports.login = async (req, res) => {
     return res.json({
       message: 'Login successful.',
       token: signUser(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -69,15 +70,10 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    const { query } = require('../config/db');
-    const result = await query(
-      'SELECT id, name, email, role, subscription_plan, subscription_expiry FROM users WHERE id=$1',
-      [req.user.id]
-    );
-    const user = result.rows[0];
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found.' });
     return res.json({ user: {
-      id: user.id, name: user.name, email: user.email, role: user.role,
+      id: user._id, name: user.name, email: user.email, role: user.role,
       subscription_plan: user.subscription_plan,
       subscription_expiry: user.subscription_expiry,
     }});
@@ -94,31 +90,33 @@ exports.googleAuth = async (req, res) => {
   if (!requireDb(res)) return;
 
   try {
-    const existing = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (existing.rows.length) {
-      const user = existing.rows[0];
-      if (user.google_id && user.google_id !== googleId)
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      if (existing.googleId && existing.googleId !== googleId)
         return res.status(409).json({ error: 'This email is registered with another Google account.' });
-      if (!user.google_id)
+      if (!existing.googleId)
         return res.status(409).json({ error: 'An account with this email already exists. Please login instead.' });
       return res.json({
         message: 'Login successful.',
-        token: signUser(user),
-        user: { id: user.id, name: user.name, email: user.email, role: user.role, picture: user.picture },
+        token: signUser(existing),
+        user: { id: existing._id, name: existing.name, email: existing.email, role: existing.role, picture: existing.picture },
       });
     }
 
     const hash = await bcrypt.hash(password || `google_${googleId}`, 10);
-    const result = await query(
-      `INSERT INTO users (name, email, password, google_id, picture, role)
-       VALUES ($1, $2, $3, $4, $5, 'student') RETURNING id, name, email, role, picture`,
-      [name.trim(), email.toLowerCase(), hash, googleId, picture || '']
-    );
-    const user = result.rows[0];
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase(),
+      password: hash,
+      googleId,
+      picture: picture || '',
+      role: 'student'
+    });
+
     return res.status(201).json({
       message: 'Account created successfully.',
       token: signUser(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, picture: user.picture },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, picture: user.picture },
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -132,12 +130,14 @@ exports.resetPassword = async (req, res) => {
   if (!requireDb(res)) return;
 
   try {
-    const result = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (!result.rows.length)
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user)
       return res.status(404).json({ error: 'No account found with this email.' });
 
     const hash = await bcrypt.hash(newPassword, 10);
-    await query('UPDATE users SET password = $1 WHERE email = $2', [hash, email.toLowerCase()]);
+    user.password = hash;
+    await user.save();
+    
     return res.json({ message: 'Password reset successfully.' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
