@@ -5,7 +5,7 @@ let lastError = null;
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/elearning';
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/elearning';
     const conn = await mongoose.connect(mongoUri);
     connected = true;
     lastError = null;
