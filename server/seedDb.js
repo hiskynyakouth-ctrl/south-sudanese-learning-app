@@ -5,12 +5,15 @@ const Subject = require('./models/subjectModel');
 
 async function seed() {
   try {
-    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/elearning';
+    const rawUri = process.env.MONGO_URI || process.env.DATABASE_URL || process.env.MONGODB_URI;
+    const mongoUri = rawUri
+      ? rawUri.trim().replace(/^['"]|['"]$/g, '')
+      : 'mongodb://localhost:27017/elearning';
     const source = process.env.MONGO_URI ? 'MONGO_URI' : process.env.DATABASE_URL ? 'DATABASE_URL' : process.env.MONGODB_URI ? 'MONGODB_URI' : 'default local URI';
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+      throw new Error('Invalid MongoDB connection string scheme. It must start with "mongodb://" or "mongodb+srv://".');
+    }
+    await mongoose.connect(mongoUri);
     console.log(`✅ Connected to MongoDB (${source})`);
 
     // Clear existing subjects to avoid duplicates if re-seeding

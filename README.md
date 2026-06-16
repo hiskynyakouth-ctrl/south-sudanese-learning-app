@@ -60,6 +60,9 @@
 
 - Backend: the root `render.yaml` deploys the API from `server/`.
 - The backend uses MongoDB. Set `MONGO_URI` on Render to your MongoDB Atlas or remote connection string, or use `DATABASE_URL` / `MONGODB_URI` as aliases.
+- Use this Atlas format:
+  - `mongodb+srv://username:password@cluster0.example.mongodb.net/elearning`
+- Do not wrap the value in quotes when setting Render env vars.
 - For email delivery, configure `GMAIL_USER` and `GMAIL_APP_PASSWORD` in Render or `SMTP_*` variables.
 - For SMS delivery, configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_PHONE`, or set a paid `TEXTBELT_KEY`.
 - Frontend: `vercel.json` rewrites `/api/(.*)` to `https://ss-elearning-api.onrender.com/api/$1`.
