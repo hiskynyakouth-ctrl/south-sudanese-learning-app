@@ -2,13 +2,15 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { register, login, me, googleAuth, resetPassword } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
-const { query, getDbStatus } = require("../config/db");
+const { getDbStatus } = require("../config/db");
+const User = require("../models/userModel");
+const Payment = require("../models/paymentModel");
 
 const router = express.Router();
 
 const requireDb = (res) => {
   if (getDbStatus().state === 1) return true;
-  res.status(503).json({ error: "Database is not connected. Check DATABASE_URL on the backend server." });
+  res.status(503).json({ error: "Database is not connected. Check MONGO_URI on the backend server." });
   return false;
 };
 
@@ -24,13 +26,13 @@ router.put("/profile", authMiddleware, async (req, res) => {
   if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
   if (!requireDb(res)) return;
   try {
-    const result = await query(
-      "UPDATE users SET name=$1 WHERE id=$2 RETURNING id, name, email, role",
-      [name.trim(), req.user.id]
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name: name.trim() },
+      { new: true }
     );
-    if (!result.rows.length) return res.status(404).json({ error: "User not found." });
-    const u = result.rows[0];
-    res.json({ message: "Profile updated.", user: { id: u.id, name: u.name, email: u.email, role: u.role } });
+    if (!user) return res.status(404).json({ error: "User not found." });
+    res.json({ message: "Profile updated.", user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -43,12 +45,13 @@ router.post("/change-password", authMiddleware, async (req, res) => {
   if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters." });
   if (!requireDb(res)) return;
   try {
-    const result = await query("SELECT password FROM users WHERE id=$1", [req.user.id]);
-    if (!result.rows.length) return res.status(404).json({ error: "User not found." });
-    const ok = await bcrypt.compare(currentPassword, result.rows[0].password);
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found." });
+    const ok = await bcrypt.compare(currentPassword, user.password);
     if (!ok) return res.status(401).json({ error: "Current password is incorrect." });
     const hash = await bcrypt.hash(newPassword, 10);
-    await query("UPDATE users SET password=$1 WHERE id=$2", [hash, req.user.id]);
+    user.password = hash;
+    await user.save();
     res.json({ message: "Password changed successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -63,18 +66,23 @@ router.post("/setup-admin", async (req, res) => {
   try {
     const hash = await bcrypt.hash(password || "Admin@2024", 10);
     const normalizedEmail = (email || "admin@school.com").toLowerCase();
-    const existing = await query("SELECT id FROM users WHERE email=$1", [normalizedEmail]);
+    
+    let user = await User.findOne({ email: normalizedEmail });
 
-    if (existing.rows.length) {
-      await query("UPDATE users SET role='admin', password=$1 WHERE email=$2", [hash, normalizedEmail]);
+    if (user) {
+      user.role = 'admin';
+      user.password = hash;
+      await user.save();
       return res.json({ message: "Admin updated", user: { email: normalizedEmail, role: "admin" } });
     }
 
-    const result = await query(
-      "INSERT INTO users (name, email, password, role) VALUES ('Admin',$1,$2,'admin') RETURNING id, email, role",
-      [normalizedEmail, hash]
-    );
-    res.json({ message: "Admin created", user: result.rows[0] });
+    user = await User.create({
+      name: 'Admin',
+      email: normalizedEmail,
+      password: hash,
+      role: 'admin'
+    });
+    res.json({ message: "Admin created", user: { id: user._id, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -87,23 +95,31 @@ router.post("/subscribe", async (req, res) => {
   if (!requireDb(res)) return;
   try {
     const expiry = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
-    const result = await query(
-      "UPDATE users SET subscription_plan=$1, subscription_expiry=$2 WHERE email=$3 RETURNING id",
-      [plan, expiry, email.toLowerCase()]
+    
+    const user = await User.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { subscription_plan: plan, subscription_expiry: expiry },
+      { new: true }
     );
-    if (!result.rows.length) return res.status(404).json({ error: "No account found with this email." });
-    const userId = result.rows[0].id;
+
+    if (!user) return res.status(404).json({ error: "No account found with this email." });
+    
     // Record payment/transaction if txRef provided
     try {
       const amt = parseFloat(req.body.amount) || 0;
       const currency = req.body.currency || 'USD';
       const provider = req.body.provider || '';
       const status = req.body.status || 'completed';
-      await query(
-        `INSERT INTO payments (user_id, email, tx_ref, amount, currency, provider, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [userId, email.toLowerCase(), txRef || null, amt, currency, provider, status]
-      );
+      
+      await Payment.create({
+        userId: user._id,
+        email: email.toLowerCase(),
+        tx_ref: txRef || null,
+        amount: amt,
+        currency: currency,
+        provider: provider,
+        status: status
+      });
     } catch (payErr) {
       console.error('Failed to record payment:', payErr.message);
     }
