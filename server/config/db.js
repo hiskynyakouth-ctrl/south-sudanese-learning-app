@@ -4,7 +4,8 @@ let connected = false;
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/elearning');
+    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/elearning';
+    const conn = await mongoose.connect(mongoUri);
     connected = true;
     console.log(`✅ Connected to MongoDB: ${conn.connection.host}`);
     return true;

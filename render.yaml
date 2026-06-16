@@ -19,12 +19,7 @@ services:
         value: thiyangkoang77@gmail.com
       - key: GMAIL_APP_PASSWORD
         sync: false
-      - key: DATABASE_URL
+      - key: MONGO_URI
         sync: false
       - key: CLIENT_URL
         value: https://south-sudanese-learning-app-two.vercel.app
-
-databases:
-  - name: ss-elearning-db
-    plan: free
-    region: oregon
