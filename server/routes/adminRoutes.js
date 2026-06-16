@@ -12,8 +12,9 @@ router.use(adminMiddleware);
 
 // DB check middleware
 router.use((req, res, next) => {
-  if (getDbStatus().state === 1) return next();
-  return res.status(503).json({ error: 'Database is not connected. Check MONGO_URI on the backend server.' });
+  const db = getDbStatus();
+  if (db.state === 1) return next();
+  return res.status(503).json({ error: "Database is not connected. " + (db.lastError ? "Error: " + db.lastError : "Check MONGO_URI on the backend server.") });
 });
 
 const GRADE_MAP  = { 1: 'Senior 1', 2: 'Senior 2', 3: 'Senior 3', 4: 'Senior 4' };

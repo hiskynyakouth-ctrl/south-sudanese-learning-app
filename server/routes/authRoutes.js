@@ -9,8 +9,9 @@ const Payment = require("../models/paymentModel");
 const router = express.Router();
 
 const requireDb = (res) => {
-  if (getDbStatus().state === 1) return true;
-  res.status(503).json({ error: "Database is not connected. Check MONGO_URI on the backend server." });
+  const db = getDbStatus();
+  if (db.state === 1) return true;
+  res.status(503).json({ error: "Database is not connected. " + (db.lastError ? "Error: " + db.lastError : "Check MONGO_URI on the backend server.") });
   return false;
 };
 
