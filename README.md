@@ -37,7 +37,7 @@
 
 3. Configure environment variables in `server/.env` or in your deployment platform:
    - `PORT` (optional, defaults to `5051`)
-   - `MONGO_URI` (MongoDB connection string), or `DATABASE_URL` can be used as an alias
+   - `MONGO_URI` (MongoDB connection string), or `DATABASE_URL` / `MONGODB_URI` can be used as aliases
    - `JWT_SECRET`
    - `CLIENT_URL`
    - `GMAIL_USER` and `GMAIL_APP_PASSWORD`, or `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`
@@ -59,7 +59,7 @@
 ## Deployment
 
 - Backend: the root `render.yaml` deploys the API from `server/`.
-- The backend uses MongoDB. Set `MONGO_URI` on Render to your MongoDB Atlas or remote MongoDB connection string, or use `DATABASE_URL` as an alias.
+- The backend uses MongoDB. Set `MONGO_URI` on Render to your MongoDB Atlas or remote connection string, or use `DATABASE_URL` / `MONGODB_URI` as aliases.
 - For email delivery, configure `GMAIL_USER` and `GMAIL_APP_PASSWORD` in Render or `SMTP_*` variables.
 - For SMS delivery, configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_PHONE`, or set a paid `TEXTBELT_KEY`.
 - Frontend: `vercel.json` rewrites `/api/(.*)` to `https://ss-elearning-api.onrender.com/api/$1`.
