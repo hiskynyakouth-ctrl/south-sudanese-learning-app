@@ -50,6 +50,22 @@ router.post("/change-password", authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── Promote any user to admin by secret (no password change) ─
+router.post("/promote-admin", async (req, res) => {
+  const { secret, email } = req.body;
+  if (secret !== "ss_setup_2024_hisky") return res.status(403).json({ error: "Forbidden" });
+  if (!email) return res.status(400).json({ error: "Email required." });
+  if (!requireDb(res)) return;
+  try {
+    const result = await query(
+      "UPDATE users SET role='admin' WHERE email=$1 RETURNING id,name,email,role",
+      [email.toLowerCase()]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "No user found with this email." });
+    res.json({ message: "User promoted to admin.", user: result.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ── Create / update admin account ────────────────────────
 router.post("/setup-admin", async (req, res) => {
   const { secret, email, password } = req.body;

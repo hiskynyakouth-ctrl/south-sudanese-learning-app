@@ -1038,16 +1038,32 @@ export default function Admin() {
               {/* Set admin role */}
               <div className="admin-setting-card">
                 <h3>Set Admin Role</h3>
-                <p>Promote your current account to admin in local storage.</p>
+                <p>Promote your current account to admin on the server.</p>
                 <button
                   className="primary-button"
-                  onClick={() => {
+                  onClick={async () => {
                     const raw = localStorage.getItem("sslauth");
                     if (!raw) { alert("Not logged in."); return; }
                     const s = JSON.parse(raw);
-                    s.user.role = "admin";
-                    localStorage.setItem("sslauth", JSON.stringify(s));
-                    alert("Done! Refresh the page.");
+                    const email = s?.user?.email;
+                    if (!email) { alert("No email found."); return; }
+                    try {
+                      // Try server first
+                      const res = await api.post("/auth/promote-admin", {
+                        secret: "ss_setup_2024_hisky", email
+                      });
+                      // Update local session role
+                      s.user.role = "admin";
+                      localStorage.setItem("sslauth", JSON.stringify(s));
+                      alert(`✅ ${res.data.message}\nRefreshing...`);
+                      window.location.reload();
+                    } catch (err) {
+                      // Fallback: update locally only
+                      s.user.role = "admin";
+                      localStorage.setItem("sslauth", JSON.stringify(s));
+                      alert("Updated locally. Refresh the page.");
+                      window.location.reload();
+                    }
                   }}
                 >
                   Set My Role to Admin
