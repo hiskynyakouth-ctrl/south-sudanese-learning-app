@@ -59,7 +59,8 @@
 ## Deployment
 
 - Backend: the root `render.yaml` deploys the API from `server/`.
-- The backend uses MongoDB. Set `MONGO_URI` on Render to your MongoDB Atlas or remote connection string, or use `DATABASE_URL` / `MONGODB_URI` as aliases.
+- The backend uses MongoDB. Set `MONGO_URI` on Render to your MongoDB Atlas or remote connection string. `MONGODB_URI` is also supported.
+- If you use `DATABASE_URL`, it must be a MongoDB URI starting with `mongodb://` or `mongodb+srv://`. Do not set `DATABASE_URL` to a Postgres or other database connection string.
 - Use this Atlas format:
   - `mongodb+srv://username:password@cluster0.example.mongodb.net/elearning`
 - Do not wrap the value in quotes when setting Render env vars.

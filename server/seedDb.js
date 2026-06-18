@@ -1,18 +1,12 @@
 // Run: node server/seedDb.js
 require('dotenv').config();
 const mongoose = require('mongoose');
+const { getMongoUri } = require('./config/db');
 const Subject = require('./models/subjectModel');
 
 async function seed() {
   try {
-    const rawUri = process.env.MONGO_URI || process.env.DATABASE_URL || process.env.MONGODB_URI;
-    const mongoUri = rawUri
-      ? rawUri.trim().replace(/^['"]|['"]$/g, '')
-      : 'mongodb://localhost:27017/elearning';
-    const source = process.env.MONGO_URI ? 'MONGO_URI' : process.env.DATABASE_URL ? 'DATABASE_URL' : process.env.MONGODB_URI ? 'MONGODB_URI' : 'default local URI';
-    if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
-      throw new Error('Invalid MongoDB connection string scheme. It must start with "mongodb://" or "mongodb+srv://".');
-    }
+    const { uri: mongoUri, source } = getMongoUri();
     await mongoose.connect(mongoUri);
     console.log(`✅ Connected to MongoDB (${source})`);
 

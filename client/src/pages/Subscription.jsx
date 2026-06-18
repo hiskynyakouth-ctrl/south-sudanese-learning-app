@@ -2,9 +2,6 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
-import api from "../services/api";
-import { FaMobileAlt, FaUniversity, FaCreditCard, FaMoneyBillWave, FaReceipt } from "react-icons/fa";
-import { SiAirtel, SiOrange, SiVodafone, SiWise, SiPaypal as SiPaypalIcon, SiVisa } from "react-icons/si";
 import "../styles/subscription.css";
 
 // ── Plans ─────────────────────────────────────────────────
@@ -18,118 +15,196 @@ const PLANS = [
   { region: "Western World", iso: null, price: "$20",  currency: "USD", color: "#1565c0", gradient: "linear-gradient(135deg,#1565c0,#1e88e5)" },
 ];
 
-// Real icons — local react-icons with emoji fallback
-// icon: React component | fallback emoji shown if icon is unavailable
-const METHOD_LOGOS = {
-  // ── Ethiopia ──────────────────────────────────────────────────────
-  "Telebirr":
-    { icon:FaMobileAlt, fb:"📱", color:"#0066cc", bg:"#e3f0ff" },
-  "M-Pesa Ethiopia":
-    { icon:FaMobileAlt, fb:"📱", color:"#00a651", bg:"#e6f9ee" },
-  "Commercial Bank of Ethiopia (CBE)":
-    { icon:FaUniversity, fb:"🏦", color:"#003087", bg:"#e8eeff" },
-  "CBE Mobile / Wallet":
-    { icon:FaMobileAlt, fb:"📱", color:"#003087", bg:"#e8eeff" },
-  "Awash Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#c8102e", bg:"#fdecea" },
-  "Dashen Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006633", bg:"#e6f4ec" },
-  "Abyssinia Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#7b1fa2", bg:"#f3e5f5" },
-  "Wegagen Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#1565c0", bg:"#e3f2fd" },
-  // ── Kenya ─────────────────────────────────────────────────────────
-  "M-Pesa":
-    { icon:FaMobileAlt, fb:"📱", color:"#00a651", bg:"#e6f9ee" },
-  "Airtel Money":
-    { icon:SiAirtel, fb:"📱", color:"#e53935", bg:"#fdecea" },
-  "T-Kash (Telkom)":
-    { icon:FaMobileAlt, fb:"📱", color:"#6a1b9a", bg:"#f3e5f5" },
-  "Equity Bank Kenya":
-    { icon:FaUniversity, fb:"🏦", color:"#c8102e", bg:"#fdecea" },
-  "KCB Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006633", bg:"#e6f4ec" },
-  "Kenya Commercial Bank (KCB)":
-    { icon:FaUniversity, fb:"🏦", color:"#006633", bg:"#e6f4ec" },
-  "Co-operative Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
-  "Absa Bank Kenya":
-    { icon:FaUniversity, fb:"🏦", color:"#cc0000", bg:"#fdecea" },
-  "NCBA Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#003087", bg:"#e8eeff" },
-  // ── Uganda ────────────────────────────────────────────────────────
-  "MTN Mobile Money":
-    { icon:FaMobileAlt, fb:"📱", color:"#ffcc00", bg:"#fffde0" },
-  "Stanbic Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
-  "Centenary Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006633", bg:"#e6f4ec" },
-  "DFCU Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#003087", bg:"#e8eeff" },
-  "Equity Bank Uganda":
-    { icon:FaUniversity, fb:"🏦", color:"#c8102e", bg:"#fdecea" },
-  // ── South Sudan ───────────────────────────────────────────────────
-  "Salaam Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006600", bg:"#e6f4ec" },
-  "Equity Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#c8102e", bg:"#fdecea" },
-  "Cash Payment":
-    { icon:FaMoneyBillWave, fb:"💵", color:"#2e7d32", bg:"#e8f5e9" },
-  // ── Egypt ─────────────────────────────────────────────────────────
-  "Vodafone Cash":
-    { icon:SiVodafone, fb:"📱", color:"#cc0000", bg:"#fdecea" },
-  "Orange Money":
-    { icon:SiOrange, fb:"📱", color:"#ff6900", bg:"#fff0e0" },
-  "Etisalat Cash":
-    { icon:FaMobileAlt, fb:"📱", color:"#006633", bg:"#e6f4ec" },
-  "Fawry":
-    { icon:FaCreditCard, fb:"💳", color:"#1e88e5", bg:"#e3f2fd" },
-  "National Bank of Egypt":
-    { icon:FaUniversity, fb:"🏦", color:"#003087", bg:"#e8eeff" },
-  "Banque Misr":
-    { icon:FaUniversity, fb:"🏦", color:"#6a1b9a", bg:"#f3e5f5" },
-  "CIB Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#0057a8", bg:"#e3f0ff" },
-  "QNB Alahli":
-    { icon:FaUniversity, fb:"🏦", color:"#8b0000", bg:"#fdecea" },
-  // ── Sudan ─────────────────────────────────────────────────────────
-  "MTN Sudan":
-    { icon:FaMobileAlt, fb:"📱", color:"#ffcc00", bg:"#fffde0" },
-  "MTN Sudan Mobile":
-    { icon:FaMobileAlt, fb:"📱", color:"#ffcc00", bg:"#fffde0" },
-  "Zain Cash":
-    { icon:FaMobileAlt, fb:"📱", color:"#cc0000", bg:"#fdecea" },
-  "Bank of Khartoum":
-    { icon:FaUniversity, fb:"🏦", color:"#1565c0", bg:"#e3f2fd" },
-  "Omdurman National Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006600", bg:"#e6f4ec" },
-  "Faisal Islamic Bank":
-    { icon:FaUniversity, fb:"🏦", color:"#006600", bg:"#e6f4ec" },
-  // ── Western ───────────────────────────────────────────────────────
-  "PayPal":
-    { icon:SiPaypalIcon, fb:"💳", color:"#003087", bg:"#e8eeff" },
-  "Wise (TransferWise)":
-    { icon:SiWise, fb:"💳", color:"#37517e", bg:"#eaf0ff" },
-  "Bank Transfer (SWIFT)":
-    { icon:FaUniversity, fb:"🏦", color:"#37474f", bg:"#eceff1" },
-  "Credit/Debit Card":
-    { icon:SiVisa, fb:"💳", color:"#1a1f71", bg:"#e8f0ff" },
-  "Invoice Payment":
-    { icon:FaReceipt, fb:"📄", color:"#455a64", bg:"#eceff1" },
-  "Mobile Money":
-    { icon:FaMobileAlt, fb:"📱", color:"#e53935", bg:"#fdecea" },
+// ── Inline SVG icons — zero network requests, always render ──
+const ICONS = {
+  // Mobile money — phone with signal bars
+  mobile: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect x="11" y="4" width="26" height="40" rx="4" fill={color} opacity="0.15" stroke={color} strokeWidth="2.5"/>
+      <rect x="16" y="8" width="16" height="10" rx="2" fill={color} opacity="0.3"/>
+      <circle cx="24" cy="38" r="2.5" fill={color}/>
+      <rect x="20" y="10" width="8" height="1.5" rx="1" fill={color}/>
+      {/* Signal bars */}
+      <rect x="28" y="21" width="3" height="7" rx="1" fill={color}/>
+      <rect x="32" y="19" width="3" height="9" rx="1" fill={color}/>
+      <rect x="36" y="16" width="3" height="12" rx="1" fill={color}/>
+    </svg>
+  ),
+  // Bank building
+  bank: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect x="6" y="38" width="36" height="4" rx="2" fill={color}/>
+      <rect x="10" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
+      <rect x="17" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
+      <rect x="24" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
+      <rect x="31" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
+      <rect x="6" y="18" width="36" height="4" rx="1" fill={color}/>
+      <polygon points="24,6 42,18 6,18" fill={color}/>
+    </svg>
+  ),
+  // Card
+  card: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect x="4" y="12" width="40" height="26" rx="4" fill={color} opacity="0.15" stroke={color} strokeWidth="2.5"/>
+      <rect x="4" y="18" width="40" height="8" fill={color} opacity="0.25"/>
+      <rect x="10" y="30" width="12" height="3" rx="1.5" fill={color}/>
+      <rect x="26" y="30" width="6" height="3" rx="1.5" fill={color} opacity="0.5"/>
+    </svg>
+  ),
+  // Cash / money
+  cash: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect x="4" y="14" width="40" height="22" rx="4" fill={color} opacity="0.15" stroke={color} strokeWidth="2.5"/>
+      <circle cx="24" cy="25" r="7" fill={color} opacity="0.25" stroke={color} strokeWidth="2"/>
+      <text x="24" y="29" textAnchor="middle" fontSize="9" fontWeight="bold" fill={color}>$</text>
+      <rect x="8" y="19" width="4" height="4" rx="1" fill={color} opacity="0.4"/>
+      <rect x="36" y="27" width="4" height="4" rx="1" fill={color} opacity="0.4"/>
+    </svg>
+  ),
+  // PayPal P
+  paypal: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="12" fill="#f0f4ff"/>
+      <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fontSize="26" fontWeight="900" fill="#003087">P</text>
+      <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fontSize="26" fontWeight="900" fill="#009cde" dx="6" dy="4">P</text>
+    </svg>
+  ),
+  // Wise W
+  wise: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="12" fill="#9fe870"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="22" fontWeight="900" fill="#163300">W</text>
+    </svg>
+  ),
+  // MTN — yellow circle M
+  mtn: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <circle cx="24" cy="24" r="22" fill="#ffcc00"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="18" fontWeight="900" fill="#000">MTN</text>
+    </svg>
+  ),
+  // M-Pesa — green M
+  mpesa: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="10" fill="#00a651"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="14" fontWeight="900" fill="white">M-PESA</text>
+    </svg>
+  ),
+  // Telebirr — blue T
+  telebirr: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="10" fill="#0066cc"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="20" fontWeight="900" fill="white">T</text>
+    </svg>
+  ),
+  // Airtel — red A
+  airtel: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="10" fill="#e53935"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="20" fontWeight="900" fill="white">A</text>
+    </svg>
+  ),
+  // Fawry — blue F
+  fawry: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="10" fill="#1e88e5"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="20" fontWeight="900" fill="white">F</text>
+    </svg>
+  ),
+  // Vodafone — red speech bubble V
+  vodafone: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <circle cx="24" cy="24" r="22" fill="#cc0000"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="22" fontWeight="900" fill="white">V</text>
+    </svg>
+  ),
+  // Orange — orange square O
+  orange: (_) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect width="48" height="48" rx="6" fill="#ff6900"/>
+      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="22" fontWeight="900" fill="white">O</text>
+    </svg>
+  ),
+  // Swift — globe icon
+  swift: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <circle cx="24" cy="24" r="18" stroke={color} strokeWidth="2.5" fill="none"/>
+      <ellipse cx="24" cy="24" rx="9" ry="18" stroke={color} strokeWidth="2" fill="none"/>
+      <line x1="6" y1="24" x2="42" y2="24" stroke={color} strokeWidth="2"/>
+      <line x1="24" y1="6" x2="24" y2="42" stroke={color} strokeWidth="2"/>
+    </svg>
+  ),
+  // Receipt / invoice
+  receipt: (color) => (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <rect x="8" y="4" width="32" height="40" rx="3" fill={color} opacity="0.12" stroke={color} strokeWidth="2.5"/>
+      <line x1="14" y1="14" x2="34" y2="14" stroke={color} strokeWidth="2"/>
+      <line x1="14" y1="20" x2="34" y2="20" stroke={color} strokeWidth="2"/>
+      <line x1="14" y1="26" x2="26" y2="26" stroke={color} strokeWidth="2"/>
+      <polygon points="28,32 36,32 32,40" fill={color}/>
+    </svg>
+  ),
 };
 
-const getMethodStyle = (name) => METHOD_LOGOS[name] || { icon:FaCreditCard, fb:"💳", color:"#607d8b", bg:"#eceff1" };
+// Map each method name → which icon + colors
+const METHOD_STYLES = {
+  "Telebirr":                          { svg: ICONS.telebirr,  color:"#0066cc", bg:"#deeeff" },
+  "M-Pesa Ethiopia":                   { svg: ICONS.mpesa,     color:"#00a651", bg:"#d4f5e3" },
+  "M-Pesa":                            { svg: ICONS.mpesa,     color:"#00a651", bg:"#d4f5e3" },
+  "Commercial Bank of Ethiopia (CBE)": { svg: ICONS.bank,      color:"#003087", bg:"#dde8ff" },
+  "CBE Mobile / Wallet":               { svg: ICONS.mobile,    color:"#003087", bg:"#dde8ff" },
+  "Awash Bank":                        { svg: ICONS.bank,      color:"#c8102e", bg:"#ffe0e0" },
+  "Dashen Bank":                       { svg: ICONS.bank,      color:"#006633", bg:"#d4f0e0" },
+  "Abyssinia Bank":                    { svg: ICONS.bank,      color:"#7b1fa2", bg:"#f3e5f5" },
+  "Wegagen Bank":                      { svg: ICONS.bank,      color:"#1565c0", bg:"#dde8ff" },
+  "Airtel Money":                      { svg: ICONS.airtel,    color:"#e53935", bg:"#ffe0e0" },
+  "T-Kash (Telkom)":                   { svg: ICONS.mobile,    color:"#6a1b9a", bg:"#f3e5f5" },
+  "Equity Bank Kenya":                 { svg: ICONS.bank,      color:"#c8102e", bg:"#ffe0e0" },
+  "Equity Bank Uganda":                { svg: ICONS.bank,      color:"#c8102e", bg:"#ffe0e0" },
+  "Equity Bank":                       { svg: ICONS.bank,      color:"#c8102e", bg:"#ffe0e0" },
+  "KCB Bank":                          { svg: ICONS.bank,      color:"#006633", bg:"#d4f0e0" },
+  "Kenya Commercial Bank (KCB)":       { svg: ICONS.bank,      color:"#006633", bg:"#d4f0e0" },
+  "Co-operative Bank":                 { svg: ICONS.bank,      color:"#0057a8", bg:"#dde8ff" },
+  "Absa Bank Kenya":                   { svg: ICONS.bank,      color:"#cc0000", bg:"#ffe0e0" },
+  "NCBA Bank":                         { svg: ICONS.bank,      color:"#003087", bg:"#dde8ff" },
+  "MTN Mobile Money":                  { svg: ICONS.mtn,       color:"#e6a800", bg:"#fff9d0" },
+  "MTN Sudan":                         { svg: ICONS.mtn,       color:"#e6a800", bg:"#fff9d0" },
+  "MTN Sudan Mobile":                  { svg: ICONS.mtn,       color:"#e6a800", bg:"#fff9d0" },
+  "Stanbic Bank":                      { svg: ICONS.bank,      color:"#0057a8", bg:"#dde8ff" },
+  "Centenary Bank":                    { svg: ICONS.bank,      color:"#006633", bg:"#d4f0e0" },
+  "DFCU Bank":                         { svg: ICONS.bank,      color:"#003087", bg:"#dde8ff" },
+  "Salaam Bank":                       { svg: ICONS.bank,      color:"#006600", bg:"#d4f0e0" },
+  "Cash Payment":                      { svg: ICONS.cash,      color:"#2e7d32", bg:"#d4f0da" },
+  "Vodafone Cash":                     { svg: ICONS.vodafone,  color:"#cc0000", bg:"#ffe0e0" },
+  "Orange Money":                      { svg: ICONS.orange,    color:"#ff6900", bg:"#fff0d0" },
+  "Etisalat Cash":                     { svg: ICONS.mobile,    color:"#006633", bg:"#d4f0e0" },
+  "Fawry":                             { svg: ICONS.fawry,     color:"#1e88e5", bg:"#dde8ff" },
+  "National Bank of Egypt":            { svg: ICONS.bank,      color:"#003087", bg:"#dde8ff" },
+  "Banque Misr":                       { svg: ICONS.bank,      color:"#6a1b9a", bg:"#f3e5f5" },
+  "CIB Bank":                          { svg: ICONS.bank,      color:"#0057a8", bg:"#dde8ff" },
+  "QNB Alahli":                        { svg: ICONS.bank,      color:"#8b0000", bg:"#ffe0e0" },
+  "Zain Cash":                         { svg: ICONS.mobile,    color:"#cc0000", bg:"#ffe0e0" },
+  "Bank of Khartoum":                  { svg: ICONS.bank,      color:"#1565c0", bg:"#dde8ff" },
+  "Omdurman National Bank":            { svg: ICONS.bank,      color:"#006600", bg:"#d4f0e0" },
+  "Faisal Islamic Bank":               { svg: ICONS.bank,      color:"#006600", bg:"#d4f0e0" },
+  "PayPal":                            { svg: ICONS.paypal,    color:"#003087", bg:"#dde8ff" },
+  "Wise (TransferWise)":               { svg: ICONS.wise,      color:"#37517e", bg:"#e8f0e0" },
+  "Bank Transfer (SWIFT)":             { svg: ICONS.swift,     color:"#37474f", bg:"#eceff1" },
+  "Credit/Debit Card":                 { svg: ICONS.card,      color:"#1a1f71", bg:"#e8f0ff" },
+  "Invoice Payment":                   { svg: ICONS.receipt,   color:"#455a64", bg:"#eceff1" },
+  "Mobile Money":                      { svg: ICONS.mobile,    color:"#e53935", bg:"#ffe0e0" },
+};
 
-// Render real icon component with emoji fallback
+const getMethodStyle = (name) =>
+  METHOD_STYLES[name] || { svg: ICONS.card, color:"#607d8b", bg:"#eceff1" };
+
 function MethodLogo({ name, size = 48 }) {
   const s = getMethodStyle(name);
-  const Icon = s.icon;
-  if (Icon) {
-    return <Icon size={size} color={s.color} />;
-  }
-  return <span style={{ fontSize: size * 0.6 }}>{s.fb}</span>;
+  return (
+    <div style={{ width: size, height: size, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      {s.svg(s.color)}
+    </div>
+  );
 }
 
 // ── Steps data ────────────────────────────────────────────
@@ -183,35 +258,9 @@ export default function Subscription() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!activePlan || !selectedMethod) return;
-    
-    setIsSubmitting(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('plan', activePlan.region);
-      formData.append('amount', activePlan.price.replace(/,/g, ''));
-      formData.append('currency', activePlan.currency);
-      formData.append('method', selectedMethod);
-      if (user?.email) formData.append('email', user.email);
-      if (user?.name) formData.append('name', user.name);
-      
-      if (receipt?.file) {
-        formData.append('receipt', receipt.file);
-      }
-
-      await api.post('/payments/submit', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Payment submission failed:", error);
-      alert("Failed to submit payment request. Please try again or contact support.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    setSubmitted(true);
   };
 
   if (submitted) {
@@ -456,14 +505,13 @@ export default function Subscription() {
 
         {/* ═══ Submit button ═══ */}
         <button
-          className={`sub-submit-btn ${(!activePlan || !selectedMethod || isSubmitting) ? "disabled" : ""}`}
-          disabled={!activePlan || !selectedMethod || isSubmitting}
+          className={`sub-submit-btn ${(!activePlan || !selectedMethod) ? "disabled" : ""}`}
+          disabled={!activePlan || !selectedMethod}
           onClick={handleSubmit}
         >
-          <span>{isSubmitting ? "⏳" : "⬆️"}</span>
+          <span>⬆️</span>
           <span>
-            {isSubmitting ? "Submitting Request..." : 
-              activePlan && selectedMethod
+            {activePlan && selectedMethod
               ? `Submit Request — ${activePlan.price} ${activePlan.currency} via ${selectedMethod}`
               : "Upload Receipt & Request Access"}
           </span>

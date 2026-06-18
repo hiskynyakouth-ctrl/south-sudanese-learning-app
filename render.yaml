@@ -19,9 +19,15 @@ services:
         value: thiyangkoang77@gmail.com
       - key: GMAIL_APP_PASSWORD
         sync: false
-      - key: MONGO_URI
-        sync: false
+      # ── PostgreSQL — set this in Render Dashboard → Environment ──
+      # Create a free PostgreSQL database on Render, then copy the
+      # Internal Database URL here as DATABASE_URL
       - key: DATABASE_URL
         sync: false
       - key: CLIENT_URL
         value: https://south-sudanese-learning-app-two.vercel.app
+
+databases:
+  - name: ss-elearning-db
+    plan: free
+    region: oregon

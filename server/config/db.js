@@ -1,47 +1,121 @@
-const mongoose = require('mongoose');
+/**
+ * PostgreSQL connection using the `pg` library.
+ * Uses DATABASE_URL (Render/cloud) or individual DB_* vars (local).
+ */
+const { Pool } = require('pg');
 
+let pool = null;
 let connected = false;
-let lastError = null;
 
-const getMongoUri = () => {
-  const rawUri = process.env.MONGO_URI || process.env.DATABASE_URL || process.env.MONGODB_URI;
-  if (!rawUri) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Missing MongoDB connection string. Set MONGO_URI or DATABASE_URL in backend environment variables.');
-    }
-    return 'mongodb://localhost:27017/elearning';
+const createPool = () => {
+  const connectionString = process.env.DATABASE_URL;
+  if (connectionString) {
+    return new Pool({
+      connectionString,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    });
   }
+  return new Pool({
+    host:     process.env.DB_HOST     || 'localhost',
+    user:     process.env.DB_USER     || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME     || 'elearning',
+    port:     parseInt(process.env.DB_PORT || '5432'),
+  });
+};
 
-  const uri = rawUri.trim().replace(/^['"]|['"]$/g, '');
-  if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
-    throw new Error('Invalid MongoDB connection string scheme. It must start with "mongodb://" or "mongodb+srv://".');
-  }
-  return uri;
+const getPool = () => {
+  if (!pool) pool = createPool();
+  return pool;
+};
+
+// Parameterised query helper
+const query = (text, params) => getPool().query(text, params);
+
+// ── Auto-create tables ────────────────────────────────────
+const initTables = async () => {
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id               SERIAL PRIMARY KEY,
+      name             VARCHAR(255)        NOT NULL,
+      email            VARCHAR(255) UNIQUE NOT NULL,
+      password         VARCHAR(255)        NOT NULL,
+      google_id        VARCHAR(255),
+      picture          VARCHAR(500),
+      role             VARCHAR(20)         DEFAULT 'student',
+      subscription_plan    VARCHAR(50)     DEFAULT '',
+      subscription_expiry  TIMESTAMPTZ,
+      created_at       TIMESTAMPTZ         DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS subjects (
+      id          SERIAL PRIMARY KEY,
+      name        VARCHAR(100) NOT NULL,
+      description TEXT         DEFAULT '',
+      grade_id    INT          NOT NULL DEFAULT 0,
+      stream_id   INT,
+      icon        VARCHAR(10)  DEFAULT '📘',
+      created_at  TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS chapters (
+      id          SERIAL PRIMARY KEY,
+      subject_id  INT          REFERENCES subjects(id) ON DELETE CASCADE,
+      title       VARCHAR(255) NOT NULL,
+      content     TEXT         DEFAULT '',
+      video_url   VARCHAR(500) DEFAULT '',
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS chapter_questions (
+      id          SERIAL PRIMARY KEY,
+      chapter_id  INT  REFERENCES chapters(id) ON DELETE CASCADE,
+      question    TEXT NOT NULL,
+      answer      TEXT DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id             SERIAL PRIMARY KEY,
+      chapter_id     INT     REFERENCES chapters(id) ON DELETE CASCADE,
+      question       TEXT    NOT NULL,
+      options        JSONB   DEFAULT '[]',
+      answer         VARCHAR(255) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS past_papers (
+      id          SERIAL PRIMARY KEY,
+      subject_id  INT,
+      subject     VARCHAR(150) DEFAULT '',
+      grade       VARCHAR(50)  DEFAULT '',
+      year        INT          NOT NULL,
+      paper       VARCHAR(50)  DEFAULT '',
+      title       VARCHAR(255) NOT NULL DEFAULT '',
+      file_url    TEXT         DEFAULT '',
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
+  `);
+  console.log('✅ PostgreSQL tables ready');
 };
 
 const connectDB = async () => {
   try {
-    const mongoUri = getMongoUri();
-    const source = process.env.MONGO_URI ? 'MONGO_URI' : process.env.DATABASE_URL ? 'DATABASE_URL' : process.env.MONGODB_URI ? 'MONGODB_URI' : 'default local URI';
-    const conn = await mongoose.connect(mongoUri);
+    await query('SELECT 1');
     connected = true;
-    lastError = null;
-    console.log(`✅ Connected to MongoDB (${source}): ${conn.connection.host}`);
+    console.log('✅ Connected to PostgreSQL');
+    await initTables();
     return true;
   } catch (err) {
     connected = false;
-    lastError = err.message;
-    console.error('❌ MongoDB connection failed:', err.message);
-    // Retry after 15s
+    console.error('❌ PostgreSQL connection failed:', err.message);
     setTimeout(connectDB, 15000);
     return false;
   }
 };
 
 const getDbStatus = () => ({
-  state: connected ? 1 : 0,
+  state:  connected ? 1 : 0,
   status: connected ? 'connected' : 'disconnected',
-  lastError: lastError,
 });
 
-module.exports = { connectDB, getDbStatus, getMongoUri };
+module.exports = { query, connectDB, getDbStatus, getPool };
