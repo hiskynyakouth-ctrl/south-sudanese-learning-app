@@ -24,55 +24,51 @@ const makeError = (msg) => {
 // ── Login ────────────────────────────────────────────────
 export const login = async (email, password, onWaking) => {
   const normalizedEmail = email.trim().toLowerCase();
-  const isAdminEmail = normalizedEmail.includes("admin");
 
-  // For admin accounts: always wait for the backend to wake up (Render free tier)
-  if (isAdminEmail) {
-    // Fire a wake-up ping. onWaking callback lets the UI show a spinner.
-    if (typeof onWaking === "function") onWaking(true);
-    try {
-      const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
+  // Always try the backend first — for ALL users.
+  // Show waking indicator if server might be cold-starting.
+  if (typeof onWaking === "function") onWaking(true);
+
+  try {
+    const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
+    if (typeof onWaking === "function") onWaking(false);
+    return res.data;
+  } catch (err) {
+    if (typeof onWaking === "function") onWaking(false);
+
+    // Wrong password — never fall back
+    if (err.response?.status === 401) throw err;
+
+    // Server conflict / validation error — don't fall back
+    if (err.response?.status === 400 || err.response?.status === 409) throw err;
+
+    // Server busy / cold-starting — wake it up and retry once
+    if (err.code === "ECONNABORTED" || !err.response) {
+      if (typeof onWaking === "function") onWaking(true);
+      const awake = await wakeBackend(90000);
       if (typeof onWaking === "function") onWaking(false);
-      return res.data;
-    } catch (err) {
-      if (typeof onWaking === "function") onWaking(false);
-      // Wrong password — don't fall back
-      if (err.response?.status === 401) throw err;
-      // Backend waking up or DB not connected
-      if (err.code === "ECONNABORTED" || !err.response) {
-        // Try waking the server explicitly, then retry once
-        if (typeof onWaking === "function") onWaking(true);
-        const awake = await wakeBackend(90000);
-        if (typeof onWaking === "function") onWaking(false);
-        if (awake) {
-          try {
-            const retryRes = await authApi.post('/auth/login', { email: normalizedEmail, password });
-            return retryRes.data;
-          } catch (retryErr) {
-            if (retryErr.response?.status === 401) throw retryErr;
-            throw makeError("Backend woke up but login failed. Check admin credentials.");
-          }
+      if (awake) {
+        try {
+          const retryRes = await authApi.post('/auth/login', { email: normalizedEmail, password });
+          return retryRes.data;
+        } catch (retryErr) {
+          if (retryErr.response?.status === 401) throw retryErr;
+          throw makeError("Backend woke up but login failed. Please check your credentials.");
         }
-        throw makeError("The server is taking too long to start. Please wait 30 seconds and try again.");
       }
-      throw makeError(err.response?.data?.error || "Online admin login is unavailable. Check the backend database connection.");
+      throw makeError("The server is taking too long to start. Please wait 30 seconds and try again.");
+    }
+
+    // Server returned 5xx or other error
+    if (err.response?.status >= 500) {
+      throw makeError(err.response?.data?.error || "Server error. Please try again in a moment.");
     }
   }
 
-  // Non-admin users: try backend, fall back to localStorage on failure
-  try {
-    const res = await authApi.post('/auth/login', { email: normalizedEmail, password });
-    return res.data;
-  } catch (err) {
-    // Only 401 (wrong password) should block — everything else falls through to localStorage
-    if (err.response?.status === 401) throw err;
-    // 404, 500, 503, no response — fall through to localStorage
-  }
-
-  // localStorage fallback
+  // Only fall back to localStorage for non-server errors (e.g. no internet at all)
   const users = getLocalUsers();
   const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-  if (!user) throw makeError("No account found with this email. Please register first.");
+  if (!user) throw makeError("No account found. Please register first or check your internet connection.");
   if (user.loginMethod === "google" || user.password?.startsWith("google_")) {
     throw makeError("This account uses Google login. Please click 'Continue with Google'.");
   }

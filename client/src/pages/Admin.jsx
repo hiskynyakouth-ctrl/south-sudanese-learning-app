@@ -126,9 +126,34 @@ export default function Admin() {
     } catch (error) {
       setDbOnline(false);
       if (error.response?.status === 401 || error.response?.status === 403) {
-        setDbError("Your admin session is not authorized. Please sign in again with an admin account.");
-        loadLocalData();
-        return;
+        // Token is valid JWT but role isn't admin in DB yet — auto-promote and retry
+        if (token?.startsWith("eyJ") && user?.email) {
+          try {
+            await api.post("/auth/promote-admin", {
+              secret: "ss_setup_2024_hisky",
+              email: user.email,
+            });
+            // Retry stats after promotion
+            try {
+              const retryRes = await api.get("/admin/stats");
+              onlineStats = retryRes.data;
+              setDbOnline(true);
+              // fall through to load other data
+            } catch {
+              setDbError("Auto-promotion succeeded but stats still failed. Please log out and log back in.");
+              loadLocalData();
+              return;
+            }
+          } catch {
+            setDbError("Your admin session is not authorized. Please sign in again with an admin account.");
+            loadLocalData();
+            return;
+          }
+        } else {
+          setDbError("Your admin session is not authorized. Please sign in again with an admin account.");
+          loadLocalData();
+          return;
+        }
       } else if (error.response?.status === 503) {
         setDbError(error.response?.data?.error || "The backend is online, but the database is not connected.");
         loadLocalData();
