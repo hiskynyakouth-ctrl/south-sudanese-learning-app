@@ -1,85 +1,62 @@
 const express = require('express');
-const multer = require('multer');
-const nodemailer = require('nodemailer');
-const Payment = require('../models/paymentModel');
+const { query, getDbStatus } = require('../config/db');
 const authMiddleware = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
 
-// Configure multer for memory storage so we can attach it directly to email
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+// Save receipt images
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../uploads/receipts');
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, Date.now() + '_' + safe);
+  },
 });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// Configure Nodemailer
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER || 'thiyangkoang77@gmail.com',
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
-  });
-};
-
+// POST /api/payments/submit — student submits payment request
 router.post('/submit', authMiddleware, upload.single('receipt'), async (req, res) => {
+  if (!getDbStatus().state) {
+    return res.status(503).json({ error: 'Database not connected.' });
+  }
+
+  const { plan, amount, currency, method, notes } = req.body;
+  const email  = req.user?.email  || req.body.email  || '';
+  const name   = req.user?.name   || req.body.name   || '';
+  const userId = req.user?.id     || null;
+
+  if (!email) return res.status(400).json({ error: 'Email required.' });
+
   try {
-    const { plan, amount, currency, method, email, name } = req.body;
-    const file = req.file;
+    const result = await query(
+      `INSERT INTO payment_requests
+         (user_id, email, name, plan, amount, currency, method, status, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'pending',$8)
+       RETURNING id`,
+      [userId, email.toLowerCase(), name, plan||'', amount||'', currency||'', method||'', notes||'']
+    );
 
-    if (!file) {
-      return res.status(400).json({ error: 'Payment receipt screenshot is required.' });
+    const paymentId = result.rows[0].id;
+    const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
+
+    if (receiptUrl) {
+      await query('UPDATE payment_requests SET notes=$1 WHERE id=$2',
+        [`Receipt: ${receiptUrl}${notes ? '\n' + notes : ''}`, paymentId]);
     }
 
-    // 1. Insert payment record into database
-    await Payment.create({
-      userId: req.user.id,
-      email: email || req.user.email,
-      tx_ref: `REQ-${Date.now()}`,
-      amount: amount || 0,
-      currency: currency || 'USD',
-      provider: method || 'Manual',
-      status: 'pending'
+    res.json({
+      message: 'Payment request submitted. Admin will verify and activate your subscription.',
+      id: paymentId,
     });
-
-    // 2. Send Email to Admin with the screenshot attached
-    const adminEmail = process.env.GMAIL_USER || 'thiyangkoang77@gmail.com';
-    const transporter = createTransporter();
-
-    if (process.env.GMAIL_APP_PASSWORD) {
-      await transporter.sendMail({
-        from: `"${name || req.user.name}" <${email || req.user.email}>`,
-        to: adminEmail,
-        subject: `New Payment Received: ${plan} (${currency} ${amount})`,
-        text: `
-Hello Admin,
-
-A new payment request has been submitted.
-
-User: ${name || req.user.name} (${email || req.user.email})
-Plan: ${plan}
-Amount: ${amount} ${currency}
-Payment Method: ${method}
-Status: Pending Verification
-
-The payment receipt screenshot is attached to this email. Please verify the payment and activate their subscription from the Admin Dashboard.
-`,
-        attachments: [
-          {
-            filename: file.originalname || 'receipt.png',
-            content: file.buffer
-          }
-        ]
-      });
-    } else {
-      console.warn("Payment submitted but email not sent because GMAIL_APP_PASSWORD is not set.");
-    }
-
-    res.json({ message: 'Payment submitted successfully. The admin has been notified.' });
-  } catch (error) {
-    console.error("Payment Submission Error:", error);
-    res.status(500).json({ error: 'Failed to submit payment. Please try again later.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

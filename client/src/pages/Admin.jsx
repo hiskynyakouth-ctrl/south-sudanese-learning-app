@@ -471,7 +471,7 @@ export default function Admin() {
         {dbOnline === true && (
           <div className="admin-online-banner">
             <span>🟢</span>
-            <strong>MongoDB Connected — South Sudan E-Learning</strong>
+            <strong>PostgreSQL Connected — South Sudan E-Learning</strong>
           </div>
         )}
 
@@ -576,47 +576,88 @@ export default function Admin() {
         ════════════════════════════════════════════════════════════ */}
         {tab === "payments" && (
           <div className="admin-section">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h1>🧾 Payments & Requests</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h1>🧾 Payments &amp; Requests</h1>
               <button className="primary-button" onClick={() => loadAll()}>Refresh</button>
             </div>
             <p style={{ color:"var(--muted)", marginBottom:20 }}>
-              View pending and completed payment requests. Screenshots are sent to your admin email ({process.env.GMAIL_USER || "thiyangkoang77@gmail.com"}).
+              Students submit payment proof here. Approve to automatically activate their subscription.
             </p>
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Ref</th>
+                    <th>#</th>
                     <th>User / Email</th>
+                    <th>Plan</th>
                     <th>Amount</th>
-                    <th>Provider</th>
+                    <th>Method</th>
                     <th>Status</th>
                     <th>Date</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paymentsList.map((p) => (
+                  {paymentsList.map((p, i) => (
                     <tr key={p.id}>
-                      <td><span style={{ fontFamily: "monospace", color: "var(--muted)" }}>{p.tx_ref || "-"}</span></td>
+                      <td>{i + 1}</td>
                       <td>
-                        <strong>{p.user_name || p.email}</strong><br />
-                        <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{p.email}</span>
+                        <strong>{p.user_name}</strong><br />
+                        <span style={{ fontSize:"0.78rem", color:"var(--muted)" }}>{p.email}</span>
                       </td>
+                      <td>{p.plan || "—"}</td>
                       <td><strong>{p.currency} {p.amount}</strong></td>
-                      <td>{p.provider}</td>
+                      <td>{p.provider || "—"}</td>
                       <td>
-                        <span className={`admin-tag ${p.status === "pending" ? "pending" : "active"}`}>
-                          {p.status || "pending"}
+                        <span style={{
+                          padding:"3px 10px", borderRadius:20, fontSize:"0.78rem", fontWeight:700,
+                          background: p.status==="approved" ? "#e8f5e9" : p.status==="rejected" ? "#fff2f2" : "#fff9e0",
+                          color:      p.status==="approved" ? "#2e7d32" : p.status==="rejected" ? "#c62828" : "#e65100",
+                          border: `1px solid ${p.status==="approved" ? "#a5d6a7" : p.status==="rejected" ? "#ffcdd2" : "#ffe082"}`,
+                        }}>
+                          {p.status === "approved" ? "✅ Approved" : p.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
                         </span>
                       </td>
-                      <td>{p.created_at ? new Date(p.created_at).toLocaleString() : "—"}</td>
+                      <td>{p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}</td>
+                      <td>
+                        {p.status === "pending" && (
+                          <div style={{ display:"flex", gap:6 }}>
+                            <button
+                              className="primary-button"
+                              style={{ padding:"4px 10px", fontSize:"0.78rem", background:"#2e7d32" }}
+                              onClick={async () => {
+                                try {
+                                  await api.put(`/admin/payments/${p.id}/status`, { status: "approved" });
+                                  flash(`✅ Approved & subscription activated for ${p.email}`);
+                                  loadAll();
+                                } catch (err) { flash(err.response?.data?.error || "Failed."); }
+                              }}
+                            >✓ Approve</button>
+                            <button
+                              className="admin-del-btn"
+                              style={{ padding:"4px 10px", fontSize:"0.78rem" }}
+                              onClick={async () => {
+                                try {
+                                  await api.put(`/admin/payments/${p.id}/status`, { status: "rejected" });
+                                  flash("Payment rejected.");
+                                  loadAll();
+                                } catch (err) { flash(err.response?.data?.error || "Failed."); }
+                              }}
+                            >✕ Reject</button>
+                          </div>
+                        )}
+                        {p.status !== "pending" && <span style={{ color:"var(--muted)", fontSize:"0.78rem" }}>—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {paymentsList.length === 0 && (
-                <p className="admin-empty">No payment requests yet.</p>
+                <div className="tb-empty" style={{ padding:32 }}>
+                  <span style={{ fontSize:"2.5rem" }}>🧾</span>
+                  <h2>No payment requests yet</h2>
+                  <p>When students submit payment proof on the Subscription page, they'll appear here.</p>
+                </div>
               )}
             </div>
           </div>

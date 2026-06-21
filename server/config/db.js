@@ -94,6 +94,20 @@ const initTables = async () => {
       file_url    TEXT         DEFAULT '',
       created_at  TIMESTAMPTZ  DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS payment_requests (
+      id          SERIAL PRIMARY KEY,
+      user_id     INT          REFERENCES users(id) ON DELETE SET NULL,
+      email       VARCHAR(255) NOT NULL,
+      name        VARCHAR(255) DEFAULT '',
+      plan        VARCHAR(100) DEFAULT '',
+      amount      VARCHAR(50)  DEFAULT '',
+      currency    VARCHAR(20)  DEFAULT '',
+      method      VARCHAR(100) DEFAULT '',
+      status      VARCHAR(20)  DEFAULT 'pending',
+      notes       TEXT         DEFAULT '',
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+    );
   `);
   console.log('✅ PostgreSQL tables ready');
 };

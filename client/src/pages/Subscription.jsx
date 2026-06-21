@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
+import api from "../services/api";
 import "../styles/subscription.css";
 
 // ── Plans ─────────────────────────────────────────────────
@@ -258,9 +259,28 @@ export default function Subscription() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!activePlan || !selectedMethod) return;
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("plan",     activePlan.region);
+      fd.append("amount",   activePlan.price.replace(/,/g, ""));
+      fd.append("currency", activePlan.currency);
+      fd.append("method",   selectedMethod);
+      if (user?.email) fd.append("email", user.email);
+      if (user?.name)  fd.append("name",  user.name);
+      if (receipt?.file) fd.append("receipt", receipt.file);
+
+      await api.post("/payments/submit", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setSubmitted(true);
+    } catch (err) {
+      // If backend is offline, still mark as submitted — user sends email manually
+      console.warn("Payment submit error:", err.message);
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -505,15 +525,16 @@ export default function Subscription() {
 
         {/* ═══ Submit button ═══ */}
         <button
-          className={`sub-submit-btn ${(!activePlan || !selectedMethod) ? "disabled" : ""}`}
-          disabled={!activePlan || !selectedMethod}
+          className={`sub-submit-btn ${(!activePlan || !selectedMethod || isSubmitting) ? "disabled" : ""}`}
+          disabled={!activePlan || !selectedMethod || isSubmitting}
           onClick={handleSubmit}
         >
-          <span>⬆️</span>
+          <span>{isSubmitting ? "⏳" : "⬆️"}</span>
           <span>
-            {activePlan && selectedMethod
-              ? `Submit Request — ${activePlan.price} ${activePlan.currency} via ${selectedMethod}`
-              : "Upload Receipt & Request Access"}
+            {isSubmitting ? "Submitting…" :
+              activePlan && selectedMethod
+                ? `Submit Request — ${activePlan.price} ${activePlan.currency} via ${selectedMethod}`
+                : "Upload Receipt & Request Access"}
           </span>
         </button>
 

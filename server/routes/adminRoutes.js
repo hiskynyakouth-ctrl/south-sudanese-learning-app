@@ -171,4 +171,50 @@ router.delete('/subscriptions/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── Payments ─────────────────────────────────────────────
+router.get('/payments', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT pr.*, u.name as user_name
+       FROM payment_requests pr
+       LEFT JOIN users u ON pr.user_id = u.id
+       ORDER BY pr.created_at DESC`
+    );
+    res.json(result.rows.map(p => ({
+      id:         p.id,
+      tx_ref:     p.id,
+      user_name:  p.user_name || p.name || '—',
+      email:      p.email,
+      amount:     p.amount,
+      currency:   p.currency,
+      provider:   p.method,
+      plan:       p.plan,
+      status:     p.status,
+      notes:      p.notes,
+      created_at: p.created_at,
+    })));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/payments/:id/status', async (req, res) => {
+  const { status } = req.body;
+  if (!['pending','approved','rejected'].includes(status))
+    return res.status(400).json({ error: 'Invalid status.' });
+  try {
+    await query('UPDATE payment_requests SET status=$1 WHERE id=$2', [status, req.params.id]);
+    // If approved, activate subscription for 60 days
+    if (status === 'approved') {
+      const pr = await query('SELECT email FROM payment_requests WHERE id=$1', [req.params.id]);
+      if (pr.rows.length) {
+        const expiry = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+        await query(
+          `UPDATE users SET subscription_plan='2-month',subscription_expiry=$1 WHERE email=$2`,
+          [expiry, pr.rows[0].email]
+        );
+      }
+    }
+    res.json({ message: `Payment ${status}.` });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
