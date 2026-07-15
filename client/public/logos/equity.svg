@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <rect width="80" height="80" rx="16" fill="#c8102e"/>
+  <text x="40" y="35" font-family="Arial,sans-serif" font-size="17" font-weight="900" fill="white" text-anchor="middle">EQUITY</text>
+  <text x="40" y="52" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">BANK</text>
+  <path d="M15 60 L65 60" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+</svg>

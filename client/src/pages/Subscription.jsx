@@ -16,99 +16,105 @@ const PLANS = [
   { region: "Western World", iso: null, price: "$20",  currency: "USD", color: "#1565c0", gradient: "linear-gradient(135deg,#1565c0,#1e88e5)" },
 ];
 
-// ── Real logo images — Wikipedia Wikimedia CDN (public, no CORS) ──────────
-// Falls back to a branded initials badge if the image fails to load.
+// ── Real logo images — local SVGs in /logos/ (always load, no CORS) ────────
 const METHOD_LOGOS = {
+  // ── Ethiopia ──────────────────────────────────────────────────────────────
   "Telebirr":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Telebirr.png", bg:"#0a54a0", color:"#fff", init:"T" },
+    { img:"/logos/telebirr.svg",   bg:"#0a54a0", color:"#fff", init:"T" },
   "M-Pesa Ethiopia":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/200px-M-PESA_LOGO-01.svg.png", bg:"#00a651", color:"#fff", init:"M-PESA" },
+    { img:"/logos/mpesa.svg",      bg:"#00a651", color:"#fff", init:"M-PESA" },
   "M-Pesa":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/200px-M-PESA_LOGO-01.svg.png", bg:"#00a651", color:"#fff", init:"M-PESA" },
+    { img:"/logos/mpesa.svg",      bg:"#00a651", color:"#fff", init:"M-PESA" },
   "Commercial Bank of Ethiopia (CBE)":
-    { img:"https://upload.wikimedia.org/wikipedia/en/thumb/c/c3/CBE_SA.png/200px-CBE_SA.png", bg:"#003087", color:"#fff", init:"CBE" },
+    { img:"/logos/cbe.svg",        bg:"#003087", color:"#fff", init:"CBE" },
   "CBE Mobile / Wallet":
-    { img:"https://upload.wikimedia.org/wikipedia/en/thumb/c/c3/CBE_SA.png/200px-CBE_SA.png", bg:"#003087", color:"#fff", init:"CBE" },
+    { img:"/logos/cbe.svg",        bg:"#003087", color:"#fff", init:"CBE" },
   "Awash Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Awash_Bank_Logo.png", bg:"#c8102e", color:"#fff", init:"AWB" },
+    { img:"/logos/awash.svg",      bg:"#c8102e", color:"#fff", init:"AWB" },
   "Dashen Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Dashen_Bank_logo.png", bg:"#006633", color:"#fff", init:"DSH" },
+    { img:"/logos/dashen.svg",     bg:"#004d1a", color:"#fff", init:"DSH" },
   "Abyssinia Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Bank_of_Abyssinia_logo.png", bg:"#7b1fa2", color:"#fff", init:"BOA" },
+    { img:"/logos/abyssinia.svg",  bg:"#7b1fa2", color:"#fff", init:"BOA" },
   "Wegagen Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Wegagen_Bank_logo.jpg", bg:"#1565c0", color:"#fff", init:"WGB" },
+    { img:"/logos/wegagen.svg",    bg:"#1565c0", color:"#fff", init:"WGB" },
+  // ── Kenya ─────────────────────────────────────────────────────────────────
   "Airtel Money":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airtel_Africa_logo.svg/200px-Airtel_Africa_logo.svg.png", bg:"#e53935", color:"#fff", init:"AIRTEL" },
+    { img:"/logos/airtel.svg",     bg:"#e53935", color:"#fff", init:"AIRTEL" },
   "T-Kash (Telkom)":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Telkom_Kenya_Logo.png", bg:"#6a1b9a", color:"#fff", init:"T-K" },
+    { img:null,                    bg:"#6a1b9a", color:"#fff", init:"T-K" },
   "Equity Bank Kenya":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Equity_Bank_Kenya.png", bg:"#c8102e", color:"#fff", init:"EQ" },
+    { img:"/logos/equity.svg",     bg:"#c8102e", color:"#fff", init:"EQ" },
   "Equity Bank Uganda":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Equity_Bank_Kenya.png", bg:"#c8102e", color:"#fff", init:"EQ" },
+    { img:"/logos/equity.svg",     bg:"#c8102e", color:"#fff", init:"EQ" },
   "Equity Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Equity_Bank_Kenya.png", bg:"#c8102e", color:"#fff", init:"EQ" },
+    { img:"/logos/equity.svg",     bg:"#c8102e", color:"#fff", init:"EQ" },
   "KCB Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/KCB_Bank_Kenya_Logo.png", bg:"#006633", color:"#fff", init:"KCB" },
+    { img:"/logos/kcb.svg",        bg:"#006600", color:"#fff", init:"KCB" },
   "Kenya Commercial Bank (KCB)":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/KCB_Bank_Kenya_Logo.png", bg:"#006633", color:"#fff", init:"KCB" },
+    { img:"/logos/kcb.svg",        bg:"#006600", color:"#fff", init:"KCB" },
   "Co-operative Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Co-operative_Bank_of_Kenya_logo.png", bg:"#0057a8", color:"#fff", init:"COOP" },
+    { img:"/logos/coop.svg",       bg:"#0057a8", color:"#fff", init:"COOP" },
   "Absa Bank Kenya":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Absa_Group_Limited_logo.svg/200px-Absa_Group_Limited_logo.svg.png", bg:"#cc0000", color:"#fff", init:"ABSA" },
+    { img:"/logos/absa.svg",       bg:"#cc0000", color:"#fff", init:"ABSA" },
   "NCBA Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/NCBA_Bank_logo.png", bg:"#003087", color:"#fff", init:"NCBA" },
+    { img:null,                    bg:"#003087", color:"#fff", init:"NCBA" },
+  // ── Uganda ────────────────────────────────────────────────────────────────
   "MTN Mobile Money":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/MTN_Logo.svg/200px-MTN_Logo.svg.png", bg:"#ffcc00", color:"#000", init:"MTN" },
+    { img:"/logos/mtn.svg",        bg:"#ffcc00", color:"#000", init:"MTN" },
   "Stanbic Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Stanbic_Bank_logo.png", bg:"#0057a8", color:"#fff", init:"STB" },
+    { img:"/logos/stanbic.svg",    bg:"#003e7e", color:"#fff", init:"STB" },
   "Centenary Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Centenary_Bank_logo.png", bg:"#006633", color:"#fff", init:"CEN" },
+    { img:null,                    bg:"#006633", color:"#fff", init:"CEN" },
   "DFCU Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Dfcu_Bank_logo.png", bg:"#003087", color:"#fff", init:"DFCU" },
+    { img:null,                    bg:"#003087", color:"#fff", init:"DFCU" },
+  // ── South Sudan ───────────────────────────────────────────────────────────
   "Salaam Bank":
-    { img:null, bg:"#006600", color:"#fff", init:"SLM" },
+    { img:null,                    bg:"#006600", color:"#fff", init:"SLM" },
   "Cash Payment":
-    { img:null, bg:"#2e7d32", color:"#fff", init:"CASH" },
+    { img:null,                    bg:"#2e7d32", color:"#fff", init:"CASH" },
+  // ── Egypt ─────────────────────────────────────────────────────────────────
   "Vodafone Cash":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Vodafone_2017_logo.svg/200px-Vodafone_2017_logo.svg.png", bg:"#cc0000", color:"#fff", init:"VF" },
+    { img:"/logos/vodafone.svg",   bg:"#e60000", color:"#fff", init:"VF" },
   "Orange Money":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/200px-Orange_logo.svg.png", bg:"#ff6900", color:"#fff", init:"OR" },
+    { img:"/logos/orange.svg",     bg:"#ff6900", color:"#fff", init:"OR" },
   "Etisalat Cash":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/E%26logo.svg/200px-E%26logo.svg.png", bg:"#006633", color:"#fff", init:"ETI" },
+    { img:null,                    bg:"#006633", color:"#fff", init:"ETI" },
   "Fawry":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Fawry_logo.png", bg:"#1e88e5", color:"#fff", init:"FWR" },
+    { img:"/logos/fawry.svg",      bg:"#1a6fba", color:"#fff", init:"FWR" },
   "National Bank of Egypt":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/National_Bank_of_Egypt_logo.png", bg:"#003087", color:"#fff", init:"NBE" },
+    { img:null,                    bg:"#003087", color:"#fff", init:"NBE" },
   "Banque Misr":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Banque_Misr_logo.png", bg:"#6a1b9a", color:"#fff", init:"BM" },
+    { img:null,                    bg:"#6a1b9a", color:"#fff", init:"BM" },
   "CIB Bank":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/CIB_Egypt_logo.png", bg:"#0057a8", color:"#fff", init:"CIB" },
+    { img:null,                    bg:"#0057a8", color:"#fff", init:"CIB" },
   "QNB Alahli":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/QNB_logo.svg/200px-QNB_logo.svg.png", bg:"#8b0000", color:"#fff", init:"QNB" },
+    { img:null,                    bg:"#8b0000", color:"#fff", init:"QNB" },
+  // ── Sudan ─────────────────────────────────────────────────────────────────
   "MTN Sudan":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/MTN_Logo.svg/200px-MTN_Logo.svg.png", bg:"#ffcc00", color:"#000", init:"MTN" },
+    { img:"/logos/mtn.svg",        bg:"#ffcc00", color:"#000", init:"MTN" },
   "MTN Sudan Mobile":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/MTN_Logo.svg/200px-MTN_Logo.svg.png", bg:"#ffcc00", color:"#000", init:"MTN" },
+    { img:"/logos/mtn.svg",        bg:"#ffcc00", color:"#000", init:"MTN" },
   "Zain Cash":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Zain_new_logo.svg/200px-Zain_new_logo.svg.png", bg:"#cc0000", color:"#fff", init:"ZAIN" },
+    { img:"/logos/zain.svg",       bg:"#cc0000", color:"#fff", init:"ZAIN" },
   "Bank of Khartoum":
-    { img:"https://en.wikipedia.org/wiki/Special:FilePath/Bank_of_Khartoum_logo.png", bg:"#1565c0", color:"#fff", init:"BOK" },
+    { img:null,                    bg:"#1565c0", color:"#fff", init:"BOK" },
   "Omdurman National Bank":
-    { img:null, bg:"#006600", color:"#fff", init:"ONB" },
+    { img:null,                    bg:"#006600", color:"#fff", init:"ONB" },
   "Faisal Islamic Bank":
-    { img:null, bg:"#006600", color:"#fff", init:"FIB" },
+    { img:null,                    bg:"#006600", color:"#fff", init:"FIB" },
+  // ── Western ───────────────────────────────────────────────────────────────
   "PayPal":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/200px-PayPal.svg.png", bg:"#003087", color:"#fff", init:"PP" },
+    { img:"/logos/paypal.svg",     bg:"#003087", color:"#fff", init:"PP" },
   "Wise (TransferWise)":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Wise_logo_2022.svg/200px-Wise_logo_2022.svg.png", bg:"#9fe870", color:"#163300", init:"WISE" },
+    { img:"/logos/wise.svg",       bg:"#9fe870", color:"#163300", init:"WISE" },
   "Bank Transfer (SWIFT)":
-    { img:null, bg:"#37474f", color:"#fff", init:"SWIFT" },
+    { img:null,                    bg:"#37474f", color:"#fff", init:"SWIFT" },
   "Credit/Debit Card":
-    { img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png", bg:"#1a1f71", color:"#fff", init:"CARD" },
+    { img:null,                    bg:"#1a1f71", color:"#fff", init:"CARD" },
   "Invoice Payment":
-    { img:null, bg:"#455a64", color:"#fff", init:"INV" },
+    { img:null,                    bg:"#455a64", color:"#fff", init:"INV" },
   "Mobile Money":
-    { img:null, bg:"#e53935", color:"#fff", init:"MM" },
+    { img:null,                    bg:"#e53935", color:"#fff", init:"MM" },
 };
 
 const getMethodStyle = (name) =>
@@ -137,81 +143,6 @@ function MethodLogo({ name, size = 48 }) {
     </div>
   );
 }
-  // Bank building
-  bank: (color) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect x="6" y="38" width="36" height="4" rx="2" fill={color}/>
-      <rect x="10" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
-      <rect x="17" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
-      <rect x="24" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
-      <rect x="31" y="22" width="4" height="16" rx="1" fill={color} opacity="0.7"/>
-      <rect x="6" y="18" width="36" height="4" rx="1" fill={color}/>
-      <polygon points="24,6 42,18 6,18" fill={color}/>
-    </svg>
-  ),
-  // Card
-  card: (color) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect x="4" y="12" width="40" height="26" rx="4" fill={color} opacity="0.15" stroke={color} strokeWidth="2.5"/>
-      <rect x="4" y="18" width="40" height="8" fill={color} opacity="0.25"/>
-      <rect x="10" y="30" width="12" height="3" rx="1.5" fill={color}/>
-      <rect x="26" y="30" width="6" height="3" rx="1.5" fill={color} opacity="0.5"/>
-    </svg>
-  ),
-  // Cash / money
-  cash: (color) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect x="4" y="14" width="40" height="22" rx="4" fill={color} opacity="0.15" stroke={color} strokeWidth="2.5"/>
-      <circle cx="24" cy="25" r="7" fill={color} opacity="0.25" stroke={color} strokeWidth="2"/>
-      <text x="24" y="29" textAnchor="middle" fontSize="9" fontWeight="bold" fill={color}>$</text>
-      <rect x="8" y="19" width="4" height="4" rx="1" fill={color} opacity="0.4"/>
-      <rect x="36" y="27" width="4" height="4" rx="1" fill={color} opacity="0.4"/>
-    </svg>
-  ),
-  // PayPal P
-  paypal: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect width="48" height="48" rx="12" fill="#f0f4ff"/>
-      <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fontSize="26" fontWeight="900" fill="#003087">P</text>
-      <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fontSize="26" fontWeight="900" fill="#009cde" dx="6" dy="4">P</text>
-    </svg>
-  ),
-  // Wise W
-  wise: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect width="48" height="48" rx="12" fill="#9fe870"/>
-      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="22" fontWeight="900" fill="#163300">W</text>
-    </svg>
-  ),
-  // MTN — yellow circle M
-  mtn: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <circle cx="24" cy="24" r="22" fill="#ffcc00"/>
-      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="18" fontWeight="900" fill="#000">MTN</text>
-    </svg>
-  ),
-  // M-Pesa — green M
-  mpesa: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect width="48" height="48" rx="10" fill="#00a651"/>
-      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="14" fontWeight="900" fill="white">M-PESA</text>
-    </svg>
-  ),
-  // Telebirr — blue T
-  telebirr: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect width="48" height="48" rx="10" fill="#0066cc"/>
-      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="20" fontWeight="900" fill="white">T</text>
-    </svg>
-  ),
-  // Airtel — red A
-  airtel: (_) => (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <rect width="48" height="48" rx="10" fill="#e53935"/>
-      <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontSize="20" fontWeight="900" fill="white">A</text>
-    </svg>
-  ),
-  // Fawry — blue F
 // ── Steps data ────────────────────────────────────────────
 const STEPS = [
   { icon: "🌍", label: "Choose Country" },

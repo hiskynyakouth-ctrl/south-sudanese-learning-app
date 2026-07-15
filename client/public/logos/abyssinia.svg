@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <rect width="80" height="80" rx="16" fill="#7b1fa2"/>
+  <polygon points="40,12 50,38 76,38 55,53 63,78 40,63 17,78 25,53 4,38 30,38" fill="#ffd700" opacity="0.9"/>
+  <text x="40" y="46" font-family="Arial,sans-serif" font-size="10" font-weight="900" fill="#7b1fa2" text-anchor="middle">BOA</text>
+</svg>

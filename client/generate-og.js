@@ -127,14 +127,14 @@ for (let y = 0; y < H; y++) {
   fillRect(0, y, W, 1, r, g, b);
 }
 
-// 2. Flag stripe accents top (green/yellow/red, 12px each)
-fillRect(0,  0, W, 12, 7,  137, 48);   // green
-fillRect(0, 12, W, 12, 252, 221, 9);   // yellow
-fillRect(0, 24, W, 12, 218, 18,  26);  // red
-// Bottom stripes
-fillRect(0, H-12, W, 12, 7,  137, 48);
+// 2. Flag stripe accents top (black/yellow/red — correct South Sudan order)
+fillRect(0,  0, W, 12, 0,   0,   0);    // black
+fillRect(0, 12, W, 12, 252, 221, 9);    // yellow
+fillRect(0, 24, W, 12, 218, 18,  26);   // red
+// Bottom stripes (same order top to bottom)
+fillRect(0, H-36, W, 12, 0,   0,   0);
 fillRect(0, H-24, W, 12, 252, 221, 9);
-fillRect(0, H-36, W, 12, 218, 18,  26);
+fillRect(0, H-12, W, 12, 218, 18,  26);
 
 // 3. ── SOUTH SUDAN FLAG (right side) ─────────────────
 // Flag at x=670, y=155, size=440x293 (3:2 ratio)
@@ -143,16 +143,17 @@ const FX = 670, FY = 155, FW = 440, FH = 293;
 // Drop shadow
 fillRect(FX+8, FY+8, FW, FH, 0, 0, 0, 80);
 
-// Green stripe (top third)
-fillRect(FX, FY,          FW, Math.round(FH/3),     7,   137, 48);
+// Correct flag stripes: Black (top), White, Red (middle), White, Green (bottom)
+// Black stripe (top third)
+fillRect(FX, FY,          FW, Math.round(FH/3),     0,   0,   0);
 // White separator
 fillRect(FX, FY+Math.round(FH/3)-2, FW, 4,          255, 255, 255);
 // Red stripe (middle)
 fillRect(FX, FY+Math.round(FH/3),   FW, Math.round(FH/3),   218, 18,  26);
 // White separator
 fillRect(FX, FY+Math.round(FH*2/3)-2, FW, 4,        255, 255, 255);
-// Black stripe (bottom)
-fillRect(FX, FY+Math.round(FH*2/3), FW, FH-Math.round(FH*2/3), 0, 0, 0);
+// Green stripe (bottom)
+fillRect(FX, FY+Math.round(FH*2/3), FW, FH-Math.round(FH*2/3), 7, 137, 48);
 
 // Blue triangle (left side of flag)
 fillTriangle(

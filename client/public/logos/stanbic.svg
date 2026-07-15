@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <rect width="80" height="80" rx="16" fill="#003e7e"/>
+  <text x="40" y="36" font-family="Arial,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">STANBIC</text>
+  <text x="40" y="52" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="rgba(255,255,255,0.8)" text-anchor="middle">BANK</text>
+</svg>
