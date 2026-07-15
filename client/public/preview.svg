@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a4d41"/>
+      <stop offset="60%" stop-color="#0f3d2e"/>
+      <stop offset="100%" stop-color="#1b3558"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- ══ SOUTH SUDAN FLAG (right side, large) ══════════════ -->
+  <!-- Flag dimensions 3:2 ratio → 420 x 280, positioned right -->
+  <g transform="translate(680, 175)">
+    <!-- Shadow -->
+    <rect x="6" y="6" width="420" height="280" rx="12" fill="rgba(0,0,0,0.4)"/>
+    <!-- Flag body -->
+    <rect x="0" y="0" width="420" height="280" rx="12" fill="white"/>
+    <!-- Correct stripes: Black (top), White divider, Red (middle), White divider, Green (bottom) -->
+    <!-- Black stripe (top) -->
+    <rect x="0" y="0"   width="420" height="87"  fill="#000000"/>
+    <!-- White divider -->
+    <rect x="0" y="87"  width="420" height="7"   fill="white"/>
+    <!-- Red stripe (middle) -->
+    <rect x="0" y="94"  width="420" height="92"  fill="#DA121A"/>
+    <!-- White divider -->
+    <rect x="0" y="186" width="420" height="7"   fill="white"/>
+    <!-- Green stripe (bottom) -->
+    <rect x="0" y="193" width="420" height="87"  fill="#078930"/>
+    <!-- Blue triangle -->
+    <polygon points="0,0 175,140 0,280" fill="#0F47AF"/>
+    <!-- Clip the triangle to flag bounds (radius already set on rect) -->
+    <!-- Yellow star in triangle center -->
+    <polygon points="87,105 97,133 128,133 103,150 113,178 87,161 61,178 71,150 46,133 77,133"
+             fill="#FCDD09" stroke="#FCDD09" stroke-width="1"/>
+    <!-- Round corners clip -->
+    <rect x="0" y="0" width="420" height="280" rx="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+  </g>
+
+  <!-- ══ LEFT CONTENT ══════════════════════════════════════ -->
+
+  <!-- Title -->
+  <text x="80" y="185" font-family="'Segoe UI',Arial,sans-serif" font-weight="800" font-size="68" fill="white" letter-spacing="-2">South Sudan</text>
+  <text x="80" y="265" font-family="'Segoe UI',Arial,sans-serif" font-weight="800" font-size="68" fill="#FCDD09" letter-spacing="-2">E-Learning</text>
+
+  <!-- Subtitle line -->
+  <rect x="80" y="285" width="520" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Description -->
+  <text x="80" y="330" font-family="'Segoe UI',Arial,sans-serif" font-size="27" fill="rgba(255,255,255,0.88)">📚 Senior 1 – 4 · Free Study Platform</text>
+  <text x="80" y="370" font-family="'Segoe UI',Arial,sans-serif" font-size="24" fill="rgba(255,255,255,0.65)">Notes · Quizzes · Past Papers · Videos</text>
+
+  <!-- Feature pills -->
+  <rect x="80"  y="400" width="130" height="42" rx="21" fill="#078930"/>
+  <text x="145" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">📖 Notes</text>
+
+  <rect x="222" y="400" width="140" height="42" rx="21" fill="#DA121A"/>
+  <text x="292" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">✏️ Quizzes</text>
+
+  <rect x="374" y="400" width="170" height="42" rx="21" fill="#0F47AF"/>
+  <text x="459" y="427" font-family="'Segoe UI',Arial,sans-serif" font-size="19" fill="white" text-anchor="middle">📄 Past Papers</text>
+
+  <!-- "Free" badge -->
+  <rect x="80"  y="460" width="100" height="38" rx="19" fill="#FCDD09"/>
+  <text x="130" y="484" font-family="'Segoe UI',Arial,sans-serif" font-size="18" font-weight="700" fill="#0a4d41" text-anchor="middle">FREE ✓</text>
+
+  <!-- URL -->
+  <text x="80" y="570" font-family="'Segoe UI',Arial,sans-serif" font-size="20" fill="rgba(255,255,255,0.45)">south-sudanese-learning-app-two.vercel.app</text>
+
+  <!-- ══ FLAG STRIPES at top and bottom (accent) — Black, Yellow, Red ══ -->
+  <rect x="0" y="0"   width="1200" height="10" fill="#000000"/>
+  <rect x="0" y="10"  width="1200" height="10" fill="#FCDD09"/>
+  <rect x="0" y="20"  width="1200" height="10" fill="#DA121A"/>
+  <rect x="0" y="600" width="1200" height="10" fill="#000000"/>
+  <rect x="0" y="610" width="1200" height="10" fill="#FCDD09"/>
+  <rect x="0" y="620" width="1200" height="10" fill="#DA121A"/>
+</svg>

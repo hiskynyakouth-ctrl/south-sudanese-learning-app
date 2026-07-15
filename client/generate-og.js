@@ -225,4 +225,6 @@ const png = Buffer.concat([
 
 const outPath = path.join(__dirname, 'public', 'og-image.png');
 fs.writeFileSync(outPath, png);
-console.log(`✅ og-image.png written (${(png.length/1024).toFixed(1)} KB) → ${outPath}`);
+// Also write as preview.png for cache-busted og:image URL
+fs.writeFileSync(path.join(__dirname, 'public', 'preview.png'), png);
+console.log(`✅ og-image.png + preview.png written (${(png.length/1024).toFixed(1)} KB)`);
