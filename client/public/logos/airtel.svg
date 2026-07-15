@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <rect width="80" height="80" rx="16" fill="#e53935"/>
+  <text x="40" y="38" font-family="Arial,sans-serif" font-size="24" font-weight="900" fill="white" text-anchor="middle">airtel</text>
+  <path d="M15 50 Q40 42 65 50" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="40" y="66" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">Money</text>
+</svg>
