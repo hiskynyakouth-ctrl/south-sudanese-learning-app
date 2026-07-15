@@ -10,33 +10,9 @@
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <!-- ══ SOUTH SUDAN FLAG (right side, large) ══════════════ -->
-  <!-- Flag dimensions 3:2 ratio → 420 x 280, positioned right -->
-  <g transform="translate(680, 175)">
-    <!-- Shadow -->
-    <rect x="6" y="6" width="420" height="280" rx="12" fill="rgba(0,0,0,0.4)"/>
-    <!-- Flag body -->
-    <rect x="0" y="0" width="420" height="280" rx="12" fill="white"/>
-    <!-- Correct stripes: Black (top), White divider, Red (middle), White divider, Green (bottom) -->
-    <!-- Black stripe (top) -->
-    <rect x="0" y="0"   width="420" height="87"  fill="#000000"/>
-    <!-- White divider -->
-    <rect x="0" y="87"  width="420" height="7"   fill="white"/>
-    <!-- Red stripe (middle) -->
-    <rect x="0" y="94"  width="420" height="92"  fill="#DA121A"/>
-    <!-- White divider -->
-    <rect x="0" y="186" width="420" height="7"   fill="white"/>
-    <!-- Green stripe (bottom) -->
-    <rect x="0" y="193" width="420" height="87"  fill="#078930"/>
-    <!-- Blue triangle -->
-    <polygon points="0,0 175,140 0,280" fill="#0F47AF"/>
-    <!-- Clip the triangle to flag bounds (radius already set on rect) -->
-    <!-- Yellow star in triangle center -->
-    <polygon points="87,105 97,133 128,133 103,150 113,178 87,161 61,178 71,150 46,133 77,133"
-             fill="#FCDD09" stroke="#FCDD09" stroke-width="1"/>
-    <!-- Round corners clip -->
-    <rect x="0" y="0" width="420" height="280" rx="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
-  </g>
+  <!-- ══ SOUTH SUDAN FLAG (right side) — using real flag image ══ -->
+  <image href="https://flagcdn.com/w320/ss.png" x="680" y="165" width="420" height="280" style="filter:drop-shadow(6px 6px 12px rgba(0,0,0,0.4))"/>
+  <rect x="680" y="165" width="420" height="280" rx="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
 
   <!-- ══ LEFT CONTENT ══════════════════════════════════════ -->
 
